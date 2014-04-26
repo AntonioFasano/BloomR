@@ -27,7 +27,7 @@ certurl='http://curl.haxx.se/ca/cacert.pem'
 
 T=TRUE; F=FALSE
 
-rPort= function(work, overwrite=TRUE, deb=1:4){
+makeBloomR= function(work, overwrite=TRUE, deb=1:4){
 ### work='work'
 ### deb: 0 don't overwrite, 1,2,3 step to execute 
                                         
@@ -50,7 +50,7 @@ rPort= function(work, overwrite=TRUE, deb=1:4){
     if(4 %in% deb) bloomrTree(work)
     
     ## Step 5
-    if(5 %in% deb) libScript(work)
+    if(5 %in% deb) libScripts(work)
     
 }
 
@@ -234,12 +234,27 @@ bloomrTree=function(work){
     file.rename(from, to)
     unlink(makePath(from, 'src.zip'))
 
+    ## Make etc/Rprofile.site 
+    makeProfile(work)
+
     ## Create shortcuts
     makeShorts(work)
     
 }
 
+### Make etc/Rprofile.site from PROF()
+makeProfile=function(work){
+    
+    p=capture.output(PROF)  # Get PROF funct definition 
+    p=p[-c(1, length(p))]   # Remove "function {", "}"
+    file=makePath(work, 'bloomR/main/etc/Rprofile.site')
+    cat(p, sep='\n', fill=T, file=file, append=T)
 
+
+}
+
+
+### Make shortcuts to run R  
 makeShorts=function(work){
 
     start="
@@ -250,12 +265,13 @@ path %JAVA_HOME%\\bin;%path%
 set HOME=mystuff
 start main\\bin\\i386\\Rgui.exe   --internet2 LANGUAGE=en
 "
-    cat(start, file=makePath(work, 'bloomR/start.cmd'))
-    
+    cat(start, file=makePath(work, 'bloomR/BloomR.cmd'))
+
+    ## make no-java short? 
 }
 
-### Make pacakge install script
-libScript=function(work){
+### Make package install CLI and R scripts
+libScripts=function(work){
 
     ## Libaries to install
     packs="   zoo  xts  "
@@ -373,140 +389,89 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
 }
 
 
-###old
-### Download binary file new
-#if(!download.bin(url, file, refr="http://sourceforge.net" )$succ)
-#    stop('Download error')
+### "etc/Rprofile.site" source (braces on separate lines) 
+PROF=function(){ #Keep this on separate line
+    
+# === #
+# FAS #
+# === #
 
 
 
-#readflat=function(url){
-#    paste(readLines(url, warn=F), collapse="")
-#}
-# 
-# 
-# 
-# 
-#### Get last directory url for project
-#sfLastDir=function (project){
-#    link=paste0("http://sourceforge.net/projects/", project, "/files/")
-#    ref="http://sourceforge.net"
-#    scurl=readflat(link)
-#    ##search for the first anchor class "name" in the "files" page to get the last published directory
-#    pat = "<a href=\"(/projects/[[:alnum:].]+?/files/[^\"]+?)\"[^<]+?class=\"name\""
-#    scurl=regmatches(scurl, regexec(pat, scurl))[[1]][2]
-#    return (paste0(ref, scurl))
-#}
-# 
-# 
-#### Download binary file 
-#bdown=function(url, file, ref){
-#    f = CFILE(file, mode="wb")
-#    a=curlPerform(url=url, referer=ref, followlocation=T, writedata=f@ref, noprogress=FALSE)
-#    cat('\n')
-#    close(f)
-#    return(a)
-#}
+#Set default repository
+local({r <- getOption("repos")
+       r["CRAN"] <- "http://cran.r-project.org"
+       options(repos=r)
+})
+BloomR.lib="./FAS/library/"
+
+#To install new packages use
+#
+#  install.packages("myPack", BloomR.lib)
+#----------------------------------------
 
 
-###Filter an entry by a rexexp key in the list of download urls
-sfSearchKey = function(link, key, curl){
 
-    #key= "portable[^\"]*?WINDOWS"
 
-    scurl=readflat(link)
-    #ref="http://sourceforge.net"
-    #scurl=getURL(link, referer=ref) # , curl= curl)
+#BBG stuff
+#=========
+library("rJava")
+library("Rbbg")
 
-    ###search for filter and  anchor class "name"
-    nq="[^\"]*?" #no quotes
-    pat = paste0 ("a href=\"(", link, nq, key, nq, ")\"" )
-    return( regmatches(scurl, regexec(pat, scurl))[[1]][2]  )
+bbg.jar=function(){
+	jarpath=paste0(R.home(), "/blpapi_java/bin")
+        Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
+    }
+
+
+
+bbg.open=function() blpConnect(blpapi.jar.file=bbg.jar())
+bbg.close=function(conn)  blpDisconnect(conn)
+
+#end BBG stuff-------------------------------------------
+
+
+delete.all= function() rm(list=ls(all=TRUE))
+
+#Time extension functions
+#=========================
+`%+%` <- function(x,y) UseMethod("%+%")
+`%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
+`%-%` <- function(x,y) UseMethod("%-%")
+`%-%.Date` <- function(date,n) seq(date, by = paste (-n, "months"), length = 2)[2]
+year=function(d) as.numeric(format(d, "%Y"))
+`year<-`=function (d, value) {
+    d <-as.Date(paste0(value, format(d, "-%m-%d")))}
+month=function(d) as.numeric(format(d, "%m"))
+`month<-`=function (d, value) {
+    d <-as.Date(paste0(format(d, "%Y-"),  value, format(d, "-%d")))}
+day=function(d) as.numeric(format(d, "%d"))
+`day<-`=function (d, value) {
+    d <-as.Date(paste0(format(d, "%Y-%m-"),  value))}
+last.day=function(d){
+    x=d %+% 1 #add a month
+    day(x)=1  #set to 1st
+    day(x-1)  #get day before
 }
+day.mod=function(d,n){
+    as.Date(paste0(format(d, "%Y-%m-"), n))}
+
+day.us=function(d1, d2){
+    #set to first of month
+    x1=day.mod(d1,1);x2=day.mod(d2,1);
+    x=seq(x1, x2, by="1 month")
+    #last day of each month in seq
+    x=sapply(x, last.day)
+    #count 31d-months
+    x=length(which(x>30))
+    #substract 1 for each 31d-month
+    as.numeric(d2-d1-x)
+}
+#--------- end Time extensions
+
+    
+}  # Keep this on separate line
 
 
 
 
-
-
-##headers = basicTextGatherer()    
-##getURL("http://example.com",  header = T)
-####or
-##curlPerform(url="http://example.com",   headerfunction = headers$update)
-##h= strsplit( headers$value(), '\r\n')[[1]]  
-##headers$reset()
-## 
-##tryCatch(curlPerform(url = "ftp.wcc.nrcs.usda.govx"),
-###COULDNT_RESOLVE_HOST = function(x) cat("resolve problem\n"),
-##error = function(x) cat(class(x), "got it\n"))
-## 
-## 
-## 
-##headers = basicTextGatherer()    
-##tryCatch(curlPerform(url = "ftp.wcc.nrcs.usda.gov",headerfunction = headers$update),
-##error = function(x) cat(x$message, '\n'))
-##strsplit( headers$value(), '\r\n')[[1]]  
-##headers$reset()
-## 
-## 
-## 
-##    f = CFILE(file, mode="wb")
-##    a=curlPerform(url=url, followlocation=T, writedata=f@ref, noprogress=FALSE)
-##    cat('\n')
-##    close(f)
-## 
-## 
-## 
-## 
-## 
-
-
-#### Download binary file 
-#bdown=function(url, file, refr){
-#    f = CFILE(file, mode="wb")
-#    headers = basicTextGatherer()  
-#    succ=tryCatch(
-#        curlPerform(url=url, referer=refr, followlocation=T, writedata=f@ref,
-#                        noprogress=FALSE, headerfunction = headers$update),
-#        error = function(x) cat(x$message, '\n'))
-#    cat('\n')
-#    close(f)
-#    return(list(succ=!is.null(succ), headers=strsplit( headers$value(),'\r\n')))
-#}
-#if(bdown("ftp.wcc.nrcs.usda.gov", "buttami.txt", "wcc.nrcs.usda.gov"))
-#    cat('Sorry, an error occurred\n') else cat('Download successful\n')
-# 
-#bdown("ftp.wcc.nrcs.usda.gov", "buttami.txt", "wcc.nrcs.usda.gov")
-# 
-# 
-#headers = basicTextGatherer()    
-#f = CFILE('buttami.txt', mode="wb")
-# 
-#succ='sddsfsd'
-#succ=tryCatch(
-#    curlPerform(url="ftp.wcc.nrcs.usda.gov", #referer=ref, 
-#        followlocation=T, writedata=f@ref, noprogress=FALSE, headerfunction = headers$update),
-#    error = (function(x) cat(x$message, '\n')) )
-# 
-#cat('\n')
-#close(f)
-#strsplit( headers$value(), '\r\n')[[1]]  
-#headers$reset()
-# 
-### Take further action after error
-#if(r) {
-#    cat('Sorry, an error occurred\n')
-#} else  {
-##blah, blah ...
-#    print('afds')
-#}
-# 
-# 
-# 
-# 
-# 
-#http://en.wikipedia.org/wiki/Deep_linking
-#Deep linking is prevented to avoid a, possibly commercial, *website* exploiting the links of another one, therefore it should be accepted if you are downloading for yourself data you are entitled to download. But check this, I am not a lwayer!
-
-
-##ess--tb-R-source-current-file 
