@@ -1,19 +1,30 @@
 
-# Set the create the R/Bloomberg Portable dir
-#
-# Requirements
-#  R-Portable*.exe from sourceforge.net/projects/rportable
-#  blpapi_java*.tar from http://www.openbloomberg.com/open-api/
-#  Rbbg_*.zip from http://r.findata.org/bin/windows/contrib/
-#  peazip portable
+###  BloomR source
+###  Status in progress. 
 
-#Usage:
-# rPort=function("path\to\workDir")
-#Set working dir
+##   TODO
+##   Audit makeDir error when dir exists and debugging later steps
+##   Set BloomR library
 
 
-## Globals
-pzip="peazip"; rport='rportable'
+##  Requirements
+##  XML and Rcurl packages should be. 
+##  R should be able to connect to the Internet.
+## 
+##  Usage:
+##  Source this file and run:
+##  makeBloomR("path\to\workDir")
+##  You will get the BloomR.zip in the work dir
+##
+##  Credits to:
+##  R-Portable*.exe from sourceforge.net/projects/rportable
+##  blpapi_java*.tar from http://www.openbloomberg.com/open-api/
+##  Rbbg_*.zip from http://r.findata.org/bin/windows/contrib/
+##  peazip portable from http://sourceforge.net/projects/peazip
+
+
+
+#### Globals
 
 ## java icedtea 
 javaurl=paste0('https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/',
@@ -23,22 +34,31 @@ javazip='openjdk'
 apiurl="http://cdn.gotraffic.net/open/blpapi_java_3.7.1.1.zip"
 apizip="blpapi_java"
 
+## Web certificates
 certurl='http://curl.haxx.se/ca/cacert.pem'
+
+## Github
+github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
+
+## Packages to download. Include dependencies! Case sensitive
+packlist=" rJava  zoo  xts  "
+
+pzip="peazip"; rport='rportable'
 
 T=TRUE; F=FALSE
 
+
 makeBloomR= function(work, overwrite=TRUE, deb=1:4){
-### work='work'
-### deb: 0 don't overwrite, 1,2,3 step to execute 
+## work='work'
+## deb: 1,2,3 steps to execute 
                                         
-    ##  Main component names    
-    #overwrite=ifelse(0 %in% deb, F, T) 
+    ##  Check for required package
     if(!loadLib("RCurl")) return(1)
     if(!loadLib("XML")) return(1)
 
     ## Step 1
     if(1 %in% deb)
-        if(!makedir (work, overwrite)) return(1)
+        if(!makeDir (work, overwrite)) return(1)
     
     ## Step 2
     if(2 %in% deb) downloads(work, overwrite)
@@ -48,28 +68,46 @@ makeBloomR= function(work, overwrite=TRUE, deb=1:4){
 
     ## Step 4
     if(4 %in% deb) bloomrTree(work)
-    
-    ## Step 5
-    if(5 %in% deb) libScripts(work)
-    
+        
 }
 
 ### Create a dir with overwrite options 
-makedir=function(dname, overwrite){
+makeDir=function(dname, overwrite){
     dir.create(dname, showWarnings = FALSE)
     x=dir(dname, all.files=TRUE)
     x=x[-which(x=='.')]
     x=x[-which(x=='..')]
 
-    if (length(x)>0) if(!overwrite) {
-        cat(dname, "\nAlready exists and is not empty\n")
-        return (FALSE)
-    } else 
-        cat("Warning! ", dname, "\nalready contains\n", dir(dname), '\n')
+    if (length(x)>0) {
+        if(!overwrite) {
+            cat(dname, "\nAlready exists and is not empty\n")
+            return (FALSE)
+        } else 
+            cat("Warning! ", dname, "\nalready contains\n", dir(dname), '\n')
+    }
     return (TRUE)
 }
 
-### Check/Load lib
+
+### Chains parent-child paths managing '/' middle slashes 
+makePath=function(parent, child){    
+## You don't have to rememeber if you need to add or not that slash
+
+    ## No trail for parent 
+    parent=sub('/$', '',  parent)
+    parent=sub('\\\\$', '',  parent)
+
+    ## No lead for child
+    child=sub('^/', '',  child)
+    child=sub('^\\\\', '',  child)
+
+    ## Now the input is secure
+    file.path(parent, child)
+
+}
+
+
+### Load CRAN packs 
 loadLib= function(lib){
     if (!lib %in% rownames(installed.packages())){
         repo=getOption("repos")[["CRAN"]]
@@ -84,7 +122,6 @@ loadLib= function(lib){
 }
 
 
-
 ### First SF project item matching regex filter (url made from prj name)
 sfFirstbyProject=function (project, filtx, quiet=FALSE){
     if(!quiet) cat('Searching last', project, 'version on SF.net\n')
@@ -97,6 +134,7 @@ sfFirstbyProject=function (project, filtx, quiet=FALSE){
     if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
     return (url)
 }
+
 
 ### First SF url item matching regex filter (url given from prj name)
 sfFirstbyUrl=function (url, versionx, quiet=FALSE){
@@ -128,6 +166,7 @@ sfBDown=function(url, file){
     if(!download.bin(url, file, refr="http://sourceforge.net" )$succ)
         stop('\nDownload error')
 }
+
 
 ### Get components
 downloads=function(work, overwrite){
@@ -169,7 +208,36 @@ downloads=function(work, overwrite){
         cat(paste('Downloading', apiurl, '\n'))
         if(!download.bin(apiurl, fpath)$succ)  stop('\nDownload error')
     }
-    
+
+    ###  Download packages
+    packd=makePath(work, "packs"); makeDir(packd, overwrite)
+    packs= strsplit(gsub('(^ +)|( +$)', '', packlist), split=' +')[[1]]
+    if(overwrite || !file.exists(fpath)){
+        ## Loop over packs and download them 
+        for(pack in packs){
+            url= cran.geturl(pack)
+            fpath=makePath(packd, pack)
+            cat(paste('Downloading', pack, '\n'))
+            if(!download.bin(url, fpath)$succ)  stop('\nDownload error')
+        }
+    }
+
+}
+
+## Get  CRAN Windows binaries release for a package 
+cran.geturl=function(pack){
+
+    ## CRAN links
+    cranpage="http://cran.r-project.org/web/packages/"
+    cranbin="http://cran.r-project.org/bin/"
+
+    ## Get package page 
+    url=paste0(cranpage, pack, "/index.html")
+    page=download.html(url)    
+
+    ## Get bin url: the first occurence on page is the dev version, second is release
+    url=regmatches(page, gregexpr("windows/contrib.*?\\.zip", page))[[1]][2]
+    paste0(cranbin, url)   
 }
 
 
@@ -178,9 +246,9 @@ expand=function(work){
     ## peazip
     file=makePath(work, pzip)
     exdir=makePath(work, paste0(pzip,'.d'))
-    cat('Create', exdir, '\n') 
+    cat('Creating', exdir, '\n') 
     if(length(unzip(file, exdir = exdir))==0)
-        stop('\nError in peazip extraction')  
+        stop('\nnUnable to extract peazip binaries')  
     pexe=makePath(exdir, paste0(dir(exdir), '/res/7z/7z.exe'))
 
     ## rportable 
@@ -194,31 +262,40 @@ expand=function(work){
     ## Java
     file=makePath(work, javazip)
     exdir=makePath(work, paste0(javazip,'.d'))
-    cat('Create', exdir, '\n') 
+    cat('Creating', exdir, '\n') 
     if(length(unzip(file, exdir = exdir))==0)
-        stop('\nError in java extraction')
+        stop('\nUnable to extract Java binaries')
 
-    ### Bloomberg API
-    fpath=makePath(work, apizip)
+    ## Bloomberg API
+    file=makePath(work, apizip)
     exdir=makePath(work, paste0(apizip,'.d'))
-    cat('Create', exdir, '\n') 
+    cat('Creating', exdir, '\n') 
     if(length(unzip(file, exdir = exdir))==0)
-        stop('\nError in API extraction')  
+        stop('\nUnable to extract API binaries')  
 
+    ## Packages   
+    from=makePath(work, "packs")
+    to=makePath(work, 'lib.d')
+    ## Loop and extract packs
+    for(pack in dir(from)){
+        cat('Creating', makePath('lib.d', pack), '\n')
+        pack=makePath(from, pack)
+        if(length(unzip(pack, exdir = to))==0)
+            stop('\nUnable to extract ',  pack, ' package')  
+    }
     
- 
 }
 
 ### Make BloomR directory tree  
 bloomrTree=function(work){
     
-    makedir(makePath(work, 'bloomR'), overwrite)
+    makeDir(makePath(work, 'bloomR'), overwrite)
 
     ## Move R
     from=makePath(work, paste0(rport, '.d/$_OUTDIR/R-Portable'))
     to=makePath(work, "bloomR/main")
     file.rename(from, to)
-    makedir(makePath(work, 'bloomR/main/site-library'), overwrite)
+    makeDir(makePath(work, 'bloomR/main/site-library'), overwrite)
     
     ## Move java
     from=makePath(work, paste0(javazip,'.d'))
@@ -234,6 +311,15 @@ bloomrTree=function(work){
     file.rename(from, to)
     unlink(makePath(from, 'src.zip'))
 
+    ## Move libs
+    lib.f=makePath(work, 'lib.d')
+    lib.t=makePath(work, "bloomR/main/library")
+    for(lib in dir(lib.f)){
+        from=makePath(lib.f, lib)  
+        to=makePath(lib.t, lib)
+        file.rename(from, to)
+    }
+
     ## Make etc/Rprofile.site 
     makeProfile(work)
 
@@ -242,9 +328,19 @@ bloomrTree=function(work){
     
 }
 
+
+
 ### Make etc/Rprofile.site from PROF()
-makeProfile=function(work){
-    
+makeProfile=function(work, overwite){
+
+    ## Get init file from GitHub
+    from=makePath(github, "bloomr.R")
+    to=makePath(work, "bloomR/main/share/bloomr")    
+    if(!makeDir (to, overwrite))  stop('\nUnable to create BloomR directory for sharing')
+    to=makePath(to, "bloomr.R")        
+    cert=makePath(work, 'cacert.pem')
+    download.bin(from, to, cert-cert)
+
     p=capture.output(PROF)  # Get PROF funct definition 
     p=p[-c(1, length(p))]   # Remove "function {", "}"
     file=makePath(work, 'bloomR/main/etc/Rprofile.site')
@@ -257,61 +353,66 @@ makeProfile=function(work){
 ### Make shortcuts to run R  
 makeShorts=function(work){
 
+    ## File content
     start="
 set \"RPORT=%~dp0\"
 cd %RPORT% 
 set JAVA_HOME=%RPORT%main\\openjdk
 path %JAVA_HOME%\\bin;%path%
-set HOME=mystuff
-start main\\bin\\i386\\Rgui.exe   --internet2 LANGUAGE=en
+set HOME=mybloomr
+start main\\bin\\i386\\Rgui.exe  --internet2 LANGUAGE=en
 "
+    ## Make shortcut
     cat(start, file=makePath(work, 'bloomR/BloomR.cmd'))
 
+    ## Make personal dir
+    makeDir(makePath(work, 'bloomR\mybloomr'), overwrite)
+    
     ## make no-java short? 
 }
 
-### Make package install CLI and R scripts
-libScripts=function(work){
+### Make package install CLI and R scripts # Not used!!
+libScripts.create=function(work){
 
     ## Libaries to install
-    packs="   zoo  xts  "
-    packs= strsplit(gsub('(^ +)|( +$)', '', packs), split=' +')
+    packlist="   zoo  xts  "
+    packs= strsplit(gsub('(^ +)|( +$)', '',  packlist), split=' +')
     
     ## main\firstRun.cmd to run r script
-    first="bin\\i386\\Rscript.exe --vanilla site-library\\firstRun.r" 
-    cat(first, file=makePath(work, '/bloomR/main/firstRun.cmd'))
+    s="bin\\i386\\Rscript.exe --vanilla site-library\\firstRun.r" 
+    cat(s, file=makePath(work, '/bloomR/main/firstRun.cmd'))
 
     ## r script main/site-library/firstRun.r
-    slib=makePath(work, '/bloomR/main/site-library/firstRun.r')
-    cat('', file=slib) #clean file 
+    firstr=makePath(work, '/bloomR/main/site-library/firstRun.r')
+    cat('', file=firstr) #clean firstRun.r
+    
+    ##  add lines:install.packages('*', lib='site-library', repos="http://cran.r-project.org")
     a="\ninstall.packages('"
     b="', lib='site-library', repos='http://cran.r-project.org')"    
     for(i in packs)
-        cat(paste0(a, i, b), file=slib, append=T)
-    ##  install.packages('*', lib='site-library', repos="http://cran.r-project.org")
+        cat(paste0(a, i, b), file=firstr, append=T)
 
     ## Exit nicely
-    str="
+    s="
 cat('Any key to exit ...')
 readLines(con='stdin', 1)
 "
-    cat(str, file=slib, append=T)
+    cat(s, file=firstr, append=T)
    
 }
 
 
-### Create path removing trail/lead sep from parent/child
-makePath=function(parent, child){
+## Not used
+libScripts.run=function(work){
 
-    ## No trail for parent 
-    parent=sub('/$', '',  parent)
-    parent=sub('\\\\$', '',  parent)
-
-    ## No lead for child
-    child=sub('^/', '',  child)
-    child=sub('^\\\\', '',  child)
+    rscript= makePath(work, "BloomR/work/bloomR/main/bin/i386/Rscript.exe")
+    rscript= paste0('"', rscript, '"')
     
-    file.path(parent, child)
+    ## r script main/site-library/firstRun.r
+    firstr=makePath(work, '/bloomR/main/site-library/firstRun.r')
+    firstr= paste0('"', firstr, '"')
+
+    shell(paste(rscript,firstr) , shell=Sys.getenv("COMSPEC"))
 
 }
 
@@ -389,8 +490,59 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
 }
 
 
+
 ### "etc/Rprofile.site" source (braces on separate lines) 
 PROF=function(){ #Keep this on separate line
+    
+# === #
+# FAS #
+# === #
+
+    ## Set working directory
+    local({
+        wd="mybloomr"
+        x=dir(wd, all.files=TRUE)   
+        if (length(x)>0) setwd(wd)
+        cat("Current working directory is\n", getwd(), "\n")
+    })
+    
+    ## Set default repository
+    local({r <- getOption("repos")
+           r["CRAN"] <- "http://cran.r-project.org"
+           options(repos=r)
+       })
+    
+    BloomR.lib="./main/library/"
+
+    ##  To install new packages use
+    ##
+    ##  install.packages("myPack", BloomR.lib)
+    ##----------------------------------------
+
+
+    ##BBG stuff
+    ##=========
+    library("rJava")
+    library("Rbbg")
+
+    bbg.jar=function(){
+	jarpath=paste0(R.home(), "/blpapi_java/bin")
+        Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
+    }
+
+    bbg.open=function() blpConnect(blpapi.jar.file=bbg.jar())
+    bbg.close=function(conn)  blpDisconnect(conn)
+
+    ##end BBG stuff-------------------------------------------
+
+
+    bloomr.r=paste0(R.home("share"), "/bloomr/bloomr.R")
+    source(bloomr.R)
+    
+}
+
+### "etc/Rprofile.site" source (braces on separate lines) 
+PROFLONG=function(){ #Keep this on separate line
     
 # === #
 # FAS #
