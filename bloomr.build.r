@@ -4,11 +4,10 @@
 
 ##   TODO
 ##   Audit makeDir error when dir exists and debugging later steps
-##   Set BloomR library
 
 
-##  Requirements
-##  XML and Rcurl packages should be. 
+##  Requirements:
+##  XML and Rcurl packages. If missing it will tray to download and install them.
 ##  R should be able to connect to the Internet.
 ## 
 ##  Usage:
@@ -16,23 +15,42 @@
 ##  makeBloomR("path\to\workDir")
 ##  You will get the BloomR.zip in the work dir
 ##
-##  Credits to:
+##  Troubleshooting:
+##    "error: unable to load shared object '... i386/rJava.dll'
+##  If the  path to BloomR folder contains wird charcters, such as "&" it will fail to load.
+##  You can still build BloomR, but move BloomR folder to a compatible path before running it 
+##
+##  Credits:
 ##  R-Portable*.exe from sourceforge.net/projects/rportable
 ##  blpapi_java*.tar from http://www.openbloomberg.com/open-api/
 ##  Rbbg_*.zip from http://r.findata.org/bin/windows/contrib/
-##  peazip portable from http://sourceforge.net/projects/peazip
-
-
+##  peazip  from http://sourceforge.net/projects/peazip
+##  ahkscript http://ahkscript.org
 
 #### Globals
 
-## java icedtea 
+## java icedtea win32
 javaurl=paste0('https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/',
     'openjdk-1.7.0-u45-unofficial-icedtea-2.4.3-windows-i586-image.zip')
+## java icedtea win64
+javaurl=paste0('https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/',
+    'openjdk-1.7.0-u45-unofficial-icedtea-2.4.3-windows-amd64-image.zip')
 javazip='openjdk'
-## API for icedtea 
+
+## Bloomberg API for icedtea 
 apiurl="http://cdn.gotraffic.net/open/blpapi_java_3.7.1.1.zip"
 apizip="blpapi_java"
+
+## Rbbg win32
+rbbgurl="http://r.findata.org/bin/windows/contrib/3.1/Rbbg_0.5.1.zip"
+## Rbbg win64
+rbbgurl="http://r.findata.org/bin/windows64/contrib/3.1/Rbbg_0.5.1.zip"
+rbbgzip="rbbg"
+
+## Ahkscript
+ahkurl="http://ahkscript.org/download/1.1/Ahk2Exe111500.zip"
+ahkzip="ahk"
+
 
 ## Web certificates
 certurl='http://curl.haxx.se/ca/cacert.pem'
@@ -67,7 +85,7 @@ makeBloomR= function(work, overwrite=TRUE, deb=1:4){
     if(3 %in% deb) expand(work)
 
     ## Step 4
-    if(4 %in% deb) bloomrTree(work)
+    if(4 %in% deb) bloomrTree(work, overwrite)
         
 }
 
@@ -171,12 +189,12 @@ sfBDown=function(url, file){
 ### Get components
 downloads=function(work, overwrite){
 
-    ### Get certificates from curl site
+    ## Get certificates from curl site
     cert=makePath(work, 'cacert.pem')
     if(overwrite || !file.exists(cert))
         if(!download.bin(certurl, cert)$succ)  stop('\nDownload error')
 
-    ###  Get peazip
+    ## peazip
     fpath=makePath(work, pzip)
     if(overwrite || !file.exists(fpath)){                     
         url=sfFirstbyProject(pzip, '[[:digit:]]') #get release dir 
@@ -185,7 +203,7 @@ downloads=function(work, overwrite){
         sfBDown(url, fpath)   
     } else cat(pzip, 'already exists', '\n')
     
-    ###  Get R-portable
+    ## portabler
     fpath=makePath(work, rport)
     if(overwrite || !file.exists(fpath)){
         url=sfFirstbyProject(rport, 'Portable')
@@ -195,21 +213,21 @@ downloads=function(work, overwrite){
         sfBDown(url, fpath)   
     } else cat(rport, 'already exists', '\n')
 
-    ###  Get Java
+    ## openjdk
     fpath=makePath(work, javazip)
     if(overwrite || !file.exists(fpath)){
         cat(paste('Downloading', javaurl, '\n'))
         if(!download.bin(javaurl, fpath, cert=cert)$succ)  stop('\nDownload error')
     }
     
-    ###  Get Bloomberg API
+    ## Bloomberg API
     fpath=makePath(work, apizip)
     if(overwrite || !file.exists(fpath)){
         cat(paste('Downloading', apiurl, '\n'))
         if(!download.bin(apiurl, fpath)$succ)  stop('\nDownload error')
     }
-
-    ###  Download packages
+    
+    ##  CRAN packages
     packd=makePath(work, "packs"); makeDir(packd, overwrite)
     packs= strsplit(gsub('(^ +)|( +$)', '', packlist), split=' +')[[1]]
     if(overwrite || !file.exists(fpath)){
@@ -222,6 +240,22 @@ downloads=function(work, overwrite){
         }
     }
 
+    ## rbbg
+    fpath=makePath(packd, rbbgzip)
+    if(overwrite || !file.exists(fpath)){
+        cat(paste('Downloading', rbbgurl, '\n'))
+        if(!download.bin(rbbgurl, fpath)$succ)  stop('\nDownload error')
+    }
+
+    ## ahkscript
+    fpath=makePath(work, ahkzip)
+    if(overwrite || !file.exists(fpath)){
+        cat(paste('Downloading', ahkurl, '\n'))
+        if(!download.bin(ahkurl, fpath)$succ)  stop('\nDownload error')
+    }
+    
+    
+    
 }
 
 ## Get  CRAN Windows binaries release for a package 
@@ -251,7 +285,7 @@ expand=function(work){
         stop('\nnUnable to extract peazip binaries')  
     pexe=makePath(exdir, paste0(dir(exdir), '/res/7z/7z.exe'))
 
-    ## rportable 
+    ## portabler 
     cat('Extract main R files: this may take a bit.','\n')
     cmd=paste0('-o', dQuote(makePath(work, paste0(rport, '.d')))) #output dir    
     cmd=paste(dQuote(pexe), 'x -aoa -r', cmd, dQuote(makePath(work, rport)))
@@ -259,7 +293,7 @@ expand=function(work){
     ret=system( cmd, intern=F, wait =T, show.output.on.console =F, ignore.stdout=T) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 
-    ## Java
+    ## openjdk
     file=makePath(work, javazip)
     exdir=makePath(work, paste0(javazip,'.d'))
     cat('Creating', exdir, '\n') 
@@ -273,7 +307,7 @@ expand=function(work){
     if(length(unzip(file, exdir = exdir))==0)
         stop('\nUnable to extract API binaries')  
 
-    ## Packages   
+    ## CRAN packages   
     from=makePath(work, "packs")
     to=makePath(work, 'lib.d')
     ## Loop and extract packs
@@ -283,13 +317,23 @@ expand=function(work){
         if(length(unzip(pack, exdir = to))==0)
             stop('\nUnable to extract ',  pack, ' package')  
     }
-    
+
+    ## ahkscript
+    file=makePath(work, ahkzip)
+    exdir=makePath(work, paste0(ahkzip,'.d'))
+    cat('Creating', exdir, '\n') 
+    if(length(unzip(file, exdir = exdir))==0)
+        stop('\nUnable to extract ahkscript')  
+
 }
 
 ### Make BloomR directory tree  
-bloomrTree=function(work){
-    
-    makeDir(makePath(work, 'bloomR'), overwrite)
+bloomrTree=function(work, overwrite){
+
+    cat("Creating BloomR tree\n")
+    if(overwrite) unlink(makePath(work, 'bloomR'), recursive=overwrite) else {
+        stop("BloomR directory tree exisisting: delete or use overwrite option")}    
+    makeDir(makePath(work, 'bloomR'))
 
     ## Move R
     from=makePath(work, paste0(rport, '.d/$_OUTDIR/R-Portable'))
@@ -302,14 +346,13 @@ bloomrTree=function(work){
     from=makePath(from, dir(from))
     to=makePath(work, paste0("bloomR/main/", javazip))
     file.rename(from, to)
-    unlink(makePath(from, 'src.zip'))
+    unlink(makePath(to, 'src.zip'))
 
     ## Move Bloomberg API
     from=makePath(work, paste0(apizip,'.d'))
     from=makePath(from, dir(from))
     to=makePath(work, paste0("bloomR/main/", apizip))
     file.rename(from, to)
-    unlink(makePath(from, 'src.zip'))
 
     ## Move libs
     lib.f=makePath(work, 'lib.d')
@@ -329,17 +372,18 @@ bloomrTree=function(work){
 }
 
 
-
 ### Make etc/Rprofile.site from PROF()
 makeProfile=function(work, overwite){
 
-    ## Get init file from GitHub
+    cat("Making etc/Rprofile.site\n")
+
+    ## Get files from GitHub
     from=makePath(github, "bloomr.R")
     to=makePath(work, "bloomR/main/share/bloomr")    
-    if(!makeDir (to, overwrite))  stop('\nUnable to create BloomR directory for sharing')
+    if(!makeDir (to, overwrite))  stop('\nUnable to create BloomR share directory')
     to=makePath(to, "bloomr.R")        
     cert=makePath(work, 'cacert.pem')
-    download.bin(from, to, cert-cert)
+    download.bin(from, to, cert=cert)
 
     p=capture.output(PROF)  # Get PROF funct definition 
     p=p[-c(1, length(p))]   # Remove "function {", "}"
@@ -349,9 +393,32 @@ makeProfile=function(work, overwite){
 
 }
 
-
 ### Make shortcuts to run R  
 makeShorts=function(work){
+
+    ## Get files from GitHub
+    from=makePath(github, "bloomr.run")
+    todir=makePath(work, paste0(ahkzip, '.d'))
+    to=makePath(todir, "bloomr.run")        
+    cert=makePath(work, 'cacert.pem')
+    download.bin(from, to, cert=cert)
+    from=makePath(github, "bloomr.ico")
+    to=makePath(todir, "bloomr.ico")        
+    download.bin(from, to, cert=cert)
+
+    ## Make shortcut
+    run=normalizePath(makePath(todir, "Ahk2Exe.exe"))
+    run= paste0('"', run, '"')
+    args="/in bloomr.txt /icon bloomr.ico /bin \"Unicode 32-bit.bin\""
+    shell(paste(run, args), shell=Sys.getenv("COMSPEC"))
+
+    
+    ## Make personal dir
+    makeDir(makePath(work, 'bloomR/mybloomr'), overwrite)    
+}
+
+### Make shortcuts to run R  
+makeShorts.old=function(work){
 
     ## File content
     start="
@@ -366,7 +433,7 @@ start main\\bin\\i386\\Rgui.exe  --internet2 LANGUAGE=en
     cat(start, file=makePath(work, 'bloomR/BloomR.cmd'))
 
     ## Make personal dir
-    makeDir(makePath(work, 'bloomR\mybloomr'), overwrite)
+    makeDir(makePath(work, 'bloomR/mybloomr'), overwrite)
     
     ## make no-java short? 
 }
@@ -501,8 +568,7 @@ PROF=function(){ #Keep this on separate line
     ## Set working directory
     local({
         wd="mybloomr"
-        x=dir(wd, all.files=TRUE)   
-        if (length(x)>0) setwd(wd)
+        if (file.info(wd)$isdir ) setwd(wd)
         cat("Current working directory is\n", getwd(), "\n")
     })
     
@@ -512,13 +578,6 @@ PROF=function(){ #Keep this on separate line
            options(repos=r)
        })
     
-    BloomR.lib="./main/library/"
-
-    ##  To install new packages use
-    ##
-    ##  install.packages("myPack", BloomR.lib)
-    ##----------------------------------------
-
 
     ##BBG stuff
     ##=========
@@ -535,9 +594,7 @@ PROF=function(){ #Keep this on separate line
 
     ##end BBG stuff-------------------------------------------
 
-
-    bloomr.r=paste0(R.home("share"), "/bloomr/bloomr.R")
-    source(bloomr.R)
+    source(R.home("share"), "/bloomr/bloomr.R")
     
 }
 
