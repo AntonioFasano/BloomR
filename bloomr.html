@@ -87,7 +87,7 @@
 <h2 id="description-1">Description</h2>
 <p>Get security descriptions.</p>
 <h2 id="usage-3">Usage</h2>
-<p>bbg.desc(con, tik)</p>
+<pre><code>bbg.desc(con, tik)</code></pre>
 <h2 id="arguments-3">Arguments</h2>
 <dl>
 <dt>con</dt>
@@ -103,7 +103,7 @@
 <h2 id="description-2">Description</h2>
 <p>Get security descriptions for a vector of tickers.</p>
 <h2 id="usage-4">Usage</h2>
-<p>bbg.bulk.desc(con, tiks)</p>
+<pre><code>bbg.bulk.desc(con, tiks) </code></pre>
 <h2 id="arguments-4">Arguments</h2>
 <dl>
 <dt>con</dt>
@@ -166,7 +166,11 @@
 <h2 id="description-4">Description:</h2>
 <p>Returns the historical data for the constituents of an index in xts or list format.</p>
 <h2 id="usage-6">Usage:</h2>
-<p>.bbg.is.con(con) .bbg.types .bbg.check.type(type) .bbg.cuttype(type) BloomR.lib bbg.jar()</p>
+<pre><code>.bbg.is.con(con)
+.bbg.types
+.bbg.check.type(type) 
+.bbg.cuttype(type)
+.bbg.jar()</code></pre>
 <h2 id="arguments-6">Arguments:</h2>
 <dl>
 <dt>con</dt>
@@ -177,14 +181,13 @@
 </dd>
 </dl>
 <h2 id="details-2">Details</h2>
-<p><code>.bbg.is.con</code> checks for the validity of a connection token. <code>.bbg.types</code> is a character vector with security types suitable as an argument for <code>bbg.bulk*</code> functions. <code>.bbg.check.type</code> checks if a type matches <code>.bbg.types</code>. <code>.bbg.cuttype</code> cuts trailing security type from character vector. <code>BloomR.lib</code> stores the path of portable library To install new packages use:</p>
-<pre><code>install.packages(&quot;myPack&quot;, BloomR.lib)</code></pre>
-<p><code>bbg.jar()</code> returns the path to the blpapi*.jar</p>
+<p><code>.bbg.is.con</code> checks for the validity of a connection token. <code>.bbg.types</code> is a character vector with security types suitable as an argument for <code>bbg.bulk*</code> functions. <code>.bbg.check.type</code> checks if a type matches <code>.bbg.types</code>. <code>.bbg.cuttype</code> cuts trailing security type from character vector. <code>.bbg.jar()</code> returns the path to the blpapi*.jar</p>
 <h1 id="manage-connections">Manage connections</h1>
 <h2 id="description-5">Description</h2>
 <p>Open and close the connection to the Bloomberg service.</p>
 <h2 id="usage-7">Usage</h2>
-<p>bbg.open() bbg.close(con)</p>
+<pre><code>bbg.open()
+bbg.close(con)</code></pre>
 <h2 id="arguments-7">Arguments</h2>
 <dl>
 <dt>con</dt>
@@ -195,3 +198,35 @@
 <pre><code>con=bbg.open() ## Open the connection and get the token
 ## Get market data
 bbg.close(con) ## Use the token to release the connection</code></pre>
+<h1 id="time-extension-functions">Time extension functions</h1>
+<h2 id="description-6">Description</h2>
+<p>Functions to get, set dates.</p>
+<h2 id="usage-8">Usage</h2>
+<pre><code>day(d)
+month(d)
+year(d)
+day(d, n)
+month(d, n)
+year(d, n)
+day(d)=x
+month(d)=x
+year(d)=x
+d %+% n
+d %-% n
+last.day(d)
+day.us(d1, d2)
+delete.all()</code></pre>
+<h2 id="arguments-8">Arguments</h2>
+<dl>
+<dt>d, d1, d2</dt>
+<dd>objects of class date
+</dd>
+<dt>x</dt>
+<dd>an integer representing the day/month/year
+</dd>
+<dt>n</dt>
+<dd>an integer representing the months to add/subtract
+</dd>
+</dl>
+<h2 id="details-3">Details</h2>
+<p>If <code>component</code> is <code>day</code>, <code>month</code> or <code>year</code>: <code>component(d)</code> returns the <em>component</em> of the date <code>d</code> as an integer; <code>component(d, n)</code> returns the date <code>d</code> with the <em>component</em> set to the integer <code>n</code>; <code>component(d)= n</code> sets to the <em>component</em> of the date <code>d</code> to the integer <code>n</code>.<br /><code>%+%</code> and <code>%-%</code> add and subtract months to a date.<br /><code>last.day</code> returns last day of the month as an integer. <code>day.us</code> calculates date differences with the US convention.<br /><code>delete.all</code> deletes all objects (variables) from memory.</p>

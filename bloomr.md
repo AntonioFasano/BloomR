@@ -134,7 +134,7 @@ Get security descriptions.
 
 Usage
 -----
-bbg.desc(con, tik)
+    bbg.desc(con, tik)
 
 Arguments
 ---------
@@ -160,7 +160,7 @@ Get security descriptions for a vector of tickers.
 
 Usage
 -----
-bbg.bulk.desc(con, tiks) 
+    bbg.bulk.desc(con, tiks) 
 
 Arguments
 ---------
@@ -236,12 +236,11 @@ Returns the historical data for the constituents of an index in xts or list form
 Usage:
 ------
 
-.bbg.is.con(con)
-.bbg.types
-.bbg.check.type(type) 
-.bbg.cuttype(type)
-BloomR.lib
-bbg.jar()
+    .bbg.is.con(con)
+    .bbg.types
+    .bbg.check.type(type) 
+    .bbg.cuttype(type)
+    .bbg.jar()
 
 Arguments:
 ----------
@@ -256,11 +255,7 @@ Details
 `.bbg.types` is a character vector with security types suitable as an argument for `bbg.bulk*` functions.
 `.bbg.check.type` checks if a type matches `.bbg.types`.
 `.bbg.cuttype` cuts trailing security type from character vector.
-`BloomR.lib` stores the path of portable library To install new packages use:
-
-    install.packages("myPack", BloomR.lib)
-	
-`bbg.jar()` returns the path to the blpapi*.jar
+`.bbg.jar()` returns the path to the blpapi*.jar
 
 
 
@@ -275,8 +270,8 @@ Open and close the connection to the Bloomberg service.
 
 Usage
 -----
-bbg.open()
-bbg.close(con)
+    bbg.open()
+    bbg.close(con)
  
 Arguments
 ---------
@@ -292,6 +287,49 @@ Example
 
 
 
+
+
+
+Time extension functions
+=========================
+
+Description
+------------
+Functions to get, set dates.
+
+Usage
+-----
+    day(d)
+    month(d)
+    year(d)
+    day(d, n)
+    month(d, n)
+    year(d, n)
+    day(d)=x
+    month(d)=x
+    year(d)=x
+    d %+% n
+    d %-% n
+    last.day(d)
+    day.us(d1, d2)
+    delete.all()
+
+Arguments
+---------
+d, d1, d2
+:   objects of class date
+x
+:   an integer representing the day/month/year
+n
+:   an integer representing the months to add/subtract
+
+
+Details
+-------
+If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
+`%+%` and `%-%` add and subtract months to a date.  
+`last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
+`delete.all` deletes all objects (variables) from memory. 
 
 
 

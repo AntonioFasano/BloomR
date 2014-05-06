@@ -288,7 +288,7 @@ Get security descriptions.
 
 Usage
 -----
-bbg.desc(con, tik)
+    bbg.desc(con, tik)
 
 Arguments
 ---------
@@ -340,7 +340,7 @@ Get security descriptions for a vector of tickers.
 
 Usage
 -----
-bbg.bulk.desc(con, tiks) 
+    bbg.bulk.desc(con, tiks) 
 
 Arguments
 ---------
@@ -490,12 +490,11 @@ Returns the historical data for the constituents of an index in xts or list form
 Usage:
 ------
 
-.bbg.is.con(con)
-.bbg.types
-.bbg.check.type(type) 
-.bbg.cuttype(type)
-BloomR.lib
-bbg.jar()
+    .bbg.is.con(con)
+    .bbg.types
+    .bbg.check.type(type) 
+    .bbg.cuttype(type)
+    .bbg.jar()
 
 Arguments:
 ----------
@@ -510,11 +509,7 @@ Details
 `.bbg.types` is a character vector with security types suitable as an argument for `bbg.bulk*` functions.
 `.bbg.check.type` checks if a type matches `.bbg.types`.
 `.bbg.cuttype` cuts trailing security type from character vector.
-`BloomR.lib` stores the path of portable library To install new packages use:
-
-    install.packages("myPack", BloomR.lib)
-	
-`bbg.jar()` returns the path to the blpapi*.jar
+`.bbg.jar()` returns the path to the blpapi*.jar
 
 
 ```{r bbg-internal, include=FALSE}
@@ -542,17 +537,7 @@ Details
 }
 
 
-## Set default repository
-local({r <- getOption("repos")
-       r["CRAN"] <- "http://cran.r-project.org"
-       options(repos=r)
-})
-
-## Position of portable library
-BloomR.lib="./FAS/library/"
-
-
-bbg.jar=function(){
+.bbg.jar=function(){
 	jarpath=paste0(R.home(), "/blpapi_java/bin")
         Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
@@ -568,8 +553,8 @@ Open and close the connection to the Bloomberg service.
 
 Usage
 -----
-bbg.open()
-bbg.close(con)
+    bbg.open()
+    bbg.close(con)
  
 Arguments
 ---------
@@ -587,7 +572,7 @@ Example
 
 ```{r connections, include=FALSE}
 
-bbg.open=function() blpConnect(blpapi.jar.file=bbg.jar())
+bbg.open=function() blpConnect(blpapi.jar.file=.bbg.jar())
 bbg.close=function(conn)  blpDisconnect(conn)
 
 ## misc func
@@ -595,7 +580,94 @@ delete.all= function() rm(list=ls(all=TRUE))
 
 ```
 
+Time extension functions
+=========================
 
+Description
+------------
+Functions to get, set dates.
+
+Usage
+-----
+    day(d)
+    month(d)
+    year(d)
+    day(d, n)
+    month(d, n)
+    year(d, n)
+    day(d)=x
+    month(d)=x
+    year(d)=x
+    d %+% n
+    d %-% n
+    last.day(d)
+    day.us(d1, d2)
+    delete.all()
+
+Arguments
+---------
+d, d1, d2
+:   objects of class date
+x
+:   an integer representing the day/month/year
+n
+:   an integer representing the months to add/subtract
+
+
+Details
+-------
+If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
+`%+%` and `%-%` add and subtract months to a date.  
+`last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
+`delete.all` deletes all objects (variables) from memory. 
+
+
+```{r time, include=FALSE}
+`%+%` <- function(x,y) UseMethod("%+%")
+`%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
+`%-%` <- function(x,y) UseMethod("%-%")
+`%-%.Date` <- function(date,n) seq(date, by = paste (-n, "months"), length = 2)[2]
+
+year=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%Y")) else year(d)=n
+    d    
+}
+`year<-`=function (d, value) d <-as.Date(paste0(value, format(d, "-%m-%d")))
+
+month=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%m")) else month(d)=n
+    d 
+}
+`month<-`=function (d, value) d <-as.Date(paste0(format(d, "%Y-"),  value, format(d, "-%d")))
+
+day=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%d")) else day(d)=n
+    d 
+}
+`day<-`=function (d, value) d <-as.Date(paste0(format(d, "%Y-%m-"),  value))
+
+last.day=function(d){
+    x=d %+% 1 #add a month
+    day(x)=1  #set to 1st
+    day(x-1)  #get day before
+}
+
+day.us=function(d1, d2){
+    #set to first of month
+    x1=day.mod(d1,1);x2=day.mod(d2,1);
+    x=seq(x1, x2, by="1 month")
+    #last day of each month in seq
+    x=sapply(x, last.day)
+    #count 31d-months
+    x=length(which(x>30))
+    #substract 1 for each 31d-month
+    as.numeric(d2-d1-x)
+}
+
+## misc func
+delete.all= function() rm(list=ls(all=TRUE))
+
+```
 
 ```{r unitests, eval=FALSE, include=FALSE}
 

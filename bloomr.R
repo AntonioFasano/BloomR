@@ -299,17 +299,7 @@ bbg.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(pric
 }
 
 
-## Set default repository
-local({r <- getOption("repos")
-       r["CRAN"] <- "http://cran.r-project.org"
-       options(repos=r)
-})
-
-## Position of portable library
-BloomR.lib="./FAS/library/"
-
-
-bbg.jar=function(){
+.bbg.jar=function(){
 	jarpath=paste0(R.home(), "/blpapi_java/bin")
         Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
@@ -318,8 +308,55 @@ bbg.jar=function(){
 
 ## ----connections, include=FALSE------------------------------------------
 
-bbg.open=function() blpConnect(blpapi.jar.file=bbg.jar())
+bbg.open=function() blpConnect(blpapi.jar.file=.bbg.jar())
 bbg.close=function(conn)  blpDisconnect(conn)
+
+## misc func
+delete.all= function() rm(list=ls(all=TRUE))
+
+
+
+## ----time, include=FALSE-------------------------------------------------
+`%+%` <- function(x,y) UseMethod("%+%")
+`%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
+`%-%` <- function(x,y) UseMethod("%-%")
+`%-%.Date` <- function(date,n) seq(date, by = paste (-n, "months"), length = 2)[2]
+
+year=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%Y")) else year(d)=n
+    d    
+}
+`year<-`=function (d, value) d <-as.Date(paste0(value, format(d, "-%m-%d")))
+
+month=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%m")) else month(d)=n
+    d 
+}
+`month<-`=function (d, value) d <-as.Date(paste0(format(d, "%Y-"),  value, format(d, "-%d")))
+
+day=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%d")) else day(d)=n
+    d 
+}
+`day<-`=function (d, value) d <-as.Date(paste0(format(d, "%Y-%m-"),  value))
+
+last.day=function(d){
+    x=d %+% 1 #add a month
+    day(x)=1  #set to 1st
+    day(x-1)  #get day before
+}
+
+day.us=function(d1, d2){
+    #set to first of month
+    x1=day.mod(d1,1);x2=day.mod(d2,1);
+    x=seq(x1, x2, by="1 month")
+    #last day of each month in seq
+    x=sapply(x, last.day)
+    #count 31d-months
+    x=length(which(x>30))
+    #substract 1 for each 31d-month
+    as.numeric(d2-d1-x)
+}
 
 ## misc func
 delete.all= function() rm(list=ls(all=TRUE))
