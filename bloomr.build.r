@@ -87,6 +87,8 @@ makeBloomR= function(work, overwrite=TRUE, deb=1:4){
     ## Step 4
     if(4 %in% deb) bloomrTree(work, overwrite)
         
+    ## Step 5
+    if(5 %in% deb) initScripts(work, overwrite)
 }
 
 ### Create a dir with overwrite options 
@@ -362,59 +364,73 @@ bloomrTree=function(work, overwrite){
         to=makePath(lib.t, lib)
         file.rename(from, to)
     }
-
-    ## Make etc/Rprofile.site 
-    makeProfile(work)
-
-    ## Create shortcuts
-    makeShorts(work)
     
 }
 
 
 ### Make etc/Rprofile.site from PROF()
-makeProfile=function(work, overwite){
+initScripts=function(work, overwrite){
 
     cat("Making etc/Rprofile.site\n")
 
-    ## Get files from GitHub
-    from=makePath(github, "bloomr.R")
-    to=makePath(work, "bloomR/main/share/bloomr")    
-    if(!makeDir (to, overwrite))  stop('\nUnable to create BloomR share directory')
-    to=makePath(to, "bloomr.R")        
-    cert=makePath(work, 'cacert.pem')
-    download.bin(from, to, cert=cert)
-
+    ## Make Rprofile.site
     p=capture.output(PROF)  # Get PROF funct definition 
     p=p[-c(1, length(p))]   # Remove "function {", "}"
     file=makePath(work, 'bloomR/main/etc/Rprofile.site')
-    cat(p, sep='\n', fill=T, file=file, append=T)
 
+    ## Append with Unix line endings
+    con= file(file,open="ab")
+    writeLines(text=p, con=con)
+    close(con)
+    
+    ## Get bloomr.R from GitHub
+    from=makePath(github, "bloomr.R")
+    to=makePath(work, "bloomR/main/share/bloomr")    
+    if(!makeDir(to, overwrite))  stop('\nUnable to create BloomR share directory')
+    to=makePath(to, "bloomr.R")        
+    cert=makePath(work, 'cacert.pem')
+    if(!download.bin(from, to, cert=cert)$succ)  stop('\nDownload error')
+        
+    ## Make personal dir
+    makeDir(makePath(work, 'bloomR/mybloomr'), overwrite)
+
+    ## Make R bootstrapper
+    makeBoot(work)
 
 }
 
-### Make shortcuts to run R  
-makeShorts=function(work){
+### Make R bootstrapper
+makeBoot=function(work){
 
-    ## Get files from GitHub
-    from=makePath(github, "bloomr.run")
-    todir=makePath(work, paste0(ahkzip, '.d'))
-    to=makePath(todir, "bloomr.run")        
+    ## Boot string    
+    bloomr.run="
+EnvSet, HOME,       %A_ScriptDir%\\mybloomr
+;EnvSet, JAVA_HOME, %A_ScriptDir%\\main\\openjdk
+EnvSet, PATH,       %A_ScriptDir%\\main\\openjdk\\bin;%path%
+Run, main\\bin\\x64\\Rgui.exe
+"
+    
+    ## Boot file
+    ahkdir=makePath(work, paste0(ahkzip, '.d'))    
+    cat(bloomr.run, file=makePath(ahkdir, "bloomr.run"))
+   
+    ## Get icon from GitHub
+    from=makePath(github, "bloomr.ico")
+    to=makePath(ahkdir, "bloomr.ico")        
     cert=makePath(work, 'cacert.pem')
     download.bin(from, to, cert=cert)
-    from=makePath(github, "bloomr.ico")
-    to=makePath(todir, "bloomr.ico")        
-    download.bin(from, to, cert=cert)
 
-    ## Make shortcut
-    run=normalizePath(makePath(todir, "Ahk2Exe.exe"))
-    run= paste0('"', run, '"')
-    args="/in bloomr.txt /icon bloomr.ico /bin \"Unicode 32-bit.bin\""
-    shell(paste(run, args), shell=Sys.getenv("COMSPEC"))
+    ## Make exe
+    cd=normalizePath(ahkdir)
+    cd= paste0('cd "', cd, '" &')
+    run="Ahk2Exe.exe /in bloomr.run /icon bloomr.ico /bin \"Unicode 32-bit.bin\""
+    shell(paste(cd, run), shell=Sys.getenv("COMSPEC"))    
 
+    ## Move exe
+    from=makePath(ahkdir, "bloomr.exe")
+    to=makePath(work, "bloomr/bloomr.exe")
+    file.rename(from, to)    
     
-    ## Make personal dir
-    makeDir(makePath(work, 'bloomR/mybloomr'), overwrite)    
 }
 
 ### Make shortcuts to run R  
@@ -594,7 +610,7 @@ PROF=function(){ #Keep this on separate line
 
     ##end BBG stuff-------------------------------------------
 
-    source(R.home("share"), "/bloomr/bloomr.R")
+    source(paste0(R.home("share"), "/bloomr/bloomr.R"))
     
 }
 
