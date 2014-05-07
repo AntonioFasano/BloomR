@@ -1,34 +1,30 @@
 
 
-
-
-
 # BloomR facility functions
 
 
-bbg.bulk.tiks
+br.bulk.tiks
 =============
 *Bulk historical data*  
 Returns the historical data for a vector of tickers in xts or list format
 
 Usage
 ------
-    bbg.bulk.tiks(con, tiks, start=Sys.Date()-5, field="PX_LAST",
+    br.bulk.tiks(con, tiks, start=Sys.Date()-5, field="PX_LAST",
 		addtype=FALSE, showtype=FALSE, use.xts=TRUE,
-		price=TRUE, nrow=5, empty.sec=0) 
+		price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0) 
   
 Arguments
 ---------
 tiks
 :   character vector of the tickers queried for data  
 
-For other arguments see the function `bbg.bulk.csv` 
+For other arguments see the function `br.bulk.csv` 
 
 Details
 --------
-If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells. 
-
-If `con=NULL` values are simulated by means of `bbg.sample()`. Sampled values are based on default values of `bbg.sample()`, but it is possible to set explicitly  `empty.sec, start, nrow`;  `sec.names` depends on `tiks` argument. See `bbg.sample()` help for more.
+If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.  
+If `con=NULL`, values are simulated by means of `br.sample()`. Sampled values are based on default values of `br.sample()`, but it is possible to set explicitly  `start, same.dates, no.na, empty.sec`; `sec.names` depends on `tiks` argument. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
 
 Value
 ------
@@ -40,24 +36,24 @@ If `use.xts=FALSE`, a list, where each element is the historical data of a secur
 
 
 
-bbg.bulk.csv
+br.bulk.csv   
 =============
-*Historical from grouped tickers in a CSV files*  
+*Historical data from grouped tickers in a CSV files*  
 Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels. 
 
 
 Usage
 ------
-    bbg.bulk.csv(con, file, start = Sys.Date() - 5, field = "PX_LAST", 
+    br.bulk.csv(con, file, start = Sys.Date() - 5, field = "PX_LAST", 
         cols = NULL, addtype = FALSE, showtype = FALSE, use.xts = TRUE, 
         comma = TRUE,
-	    price=TRUE, nrow=5, empty.sec=0
+	    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
 		) 
   
 Arguments
 ----------
 con
-:   the connection token returned from bbg.open(). If `NULL` simulated values are generated.   
+:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
 file
 :   path to CSV file.  
 start
@@ -75,17 +71,17 @@ use.xts
 comma
 :   to be set to FALSE for (non-English) CSV, using semicolon as separator.  
 nrow
-:   Maximum number of simulated rows (actual is random). Ignored if `con!=NULL`, it defaults to 5.
+:   maximum number of simulated rows (actual is random). Ignored if `con!=NULL`, it defaults to 5.
 empty.sec
 :   ratio of securities returning no data. Ignored if `con!=NULL`, it defaults to 0.
 
 Details
 -------
 Empty CSV cells or cells interpreted as NAs will be ignored.  
-If `con=NULL` values are simulated by means of `bbg.sample()`. This function is used with default values, except for `empty.sec, start, nrow`, which can be explicitly passed as arguments, and `sec.names` depending on on tickers found in the CSV file. See `bbg.sample()` help for more.
+If `con=NULL`, values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, start, same.dates, no.na, empty.sec`, which can be explicitly passed as arguments, and `sec.names` depending on tickers found in the CSV file. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
 
 Value
-------
+-----
 a list where each element is the historical data of a CSV group.  
 If `use.xts=TRUE`, elements are xts object, where each column is the historical data of a security.  
 If `use.xts=FALSE`, elements are sub-list, where each element is the historical data of a security.  
@@ -95,7 +91,7 @@ If there is only one group, the first (and unique) element of the list will be r
 
 
 
-bbg.bulk.idx
+br.bulk.idx
 ============
 
 Description
@@ -104,16 +100,28 @@ Returns the historical data for the constituents of an index in xts or list form
 
 Usage
 -----
-    bbg.bulk.idx(con, index, start=Sys.Date()-5, field="PX_LAST",  
-        include.idx=TRUE, use.xts=TRUE)
+
+	br.bulk.idx(con, index, start = Sys.Date() - 5, field = "PX_LAST",  
+	     showtype = FALSE, include.idx = TRUE, use.xts = TRUE, nsec = 50,  
+         price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0, sec.names = NULL)  
 
 Arguments
 ---------
+con
+:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
 index
 :   string denoting the index ticker with or without the final security type label ('Index')  
 include.idx
 :   if TRUE (default) returns also historical data for the index.  
-For other arguments see the function `bbg.bulk.csv`  
+nsec
+:   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
+sec.names
+:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.  
+For other arguments see the function `br.bulk.csv`
+
+Details
+-------
+If `con=NULL`,  values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names`.
 
 Value
 -----
@@ -125,7 +133,7 @@ If `include.idx=TRUE`, the last column or element will be the historical data of
 
 
 
-bbg.desc
+br.desc
 ========
 
 Description
@@ -134,12 +142,12 @@ Get security descriptions.
 
 Usage
 -----
-    bbg.desc(con, tik)
+    br.desc(con, tik)
 
 Arguments
 ---------
 con
-:   the connection token returned from bbg.open()
+:   the connection token returned from br.open()
 tik
 :   string denoting the ticker queried for data 
 
@@ -151,7 +159,7 @@ A data frame containing the value of the Bloomberg fields form `ds001` to `ds009
 
 
 
-bbg.bulk.desc
+br.bulk.desc
 =============
 
 Description
@@ -160,25 +168,25 @@ Get security descriptions for a vector of tickers.
 
 Usage
 -----
-    bbg.bulk.desc(con, tiks) 
+    br.bulk.desc(con, tiks) 
 
 Arguments
 ---------
 con
-:    the connection token returned from bbg.open()
+:    the connection token returned from br.open()
 tiks
 :    character vector of the tickers queried for data
 
 Value
 -----
-A list of data frames, each representing the description of a security. For the format of data frames see the function `bbg.desc`.
+A list of data frames, each representing the description of a security. For the format of data frames see the function `br.desc`.
 
 
 
 
 
 
-bbg.sample
+br.sample
 ==========
 
 Description
@@ -187,7 +195,7 @@ Return simulated historical data for n securities in xts or df format.
 
 Usage
 -----
-    bbg.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
+    br.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
        jitter=0, same.dates=FALSE, no.na=FALSE, empty.sec=0, df=FALSE, sec.names=NULL)
 
 Arguments
@@ -236,26 +244,26 @@ Returns the historical data for the constituents of an index in xts or list form
 Usage:
 ------
 
-    .bbg.is.con(con)
-    .bbg.types
-    .bbg.check.type(type) 
-    .bbg.cuttype(type)
-    .bbg.jar()
+    .br.is.con(con)
+    .br.types
+    .br.check.type(type) 
+    .br.cuttype(type)
+    .br.jar()
 
 Arguments:
 ----------
 con
-:   the connection token returned from bbg.open()
+:   the connection token returned from br.open()
 type
 :   a string representing the security type
 
 Details
 -------
-`.bbg.is.con` checks for the validity of a connection token.
-`.bbg.types` is a character vector with security types suitable as an argument for `bbg.bulk*` functions.
-`.bbg.check.type` checks if a type matches `.bbg.types`.
-`.bbg.cuttype` cuts trailing security type from character vector.
-`.bbg.jar()` returns the path to the blpapi*.jar
+`.br.is.con` checks for the validity of a connection token.
+`.br.types` is a character vector with security types suitable as an argument for `br.bulk*` functions.
+`.br.check.type` checks if a type matches `.br.types`.
+`.br.cuttype` cuts trailing security type from character vector.
+`.br.jar()` returns the path to the blpapi*.jar
 
 
 
@@ -270,20 +278,20 @@ Open and close the connection to the Bloomberg service.
 
 Usage
 -----
-    bbg.open()
-    bbg.close(con)
+    br.open()
+    br.close(con)
  
 Arguments
 ---------
 con
-:   the connection token returned from bbg.open()
+:   the connection token returned from br.open()
 
 Example
 -------
 
-    con=bbg.open() ## Open the connection and get the token
+    con=br.open() ## Open the connection and get the token
     ## Get market data
-    bbg.close(con) ## Use the token to release the connection
+    br.close(con) ## Use the token to release the connection
 
 
 

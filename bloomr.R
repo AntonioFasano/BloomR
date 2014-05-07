@@ -1,25 +1,13 @@
 
-## ----bloomr-init, include=FALSE------------------------------------------
-## uncomment for BloomR distro
-#library("rJava")
-#library("Rbbg")
-
-##Common packages
-#library(zoo)
-#library(xts)
-#library(stringr)
-
-
-
 ## ----bbg.bulk.tiks, include=FALSE----------------------------------------
 bbg.bulk.tiks=function(
     con,  
     tiks, 
     start=Sys.Date()-5, field="PX_LAST",
     addtype=FALSE, showtype=FALSE, use.xts=TRUE,
-    price=TRUE, nrow=5, empty.sec=0
+    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
     )
-{
+{ 
 
     ## Check connection
     if(!is.null(con) && !.bbg.is.con(con)) stop('Invalid connection parameter') 
@@ -48,15 +36,14 @@ bbg.bulk.tiks=function(
             cat('Loading', tik,  '\n')
             if(!is.null(con)) x=bdh(con, tik, field, start) else {
                 x=bbg.sample(nrow, 1, price=price, start=start,
-                    df=TRUE, sec.names=c('date', field))
+                    df=TRUE, same.dates=same.dates, no.na=no.na,
+                    sec.names=c('date', field))
             }
             x=xts(x[-1], as.Date (x[[1]]))
             if(nrow(x)==0) x=NA else x
         })
 
         ## Randomly identify empty.sec
-    ##:ess-bp-start::browser@nil:##
-browser(expr=is.null(.ESSBP.[["@4@"]]))##:ess-bp-end:##
         if(is.null(con)){
             x=round(length(tiks.show) * empty.sec) 
             empty=sample(length(tiks.show), x)
@@ -98,7 +85,7 @@ browser(expr=is.null(.ESSBP.[["@4@"]]))##:ess-bp-end:##
 ## ----bbg.bulk.csv, include=FALSE-----------------------------------------
 bbg.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
-    price=TRUE, nrow=5, empty.sec=0
+    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
     )
 {
 
@@ -130,7 +117,8 @@ bbg.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     for(g in 1:gcnt){
         cat('Processing', gnams[g],  '\n')
         x=list(bbg.bulk.tiks(con, csv[[g]],
-            start, field, addtype, showtype, use.xts, price=price, nrow=nrow, empty.sec=empty.sec))
+            start, field, addtype, showtype, use.xts,
+            price=price, nrow=nrow, same.dates=FALSE, no.na=FALSE, empty.sec=empty.sec))
         names(x)=gnams[g]
         grps=c(grps, x)        
     }
@@ -140,12 +128,15 @@ bbg.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
 
 
 ## ----bbg.bulk.idx, include=FALSE-----------------------------------------
-bbg.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST",
-    include.idx=TRUE, use.xts=TRUE)
+bbg.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
+    include.idx=TRUE, use.xts=TRUE,
+    nsec=10, price=TRUE, nrow=5,
+    same.dates=FALSE, no.na=FALSE, empty.sec=0, sec.names = NULL
+    )
 {
-
+   
     ## Check connection
-    if(!.bbg.is.con(con)) stop('Invalid connection parameter') 
+    if(!is.null(con) && !.bbg.is.con(con)) stop('Invalid connection parameter')
 
     ## Check index format. Add 'INDEX' if missing
     if(!is.character(index)) stop('Index should be a string')
@@ -153,15 +144,36 @@ bbg.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST",
     if(!grepl("INDEX$", toupper(index))) index=paste(index, 'INDEX') 
 
     ## Get index members
-    tiks=bds(con, index, 'INDX_MEMBERS')
-    tiks=paste(tiks[[1]], 'Equity')
+    if(is.null(con)) tiks=paste0('memb', 1:nsec) else{
+        tiks=bds(con, index, 'INDX_MEMBERS')
+        tiks=paste(tiks[[1]], 'Equity')
+    }
 
+    ## Check sec.names
+    if(is.null(con) && !is.null(sec.names)) {
+        if(!is.character(sec.names)) stop("'sec.names' should be a character vector")
+        if(length(sec.names)!=nsec) stop("'sec.names' length should be equal to the number of index constituents")
+        tiks=sec.names
+    }
+    
     ## Include index?
     if(include.idx) tiks=c(tiks, index)
 
     ## Get data
-    bbg.bulk.tiks(con, tiks, start, field, addtype=NULL, use.xts=use.xts) 
-
+    bbg.bulk.tiks(
+        con=con, 
+        tiks=tiks, 
+        start=start,
+        field=field,
+        addtype=FALSE,
+        showtype=showtype,
+        use.xts=use.xts,
+        price=price,
+        nrow=nrow,
+        same.dates=same.dates,
+        no.na=same.dates,
+        empty.sec=empty.sec
+        )
 }
 
 
@@ -245,7 +257,7 @@ bbg.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(pric
         if(col %in% empty){
             x=NA
         } else {            
-            x=xts(round(rnorm(r,mean.jit, sd),3), sort(sample(Sys.Date()+1:nrow,r)))            
+            x=xts(round(rnorm(r,mean.jit, sd),3), sort(sample(start+1:nrow-1,r)))            
             if(price) coredata(x)=abs(coredata(x))   # Price always non-negative
         }
                 
