@@ -1,5 +1,4 @@
 
-
 # BloomR facility functions
 
 
@@ -36,8 +35,8 @@ If `use.xts=FALSE`, a list, where each element is the historical data of a secur
 
 
 
-br.bulk.csv   
-=============
+br.bulk.csv 
+===========
 *Historical data from grouped tickers in a CSV files*  
 Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels. 
 

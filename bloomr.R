@@ -382,7 +382,7 @@ delete.all= function() rm(list=ls(all=TRUE))
 ## 
 ## ## pars
 ## 
-## file='bric.csv'
+## file='test.csv'
 ## start="20060101"
 ## field="PX_LAST"
 ## cols=NULL
@@ -394,11 +394,11 @@ delete.all= function() rm(list=ls(all=TRUE))
 ## #con=br.open()
 ## #
 ## #start="20140301"
-## #bric.focus=
+## #dat=
 ## #    br.bulk.csv(con, file, field="PX_LAST", cols=c(1), use.xts=TRUE)
 ## #
-## #save(bric.focus, file='bricFocus.RData', compress='xz')
-## #save(bric.focus, file='bricFocus.RData')
+## #save(dat, file='test.RData', compress='xz')
+## #save(dat, file='test.RData')
 ## #
 ## #br.close(con)
 ## #
