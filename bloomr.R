@@ -1,6 +1,6 @@
 
-## ----bbg.bulk.tiks, include=FALSE----------------------------------------
-bbg.bulk.tiks=function(
+## ----br.bulk.tiks, include=FALSE-----------------------------------------
+br.bulk.tiks=function(
     con,  
     tiks, 
     start=Sys.Date()-5, field="PX_LAST",
@@ -10,7 +10,7 @@ bbg.bulk.tiks=function(
 { 
 
     ## Check connection
-    if(!is.null(con) && !.bbg.is.con(con)) stop('Invalid connection parameter') 
+    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter') 
     
     ## Check tickers (skip possible empty CSV cells)
     if(!is.character(tiks)) stop('Tickers should be in the form of a character vector')
@@ -21,11 +21,11 @@ bbg.bulk.tiks=function(
     if(is.na(as.Date(start, format='%Y%m%d'))) stop(paste('Invalida date', start))
 
     ## Check security type to add/show
-    .bbg.check.type(addtype)
-    .bbg.check.type(showtype)
+    .br.check.type(addtype)
+    .br.check.type(showtype)
     if(addtype==TRUE)  addtype="Equity"
     if(addtype!=FALSE) tiks=paste(tiks, addtype)
-    if(!showtype) tiks.show=.bbg.cuttype(tiks) else tiks.show=tiks
+    if(!showtype) tiks.show=.br.cuttype(tiks) else tiks.show=tiks
     
     ## Check xts library availability
     if(use.xts && !require("xts", quietly=TRUE, character.only=TRUE))  stop("Can't find library xts")
@@ -35,7 +35,7 @@ bbg.bulk.tiks=function(
         LL = lapply(tiks, function(tik){
             cat('Loading', tik,  '\n')
             if(!is.null(con)) x=bdh(con, tik, field, start) else {
-                x=bbg.sample(nrow, 1, price=price, start=start,
+                x=br.sample(nrow, 1, price=price, start=start,
                     df=TRUE, same.dates=same.dates, no.na=no.na,
                     sec.names=c('date', field))
             }
@@ -65,7 +65,7 @@ bbg.bulk.tiks=function(
         LL=lapply(tiks, function(tik){
             cat('Loading', tik,  '\n')
             if(!is.null(con)) bdh(con, tik, field, start) else {
-                bbg.sample(nrow, 1, price=price, empty.sec=empty.sec, start=start,
+                br.sample(nrow, 1, price=price, empty.sec=empty.sec, start=start,
                            df=TRUE, sec.names=c('date', field))
             }            
         })
@@ -82,8 +82,8 @@ bbg.bulk.tiks=function(
 }
 
 
-## ----bbg.bulk.csv, include=FALSE-----------------------------------------
-bbg.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
+## ----br.bulk.csv, include=FALSE------------------------------------------
+br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
     price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
     )
@@ -116,7 +116,7 @@ bbg.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     grps=list()
     for(g in 1:gcnt){
         cat('Processing', gnams[g],  '\n')
-        x=list(bbg.bulk.tiks(con, csv[[g]],
+        x=list(br.bulk.tiks(con, csv[[g]],
             start, field, addtype, showtype, use.xts,
             price=price, nrow=nrow, same.dates=FALSE, no.na=FALSE, empty.sec=empty.sec))
         names(x)=gnams[g]
@@ -127,8 +127,8 @@ bbg.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
 }
 
 
-## ----bbg.bulk.idx, include=FALSE-----------------------------------------
-bbg.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
+## ----br.bulk.idx, include=FALSE------------------------------------------
+br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
     include.idx=TRUE, use.xts=TRUE,
     nsec=10, price=TRUE, nrow=5,
     same.dates=FALSE, no.na=FALSE, empty.sec=0, sec.names = NULL
@@ -136,7 +136,7 @@ bbg.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=
 {
    
     ## Check connection
-    if(!is.null(con) && !.bbg.is.con(con)) stop('Invalid connection parameter')
+    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter')
 
     ## Check index format. Add 'INDEX' if missing
     if(!is.character(index)) stop('Index should be a string')
@@ -160,7 +160,7 @@ bbg.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=
     if(include.idx) tiks=c(tiks, index)
 
     ## Get data
-    bbg.bulk.tiks(
+    br.bulk.tiks(
         con=con, 
         tiks=tiks, 
         start=start,
@@ -177,12 +177,12 @@ bbg.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=
 }
 
 
-## ----bbg.desc, include=FALSE---------------------------------------------
-bbg.desc=function(con, tik)
+## ----br.desc, include=FALSE----------------------------------------------
+br.desc=function(con, tik)
 {
 
     ## Check connection
-    if(!.bbg.is.con(con)) stop('Invalid connection parameter') 
+    if(!.br.is.con(con)) stop('Invalid connection parameter') 
 
     ## Check ticker format
     if(!is.character(tik)) stop('The ticker should be a string')
@@ -206,12 +206,12 @@ bbg.desc=function(con, tik)
 }
 
 
-## ----bbg.bulk.desc, include=FALSE----------------------------------------
-bbg.bulk.desc=function(con, tiks) {
+## ----br.bulk.desc, include=FALSE-----------------------------------------
+br.bulk.desc=function(con, tiks) {
 
     LL = lapply(tiks, function(tik){
         cat('Reading', tik,  '\n')
-        bbg.desc(con, tik)             
+        br.desc(con, tik)             
     })
     names(LL)=tiks
     LL
@@ -219,8 +219,8 @@ bbg.bulk.desc=function(con, tiks) {
 
 
 
-## ----bbg.sample, include=FALSE-------------------------------------------
-bbg.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
+## ----br.sample, include=FALSE--------------------------------------------
+br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
     jitter=0, same.dates=FALSE, no.na=FALSE, df=FALSE, empty.sec=0,sec.names=NULL)
 {
  
@@ -289,29 +289,29 @@ bbg.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(pric
 ## ----bbg-internal, include=FALSE-----------------------------------------
 
 ## Check connection token
-.bbg.is.con=function(con) identical(attr(con, 'jclass'), "org/findata/blpwrapper/Connection")
+.br.is.con=function(con) identical(attr(con, 'jclass'), "org/findata/blpwrapper/Connection")
 
 ## Legal security types
-.bbg.types=c('Govt', 'Corp', 'Mtge', 'M-Mkt', 'Muni', 'Pfd', 'Equity', 'Comdty', 'Index', 'Curncy')
+.br.types=c('Govt', 'Corp', 'Mtge', 'M-Mkt', 'Muni', 'Pfd', 'Equity', 'Comdty', 'Index', 'Curncy')
 
 ## Check security type
-.bbg.check.type=function(type) {
+.br.check.type=function(type) {
     if(is.character(type)){
 	x=toupper(type)
-	xx=toupper(.bbg.types)
+	xx=toupper(.br.types)
 	if(!any(xx %in% x)) stop(paste(x, 'not in', paste(xx, collapse=' ')))
     }
 }
 
 ## Cut trailing security type from character vector 
-.bbg.cuttype=function(type){
-    p=paste0(' +', .bbg.types, '$|', collapse='')
+.br.cuttype=function(type){
+    p=paste0(' +', .br.types, '$|', collapse='')
     p=sub('\\|$', '', p)
     sub(p, '', type, ignore.case=TRUE)
 }
 
 
-.bbg.jar=function(){
+.br.jar=function(){
 	jarpath=paste0(R.home(), "/blpapi_java/bin")
         Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
@@ -320,8 +320,8 @@ bbg.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(pric
 
 ## ----connections, include=FALSE------------------------------------------
 
-bbg.open=function() blpConnect(blpapi.jar.file=.bbg.jar())
-bbg.close=function(conn)  blpDisconnect(conn)
+br.open=function() blpConnect(blpapi.jar.file=.br.jar())
+br.close=function(conn)  blpDisconnect(conn)
 
 ## misc func
 delete.all= function() rm(list=ls(all=TRUE))
@@ -391,21 +391,21 @@ delete.all= function() rm(list=ls(all=TRUE))
 ## addtype='Equity'
 ## 
 ## 
-## #con=bbg.open()
+## #con=br.open()
 ## #
 ## #start="20140301"
 ## #bric.focus=
-## #    bbg.bulk.csv(con, file, field="PX_LAST", cols=c(1), use.xts=TRUE)
+## #    br.bulk.csv(con, file, field="PX_LAST", cols=c(1), use.xts=TRUE)
 ## #
 ## #save(bric.focus, file='bricFocus.RData', compress='xz')
 ## #save(bric.focus, file='bricFocus.RData')
 ## #
-## #bbg.close(con)
+## #br.close(con)
 ## #
-## #x=setNames(bbg.sample(4,1), field); data.frame(date=time(x), x)
-## #bbg.bulk.tiks(con,  lab, start=Sys.Date()-5, field="PX_LAST", addtype=TRUE)
-## #bbg.bulk.desc(con, c("MSFT US EQUITY", "ASSGEN 10.125 07/10/2042 Corp"))
-## # bbg.bulk.idx(con, "SX5E Index", start=Sys.Date()-5, field="PX_LAST")
+## #x=setNames(br.sample(4,1), field); data.frame(date=time(x), x)
+## #br.bulk.tiks(con,  lab, start=Sys.Date()-5, field="PX_LAST", addtype=TRUE)
+## #br.bulk.desc(con, c("MSFT US EQUITY", "ASSGEN 10.125 07/10/2042 Corp"))
+## # br.bulk.idx(con, "SX5E Index", start=Sys.Date()-5, field="PX_LAST")
 ## 
 ## 
 
