@@ -15,12 +15,11 @@ Download [bloomr.build.R](https://raw.githubusercontent.com/AntonioFasano/BloomR
 You will find your portable BloomR directory  inside your `workDir`.
 
 
-
 Requirements
 ------------
 
-XML and Rcurl packages. If missing it will tray to download and install them.
-R should be able to connect to the Internet.
+XML and Rcurl packages. If missing, it will tray to download and install them.  
+R should be able to connect to the Internet.  
 `.Platform$OS.type == "windows"`
 
 
