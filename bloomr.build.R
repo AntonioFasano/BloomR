@@ -374,7 +374,7 @@ bloomrTree=function(work, overwrite){
 ### Make etc/Rprofile.site from PROF()
 initScripts=function(work, overwrite){
 
-    cat("Making etc/Rprofile.site\n")
+    cat("Making etc/Rprofile.site and shared directory\n")
 
     ## Make Rprofile.site
     p=capture.output(PROF)  # Get PROF function definition 
@@ -395,6 +395,7 @@ initScripts=function(work, overwrite){
     if(!download.bin(from, to, cert=cert)$succ)  stop('\nDownload error')
         
     ## Make personal dir
+    cat("Creating personal directory\n")
     makeDir(makePath(work, 'bloomR/mybloomr'), overwrite)
 
     ## Make R bootstrapper
@@ -408,22 +409,24 @@ makeBoot=function(work){
     ## Boot string    
     bloomr.run="
 EnvSet, HOME,       %A_ScriptDir%\\mybloomr
-;EnvSet, JAVA_HOME, %A_ScriptDir%\\main\\openjdk
-EnvSet, PATH,       %A_ScriptDir%\\main\\openjdk\\bin;%path%
-Run, main\\bin\\x64\\Rgui.exe
+EnvSet, JAVA_HOME, %A_ScriptDir%\\main\\openjdk\\jre
+;EnvSet, PATH,       %A_ScriptDir%\\main\\openjdk\\bin;%path%
+Run, main\\bin\\x64\\Rgui.exe,  --internet2, LANGUAGE=en
 "
     
-    ## Boot file
-    ahkdir=makePath(work, paste0(ahkzip, '.d'))    
+    ## Make boot file
+    ahkdir=makePath(work, paste0(ahkzip, '.d'))
     cat(bloomr.run, file=makePath(ahkdir, "bloomr.run"))
    
     ## Get icon from GitHub
+    cat("Getting icons\n")
     from=makePath(github, "bloomr.ico")
     to=makePath(ahkdir, "bloomr.ico")        
     cert=makePath(work, 'cacert.pem')
     download.bin(from, to, cert=cert)
 
     ## Make exe
+    cat("Making BloomR executable\n")
     cd=normalizePath(ahkdir)
     cd= paste0('cd "', cd, '" &')
     run="Ahk2Exe.exe /in bloomr.run /icon bloomr.ico /bin \"Unicode 32-bit.bin\""
@@ -580,31 +583,21 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
 ### "etc/Rprofile.site" source (braces on separate lines) 
 PROF=function(){ #Keep this on separate line
     
-# === #
-# FAS #
-# === #
-
-    ## Set working directory
-    local({
-        wd="mybloomr"
-        if (file.info(wd)$isdir ) setwd(wd)
-        cat("Current working directory is\n", getwd(), "\n")
-    })
+    ## BloomR bootstrap
+    ## ================
+    
+    cat("Current working directory is\n", getwd(), "\n")
     
     ## Set default repository
     local({r <- getOption("repos")
            r["CRAN"] <- "http://cran.r-project.org"
            options(repos=r)
-       })
-    
-
-    ##BBG stuff
-    ##=========
+       })    
     library("rJava")
     library("Rbbg")
     source(paste0(R.home("share"), "/bloomr/bloomr.R"))
-    ##end BBG stuff----------------------------------------
-
+    
+    ## end BloomR----------
 }
 
 
