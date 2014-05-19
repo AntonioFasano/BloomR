@@ -9,16 +9,12 @@
 ##  Requirements:
 ##  XML and Rcurl packages. If missing it will tray to download and install them.
 ##  R should be able to connect to the Internet.
+##  .Platform$OS.type == "windows"
 ## 
 ##  Usage:
 ##  Source this file and run:
 ##  makeBloomR("path\to\workDir")
 ##  You will get the BloomR.zip in the work dir
-##
-##  Troubleshooting:
-##    "error: unable to load shared object '... i386/rJava.dll'
-##  If the  path to BloomR folder contains wird charcters, such as "&" it will fail to load.
-##  You can still build BloomR, but move BloomR folder to a compatible path before running it 
 ##
 ##  Credits:
 ##  R-Portable*.exe from sourceforge.net/projects/rportable
@@ -26,6 +22,10 @@
 ##  Rbbg_*.zip from http://r.findata.org/bin/windows/contrib/
 ##  peazip  from http://sourceforge.net/projects/peazip
 ##  ahkscript http://ahkscript.org
+##  Icon set Simplicio CC 3.0 by Neurovit: http://neurovit.deviantart.com
+##   retrieved at https://www.iconfinder.com/icons/48750/direction_right_icon
+##
+
 
 #### Globals
 
@@ -66,10 +66,13 @@ pzip="peazip"; rport='rportable'
 T=TRUE; F=FALSE
 
 
-makeBloomR= function(work, overwrite=TRUE, deb=1:4){
+makeBloomR= function(work, overwrite=TRUE, deb=1:5){
 ## work='work'
 ## deb: 1,2,3 steps to execute 
-                                        
+
+    ## Windows?
+    if(.Platform$OS.type != "windows") stop("Sorry, Bloomberg only exists for Windows and so BloomR.")
+    
     ##  Check for required package
     if(!loadLib("RCurl")) return(1)
     if(!loadLib("XML")) return(1)
@@ -374,7 +377,7 @@ initScripts=function(work, overwrite){
     cat("Making etc/Rprofile.site\n")
 
     ## Make Rprofile.site
-    p=capture.output(PROF)  # Get PROF funct definition 
+    p=capture.output(PROF)  # Get PROF function definition 
     p=p[-c(1, length(p))]   # Remove "function {", "}"
     file=makePath(work, 'bloomR/main/etc/Rprofile.site')
 
@@ -599,104 +602,9 @@ PROF=function(){ #Keep this on separate line
     ##=========
     library("rJava")
     library("Rbbg")
-
-    bbg.jar=function(){
-	jarpath=paste0(R.home(), "/blpapi_java/bin")
-        Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
-    }
-
-    bbg.open=function() blpConnect(blpapi.jar.file=bbg.jar())
-    bbg.close=function(conn)  blpDisconnect(conn)
-
-    ##end BBG stuff-------------------------------------------
-
     source(paste0(R.home("share"), "/bloomr/bloomr.R"))
-    
+    ##end BBG stuff----------------------------------------
+
 }
-
-### "etc/Rprofile.site" source (braces on separate lines) 
-PROFLONG=function(){ #Keep this on separate line
-    
-# === #
-# FAS #
-# === #
-
-
-
-#Set default repository
-local({r <- getOption("repos")
-       r["CRAN"] <- "http://cran.r-project.org"
-       options(repos=r)
-})
-BloomR.lib="./FAS/library/"
-
-#To install new packages use
-#
-#  install.packages("myPack", BloomR.lib)
-#----------------------------------------
-
-
-
-
-#BBG stuff
-#=========
-library("rJava")
-library("Rbbg")
-
-bbg.jar=function(){
-	jarpath=paste0(R.home(), "/blpapi_java/bin")
-        Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
-    }
-
-
-
-bbg.open=function() blpConnect(blpapi.jar.file=bbg.jar())
-bbg.close=function(conn)  blpDisconnect(conn)
-
-#end BBG stuff-------------------------------------------
-
-
-delete.all= function() rm(list=ls(all=TRUE))
-
-#Time extension functions
-#=========================
-`%+%` <- function(x,y) UseMethod("%+%")
-`%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
-`%-%` <- function(x,y) UseMethod("%-%")
-`%-%.Date` <- function(date,n) seq(date, by = paste (-n, "months"), length = 2)[2]
-year=function(d) as.numeric(format(d, "%Y"))
-`year<-`=function (d, value) {
-    d <-as.Date(paste0(value, format(d, "-%m-%d")))}
-month=function(d) as.numeric(format(d, "%m"))
-`month<-`=function (d, value) {
-    d <-as.Date(paste0(format(d, "%Y-"),  value, format(d, "-%d")))}
-day=function(d) as.numeric(format(d, "%d"))
-`day<-`=function (d, value) {
-    d <-as.Date(paste0(format(d, "%Y-%m-"),  value))}
-last.day=function(d){
-    x=d %+% 1 #add a month
-    day(x)=1  #set to 1st
-    day(x-1)  #get day before
-}
-day.mod=function(d,n){
-    as.Date(paste0(format(d, "%Y-%m-"), n))}
-
-day.us=function(d1, d2){
-    #set to first of month
-    x1=day.mod(d1,1);x2=day.mod(d2,1);
-    x=seq(x1, x2, by="1 month")
-    #last day of each month in seq
-    x=sapply(x, last.day)
-    #count 31d-months
-    x=length(which(x>30))
-    #substract 1 for each 31d-month
-    as.numeric(d2-d1-x)
-}
-#--------- end Time extensions
-
-    
-}  # Keep this on separate line
-
-
 
 
