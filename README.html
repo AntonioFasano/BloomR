@@ -1,0 +1,23 @@
+<h1 id="bloomr">BloomR</h1>
+<p><em>Portable R for Bloomberg</em></p>
+<h2 id="whats-new">What's new</h2>
+<h3 id="bloomr-0.2.1-beta">BloomR-0.2.1 Beta</h3>
+<ul>
+<li>Only 64 bit</li>
+<li>Updated to R-3.1.0</li>
+<li>New functions for bulk download from CSV files tickers, from index constituents or from strings.</li>
+<li>Sample download to prepare script at home and test on terminal later.</li>
+<li>Bulk and non-bulk download of many description fields.</li>
+</ul>
+<h2 id="manual">Manual</h2>
+<p>TODO Find in your BloomR directory the subdirectory <code>help</code> intended for learning and reference material.<br />As this is development version the help resources are not yet finalised!</p>
+<h2 id="build-instructions">Build instructions</h2>
+<h3 id="for-the-impatient">For the impatient</h3>
+<p>Download <a href="https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.r">bloomr.build.R</a> and under R for Windows issue:</p>
+<pre><code>source(&quot;path\to\bloomr.build.R&quot;)
+makeBloomR(&quot;path\to\workDir&quot;)</code></pre>
+<p>You will find your portable BloomR directory inside your <code>workDir</code>.</p>
+<h3 id="more-options-and-requirements">More options and requirements</h3>
+<p>A decent R version is needed 3+ (perhaps older version will do).<br /><code>.Platform$OS.type == &quot;windows&quot;</code>. <code>XML</code> and <code>Rcurl</code> packages are needed, but if missing, the build script will try to download and install them.<br />R should be able to connect to the Internet.</p>
+<p>If you want to find <code>BloomR.zip</code> too in your work directory use:</p>
+<pre><code>makeBloomR(&quot;path\to\workDir&quot;, zip = TRUE)   ##&lt;- coming soon </code></pre>
