@@ -3,8 +3,8 @@
 ###  Status in progress. 
 
 ##   TODO
-##   Audit makeDir error when dir exists and debugging later steps
-
+##   Add  makeDir descs
+##   Switch from file.exists to new FS funcs (eg in downloads)
 
 ##  Requirements:
 ##  XML and Rcurl packages. If missing it will tray to download and install them.
@@ -14,7 +14,7 @@
 ##  Usage:
 ##  Source this file and run:
 ##  makeBloomR("path\to\workDir")
-##  You will get the BloomR.zip in the work dir
+##  You will get the BloomR subdit in the work dir
 ##
 ##  Credits:
 ##  R-Portable*.exe from sourceforge.net/projects/rportable
@@ -66,7 +66,7 @@ pzip="peazip"; rport='rportable'
 T=TRUE; F=FALSE
 
 
-makeBloomR= function(work, overwrite=TRUE, deb=1:5){
+makeBloomR=function(work, overwrite=TRUE, zip=FALSE, deb=1:6){
 ## work='work'
 ## deb: 1,2,3 steps to execute 
 
@@ -78,57 +78,25 @@ makeBloomR= function(work, overwrite=TRUE, deb=1:5){
     if(!loadLib("XML")) return(1)
 
     ## Step 1
-    if(1 %in% deb)
-        if(!makeDir (work, overwrite)) return(1)
+    if(1 %in% deb) makeDir(work, overwrite)
     
     ## Step 2
     if(2 %in% deb) downloads(work, overwrite)
 
     ## Step 3
-    if(3 %in% deb) expand(work)
+    if(3 %in% deb) expand(work, overwrite)
 
     ## Step 4
     if(4 %in% deb) bloomrTree(work, overwrite)
         
     ## Step 5
     if(5 %in% deb) initScripts(work, overwrite)
+
+    ## Step 6
+    if(6 %in% deb && zip) makeZip(work, overwrite)
 }
 
-### Create a dir with overwrite options 
-makeDir=function(dname, overwrite){
-    dir.create(dname, showWarnings = FALSE)
-    x=dir(dname, all.files=TRUE)
-    x=x[-which(x=='.')]
-    x=x[-which(x=='..')]
-
-    if (length(x)>0) {
-        if(!overwrite) {
-            cat(dname, "\nAlready exists and is not empty\n")
-            return (FALSE)
-        } else 
-            cat("Warning! ", dname, "\nalready contains\n", dir(dname), '\n')
-    }
-    return (TRUE)
-}
-
-
-### Chains parent-child paths managing '/' middle slashes 
-makePath=function(parent, child){    
-## You don't have to rememeber if you need to add or not that slash
-
-    ## No trail for parent 
-    parent=sub('/$', '',  parent)
-    parent=sub('\\\\$', '',  parent)
-
-    ## No lead for child
-    child=sub('^/', '',  child)
-    child=sub('^\\\\', '',  child)
-
-    ## Now the input is secure
-    file.path(parent, child)
-
-}
-
+###== Main steps ==
 
 ### Load CRAN packs 
 loadLib= function(lib){
@@ -142,52 +110,6 @@ loadLib= function(lib){
         return (FALSE)
     }
     return (TRUE)
-}
-
-
-### First SF project item matching regex filter (url made from prj name)
-sfFirstbyProject=function (project, filtx, quiet=FALSE){
-    if(!quiet) cat('Searching last', project, 'version on SF.net\n')
-    url=paste0("http://sourceforge.net/projects/", project, "/files/")
-    ref="http://sourceforge.net"    
-    page=download.html(url)    
-    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
-        "//a[@class='name']",  xmlGetAttr, "href")
-    url=grep(filtx, url, value=T)[1] 
-    if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
-    return (url)
-}
-
-
-### First SF url item matching regex filter (url given from prj name)
-sfFirstbyUrl=function (url, versionx, quiet=FALSE){
-    if(!quiet) cat('Searching for version ', versionx, ' on\n', url, '\n')
-    ref="http://sourceforge.net"
-    if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
-    page=download.html(url)    
-    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
-        "//a[@class='name']",  xmlGetAttr, "href")
-    return (grep(versionx, url, value=T)[1])
-}
-
-
-### Follow the direct-download link 
-sfDirLink=function (url, quiet=FALSE){
-
-    if(!quiet) cat('Find best mirror for\n', url, '\n')
-    ref="http://sourceforge.net"
-    page=download.html(url, refr=ref)    
-    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
-        "//a[@class='direct-download']",  xmlGetAttr, "href")
-    return (url)
-}
-
-
-### Download binary file with SF refer
-sfBDown=function(url, file){
-    cat(paste('Downloading', url, '\n'))
-    if(!download.bin(url, file, refr="http://sourceforge.net" )$succ)
-        stop('\nDownload error')
 }
 
 
@@ -206,7 +128,7 @@ downloads=function(work, overwrite){
         url=sfFirstbyUrl(url, "portable[^\"]*?WINDOWS")
         url=sfDirLink(url)
         sfBDown(url, fpath)   
-    } else cat(pzip, 'already exists', '\n')
+    } else cat(pzip, ' already exists', '\n')
     
     ## portabler
     fpath=makePath(work, rport)
@@ -263,82 +185,57 @@ downloads=function(work, overwrite){
     
 }
 
-## Get  CRAN Windows binaries release for a package 
-cran.geturl=function(pack){
-
-    ## CRAN links
-    cranpage="http://cran.r-project.org/web/packages/"
-    cranbin="http://cran.r-project.org/bin/"
-
-    ## Get package page 
-    url=paste0(cranpage, pack, "/index.html")
-    page=download.html(url)    
-
-    ## Get bin url: the first occurence on page is the dev version, second is release
-    url=regmatches(page, gregexpr("windows/contrib.*?\\.zip", page))[[1]][2]
-    paste0(cranbin, url)   
-}
-
-
-expand=function(work){
+### Expand components
+expand=function(work, overwrite){
     
     ## peazip
-    file=makePath(work, pzip)
-    exdir=makePath(work, paste0(pzip,'.d'))
-    cat('Creating', exdir, '\n') 
-    if(length(unzip(file, exdir = exdir))==0)
-        stop('\nnUnable to extract peazip binaries')  
-    pexe=makePath(exdir, paste0(dir(exdir), '/res/7z/7z.exe'))
+    uzip(work, pzip, paste0(pzip,'.d'), overwrite,
+          "Peazip binaries")
+    
+    ## R files
+    cat('\nExtract main R files: this may take a bit.','\n')
 
-    ## portabler 
-    cat('Extract main R files: this may take a bit.','\n')
-    cmd=paste0('-o', dQuote(makePath(work, paste0(rport, '.d')))) #output dir    
-    cmd=paste(dQuote(pexe), 'x -aoa -r', cmd, dQuote(makePath(work, rport)))
-    cmd=chartr("/", "\\", cmd)
+    to=makePath(work, paste0(rport, '.d')) # output dir    
+    from=makePath(work, rport)             # source
+    chk.write(to, overwrite, "R file directory")
+
+    zexe=getzip(work)
+    cmd=paste(wPath(to), wPath(from))
+    cmd=paste0(wPath(zexe), ' x -aoa -r -o', cmd)
     ret=system( cmd, intern=F, wait =T, show.output.on.console =F, ignore.stdout=T) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 
     ## openjdk
-    file=makePath(work, javazip)
-    exdir=makePath(work, paste0(javazip,'.d'))
-    cat('Creating', exdir, '\n') 
-    if(length(unzip(file, exdir = exdir))==0)
-        stop('\nUnable to extract Java binaries')
+    uzip(work, javazip, paste0(javazip,'.d'), overwrite,
+          "Java binaries")
 
     ## Bloomberg API
-    file=makePath(work, apizip)
-    exdir=makePath(work, paste0(apizip,'.d'))
-    cat('Creating', exdir, '\n') 
-    if(length(unzip(file, exdir = exdir))==0)
-        stop('\nUnable to extract API binaries')  
+    uzip(work, apizip, paste0(apizip,'.d'), overwrite,
+          "API binaries")
 
-    ## CRAN packages   
+    ## CRAN packages
+    cat('\nExpanding packages', '...\n')
     from=makePath(work, "packs")
-    to=makePath(work, 'lib.d')
+    chk.write(makePath(work, "lib.d"), overwrite)
+    if(overwrite) del.dir(makePath(work, "lib.d"))
     ## Loop and extract packs
-    for(pack in dir(from)){
-        cat('Creating', makePath('lib.d', pack), '\n')
-        pack=makePath(from, pack)
-        if(length(unzip(pack, exdir = to))==0)
-            stop('\nUnable to extract ',  pack, ' package')  
-    }
-
+    for(pack in  dir(from) )
+        uzip(work, makePath('packs', pack), 'lib.d', overwrite,
+              paste0('lib.d/', pack), delTarget=FALSE)    
+    
     ## ahkscript
-    file=makePath(work, ahkzip)
-    exdir=makePath(work, paste0(ahkzip,'.d'))
-    cat('Creating', exdir, '\n') 
-    if(length(unzip(file, exdir = exdir))==0)
-        stop('\nUnable to extract ahkscript')  
+    uzip(work, ahkzip, paste0(ahkzip,'.d'), overwrite,
+          "ahkscript")
 
 }
 
 ### Make BloomR directory tree  
 bloomrTree=function(work, overwrite){
 
-    cat("Creating BloomR tree\n")
-    if(overwrite) unlink(makePath(work, 'bloomR'), recursive=overwrite) else {
-        stop("BloomR directory tree exisisting: delete or use overwrite option")}    
-    makeDir(makePath(work, 'bloomR'))
+    ## Make dir
+    to=makePath(work, 'bloomR')
+    chk.write(to, overwrite, "Creating BloomR tree")
+    makeDir(to, overwrite) 
 
     ## Move R
     from=makePath(work, paste0(rport, '.d/$_OUTDIR/R-Portable'))
@@ -367,9 +264,30 @@ bloomrTree=function(work, overwrite){
         to=makePath(lib.t, lib)
         file.rename(from, to)
     }
+
+    ## Download manuals
+    cat("\nDownloading BloomR help resources\n")
+    cert=makePath(work, 'cacert.pem')    
+
+    to=makePath(work, "bloomR/README.html")
+    from=makePath(github, "README.html")
+    if(!download.bin(from, to, cert=cert)$succ)  stop('\nDownload error')
+ 
+    exdir=makePath(work, "bloomR/help")
+    makeDir(exdir, overwrite, "BloomR help directory")
+    
+    to=makePath(exdir, "bloomr.html")
+    from=makePath(github, "bloomr.html")  
+    if(!download.bin(from, to, cert=cert)$succ)  stop('\nDownload error')
+    
+    to=makePath(exdir, "bloomr.pdf")
+    from=makePath(github, "bloomr.pdf") 
+    if(!download.bin(from, to, cert=cert)$succ)  stop('\nDownload error')
     
 }
 
+
+###== Boot functions ==
 
 ### Make etc/Rprofile.site from PROF()
 initScripts=function(work, overwrite){
@@ -389,7 +307,7 @@ initScripts=function(work, overwrite){
     ## Get bloomr.R from GitHub
     from=makePath(github, "bloomr.R")
     to=makePath(work, "bloomR/main/share/bloomr")    
-    if(!makeDir(to, overwrite))  stop('\nUnable to create BloomR share directory')
+    makeDir(to, overwrite, 'BloomR share directory')
     to=makePath(to, "bloomr.R")        
     cert=makePath(work, 'cacert.pem')
     if(!download.bin(from, to, cert=cert)$succ)  stop('\nDownload error')
@@ -439,72 +357,110 @@ Run, main\\bin\\x64\\Rgui.exe,  --internet2, LANGUAGE=en
     
 }
 
-### Make shortcuts to run R  
-makeShorts.old=function(work){
-
-    ## File content
-    start="
-set \"RPORT=%~dp0\"
-cd %RPORT% 
-set JAVA_HOME=%RPORT%main\\openjdk
-path %JAVA_HOME%\\bin;%path%
-set HOME=mybloomr
-start main\\bin\\i386\\Rgui.exe  --internet2 LANGUAGE=en
-"
-    ## Make shortcut
-    cat(start, file=makePath(work, 'bloomR/BloomR.cmd'))
-
-    ## Make personal dir
-    makeDir(makePath(work, 'bloomR/mybloomr'), overwrite)
+### "etc/Rprofile.site" source (braces on separate lines) 
+PROF=function(){ #Keep this on separate line
     
-    ## make no-java short? 
-}
-
-### Make package install CLI and R scripts # Not used!!
-libScripts.create=function(work){
-
-    ## Libaries to install
-    packlist="   zoo  xts  "
-    packs= strsplit(gsub('(^ +)|( +$)', '',  packlist), split=' +')
+    ## BloomR bootstrap
+    ## ================
     
-    ## main\firstRun.cmd to run r script
-    s="bin\\i386\\Rscript.exe --vanilla site-library\\firstRun.r" 
-    cat(s, file=makePath(work, '/bloomR/main/firstRun.cmd'))
-
-    ## r script main/site-library/firstRun.r
-    firstr=makePath(work, '/bloomR/main/site-library/firstRun.r')
-    cat('', file=firstr) #clean firstRun.r
+    cat("Current working directory is\n", getwd(), "\n")
     
-    ##  add lines:install.packages('*', lib='site-library', repos="http://cran.r-project.org")
-    a="\ninstall.packages('"
-    b="', lib='site-library', repos='http://cran.r-project.org')"    
-    for(i in packs)
-        cat(paste0(a, i, b), file=firstr, append=T)
-
-    ## Exit nicely
-    s="
-cat('Any key to exit ...')
-readLines(con='stdin', 1)
-"
-    cat(s, file=firstr, append=T)
-   
+    ## Set default repository
+    local({r <- getOption("repos")
+           r["CRAN"] <- "http://cran.r-project.org"
+           options(repos=r)
+       })    
+    library("rJava")
+    library("Rbbg")
+    source(paste0(R.home("share"), "/bloomr/bloomr.R"))
+    
+    ## end BloomR----------
 }
 
 
-## Not used
-libScripts.run=function(work){
+###== Utlities ==
 
-    rscript= makePath(work, "BloomR/work/bloomR/main/bin/i386/Rscript.exe")
-    rscript= paste0('"', rscript, '"')
-    
-    ## r script main/site-library/firstRun.r
-    firstr=makePath(work, '/bloomR/main/site-library/firstRun.r')
-    firstr= paste0('"', firstr, '"')
+### Zip distro 
+makeZip=function(work, overwrite){
 
-    shell(paste(rscript,firstr) , shell=Sys.getenv("COMSPEC"))
+    cat('\nCreating BloomR.zip\n')
+    to=makePath(work, "BloomR.zip")
+
+    chk.write(to, overwrite)
+    del.dir(to)
+        
+    from=makePath(work, 'bloomR/.././bloomR/*')   # In 7z ./ removes dir prefix from archive     
+    exdir=makePath(work, paste0(pzip,'.d'))
+    zexe=getzip(work)
+    cmd=paste("cmd.exe /c cd /D", wPath(work) , "&")
+    cmd=paste(wPath(zexe), "a", wPath(to), wPath(from))
+    ret=system(cmd, intern=F, wait =T, show.output.on.console =F, ignore.stdout=T) 
+    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 
 }
 
+
+###== Website helpers ==
+
+### First SF project item matching regex filter (url made from prj name)
+sfFirstbyProject=function (project, filtx, quiet=FALSE){
+    if(!quiet) cat('Searching last', project, 'version on SF.net\n')
+    url=paste0("http://sourceforge.net/projects/", project, "/files/")
+    ref="http://sourceforge.net"    
+    page=download.html(url)    
+    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
+        "//a[@class='name']",  xmlGetAttr, "href")
+    url=grep(filtx, url, value=T)[1] 
+    if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
+    return (url)
+}
+
+### First SF url item matching regex filter (url given from prj name)
+sfFirstbyUrl=function (url, versionx, quiet=FALSE){
+    if(!quiet) cat('Searching for version ', versionx, ' on\n', url, '\n')
+    ref="http://sourceforge.net"
+    if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
+    page=download.html(url)    
+    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
+        "//a[@class='name']",  xmlGetAttr, "href")
+    return (grep(versionx, url, value=T)[1])
+}
+
+### Follow the direct-download link 
+sfDirLink=function (url, quiet=FALSE){
+
+    if(!quiet) cat('Find best mirror for\n', url, '\n')
+    ref="http://sourceforge.net"
+    page=download.html(url, refr=ref)    
+    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
+        "//a[@class='direct-download']",  xmlGetAttr, "href")
+    return (url)
+}
+
+### Download binary file with SF refer
+sfBDown=function(url, file){
+    cat(paste('Downloading', url, '\n'))
+    if(!download.bin(url, file, refr="http://sourceforge.net" )$succ)
+        stop('\nDownload error')
+}
+
+## Get  CRAN Windows binaries release for a package 
+cran.geturl=function(pack){
+
+    ## CRAN links
+    cranpage="http://cran.r-project.org/web/packages/"
+    cranbin="http://cran.r-project.org/bin/"
+
+    ## Get package page 
+    url=paste0(cranpage, pack, "/index.html")
+    page=download.html(url)    
+
+    ## Get bin url: the first occurence on page is the dev version, second is release
+    url=regmatches(page, gregexpr("windows/contrib.*?\\.zip", page))[[1]][2]
+    paste0(cranbin, url)   
+}
+
+###== Donwload helpers ==
 
 ### Download html page with simple progress and stop on error
 download.html=function(url, refr=NULL){
@@ -579,25 +535,156 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
 }
 
 
+###== File System ==
 
-### "etc/Rprofile.site" source (braces on separate lines) 
-PROF=function(){ #Keep this on separate line
-    
-    ## BloomR bootstrap
-    ## ================
-    
-    cat("Current working directory is\n", getwd(), "\n")
-    
-    ## Set default repository
-    local({r <- getOption("repos")
-           r["CRAN"] <- "http://cran.r-project.org"
-           options(repos=r)
-       })    
-    library("rJava")
-    library("Rbbg")
-    source(paste0(R.home("share"), "/bloomr/bloomr.R"))
-    
-    ## end BloomR----------
+
+### Conv: "my/sub dir" -> "\"my\\sub dir\""
+wPath=function(path){
+    path=dQuote(path)
+    chartr("/", "\\", path)
 }
+
+### Path exists
+is.path=function(path){
+    path=sub("/$", "", path)
+    file.exists(path)
+}
+
+### Path exists as a file
+is.file=function(file){
+    is.path(file) && !file.info(file)$isdir
+}
+
+### Path exists as a dir
+is.dir=function(file){
+    is.path(file) && file.info(file)$isdir
+}
+
+### Dir is empty
+is.empty=function(dir){
+### Also: T, if does not exist; F, if is a file
+    if(is.file(dir)) return (FALSE)
+    length(dir(dir, all.files=TRUE, no..=TRUE)) ==0
+}
+
+### Break on path not a file
+chk.file=function(file, desc=""){
+    if(!is.path(file)) exit.p(file, desc, "is not a valid path")
+    if(is.dir(file))   exit.p(file, desc, "is a directory")
+}
+
+### Break on path not a dir
+chk.dir=function(dir){
+    if(!is.path(dir)) exit.p(file, desc, "is not a valid path")
+    if(!is.dir(dir))  exit.p(file, desc, "is a file")
+}
+
+### Check if we can overwrite (non-empty dir) 
+chk.write=function(path, over, desc=""){
+
+    if(nzchar(desc)) desc=paste(desc, '\n')
+
+    ## Ret if  non-exisitng path
+    if(!is.path(path)) return
+    
+    ## Break on no right to overwrite (unless it is an empty dir)
+    ## note: a file is considered a non-empty dir
+    if(!over && !is.empty(path)){
+        exit.p(path, desc, "already exists")}
+    else{ 
+        warn.p(path, desc, "already exists")}
+        
+}
+       
+
+### Delete dir and break on fail 
+del.dir=function(dir){
+    unlink(dir,recursive=TRUE)
+    if(is.path(dir)) {
+        Sys.sleep(1.5)
+        if(is.path(dir)) stop("\nUnable to access\n", dir)
+    }
+}
+
+
+
+### Create a dir with overwrite options and dir desc, in case of error 
+makeDir=function(dir, overwrite, desc=""){
+
+    ## Inform user with desc if any
+    if(nzchar(desc)) cat("\nCreating", desc, '\n')    
+    
+    ## Check rights 
+    chk.write(dir, overwrite, desc)
+
+    ## Go
+    del.dir(dir)    
+    dir.create(dir, showWarnings = FALSE)  
+
+    ## Unable to create? 
+    if(!is.path(dir))
+        stop("\nUnable to create ", desc, dir)
+    
+}
+    
+
+### Chains parent-child paths managing '/' middle slashes 
+makePath=function(parent, child){    
+## You don't have to rememeber if you need to add or not that slash
+
+    ## No trail for parent 
+    parent=sub('/$', '',  parent)
+    parent=sub('\\\\$', '',  parent)
+
+    ## No lead for child
+    child=sub('^/', '',  child)
+    child=sub('^\\\\', '',  child)
+
+    ## Now the input is secure
+    file.path(parent, child)
+
+}
+
+
+### Unzip adding the a prefix path to both source and destination
+### Stops on errors and inform used with a desc asrgument
+uzip=function(base, from, to, overwrite, desc, delTarget=TRUE){
+
+    from=makePath(base, from)
+    to=makePath(base, to)
+    cat('\nExpanding', desc, '...\n')
+    chk.file(from)
+    chk.write(to, overwrite, desc)
+    if(delTarget) del.dir(to)
+    if(length(unzip(from, exdir= to))==0)
+        stop('\nUnable to extract perform extraction')  
+}
+
+### Get 7z.exe
+getzip=function(work){   
+    x= makePath(work, paste0(pzip,'.d'))
+    makePath(x, paste0(dir(x), '/res/7z/7z.exe'))
+}
+
+
+
+### == Messages ==
+
+### Exisintg paths
+mess.p=function(path, desc, mess){
+ #   if(nzchar(desc)) desc=paste(desc, '\n')   
+    paste0("\n", desc, path, "\n", mess)
+}
+
+### Exisintg paths stop
+exit.p=function(path, desc, mess){ 
+    stop(mess.p(path, desc, mess))
+}
+
+### Exisintg paths warn
+warn.p=function(path, desc, mess){
+    cat(mess.p(path, desc, mess), "\n")
+}
+
 
 
