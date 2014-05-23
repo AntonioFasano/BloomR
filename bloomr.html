@@ -1,218 +1,421 @@
-<h1 id="bloomr-facility-functions">BloomR facility functions</h1>
-<h1 id="br.bulk.tiks">br.bulk.tiks</h1>
-<p><em>Bulk historical data</em><br />Returns the historical data for a vector of tickers in xts or list format</p>
-<h2 id="usage">Usage</h2>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>BloomR facility functions</title>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 { 
+   font-size:2.2em; 
+}
+
+h2 { 
+   font-size:1.8em; 
+}
+
+h3 { 
+   font-size:1.4em; 
+}
+
+h4 { 
+   font-size:1.0em; 
+}
+
+h5 { 
+   font-size:0.9em; 
+}
+
+h6 { 
+   font-size:0.8em; 
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * { 
+      background: transparent !important; 
+      color: black !important; 
+      filter:none !important; 
+      -ms-filter: none !important; 
+   }
+
+   body { 
+      font-size:12pt; 
+      max-width:100%; 
+   }
+       
+   a, a:visited { 
+      text-decoration: underline; 
+   }
+
+   hr { 
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote { 
+      padding-right: 1em; 
+      page-break-inside: avoid; 
+   }
+
+   tr, img { 
+      page-break-inside: avoid; 
+   }
+
+   img { 
+      max-width: 100% !important; 
+   }
+
+   @page :left { 
+      margin: 15mm 20mm 15mm 10mm; 
+   }
+     
+   @page :right { 
+      margin: 15mm 10mm 15mm 20mm; 
+   }
+
+   p, h2, h3 { 
+      orphans: 3; widows: 3; 
+   }
+
+   h2, h3 { 
+      page-break-after: avoid; 
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h1>BloomR facility functions</h1>
+
+<h1>br.bulk.tiks</h1>
+
+<p><em>Bulk historical data</em><br/>
+Returns the historical data for a vector of tickers in xts or list format</p>
+
+<h2>Usage</h2>
+
 <pre><code>br.bulk.tiks(con, tiks, start=Sys.Date()-5, field=&quot;PX_LAST&quot;,
     addtype=FALSE, showtype=FALSE, use.xts=TRUE,
-    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0) </code></pre>
-<h2 id="arguments">Arguments</h2>
-<dl>
-<dt>tiks</dt>
-<dd>character vector of the tickers queried for data
-</dd>
-</dl>
-<p>For other arguments see the function <code>br.bulk.csv</code></p>
-<h2 id="details">Details</h2>
-<p>If an element of <code>tiks</code> is <code>NA</code> or empty (<code>&quot;&quot;</code>) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.<br />If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. Sampled values are based on default values of <code>br.sample()</code>, but it is possible to set explicitly <code>start, same.dates, no.na, empty.sec</code>; <code>sec.names</code> depends on <code>tiks</code> argument. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
-<h2 id="value">Value</h2>
-<p>If <code>use.xts=TRUE</code>, an xts object, where each column is the historical data of a security.<br />If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a security.</p>
-<h1 id="br.bulk.csv">br.bulk.csv</h1>
-<p><em>Historical data from grouped tickers in a CSV files</em><br />Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels.</p>
-<h2 id="usage-1">Usage</h2>
+    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0) 
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>tiks
+:   character vector of the tickers queried for data  </p>
+
+<p>For other arguments see the function <code>br.bulk.csv</code> </p>
+
+<h2>Details</h2>
+
+<p>If an element of <code>tiks</code> is <code>NA</code> or empty (<code>&quot;&quot;</code>) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.<br/>
+If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. Sampled values are based on default values of <code>br.sample()</code>, but it is possible to set explicitly  <code>start, same.dates, no.na, empty.sec</code>; <code>sec.names</code> depends on <code>tiks</code> argument. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
+
+<h2>Value</h2>
+
+<p>If <code>use.xts=TRUE</code>, an xts object, where each column is the historical data of a security.<br/>
+If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a security.</p>
+
+<h1>br.bulk.csv </h1>
+
+<p><em>Historical data from grouped tickers in a CSV files</em><br/>
+Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels. </p>
+
+<h2>Usage</h2>
+
 <pre><code>br.bulk.csv(con, file, start = Sys.Date() - 5, field = &quot;PX_LAST&quot;, 
     cols = NULL, addtype = FALSE, showtype = FALSE, use.xts = TRUE, 
     comma = TRUE,
     price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
-    ) </code></pre>
-<h2 id="arguments-1">Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open(). If <code>NULL</code> simulated values are generated.<br />
-</dd>
-<dt>file</dt>
-<dd>path to CSV file.<br />
-</dd>
-<dt>start</dt>
-<dd>start date. Can be a Date object or an ISO string without separators. Defaults to 5 days before current date.<br />
-</dd>
-<dt>field</dt>
-<dd>String denoting the Bloomberg field queried. Defaults to &quot;PX_LAST&quot;. If the field is wrong or not accessible, data will be empty but no error will be raised.<br />
-</dd>
-<dt>cols</dt>
-<dd>Logical or integer vector for selecting CSV columns (ticker groups). Defaults to all columns.<br />
-</dd>
-<dt>addtype</dt>
-<dd>If a string denoting the security type, it will be added to all tickers; if TRUE &quot;Equity&quot;, will be added; if FALSE (the default), nothing will be added.<br />
-</dd>
-<dt>showtype</dt>
-<dd>if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.<br />
-</dd>
-<dt>use.xts</dt>
-<dd>if TRUE (the default) each group will be formatted as an xts object else as a list.<br />
-</dd>
-<dt>comma</dt>
-<dd>to be set to FALSE for (non-English) CSV, using semicolon as separator.<br />
-</dd>
-<dt>nrow</dt>
-<dd>maximum number of simulated rows (actual is random). Ignored if <code>con!=NULL</code>, it defaults to 5.
-</dd>
-<dt>empty.sec</dt>
-<dd>ratio of securities returning no data. Ignored if <code>con!=NULL</code>, it defaults to 0.
-</dd>
-</dl>
-<h2 id="details-1">Details</h2>
-<p>Empty CSV cells or cells interpreted as NAs will be ignored.<br />If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. This function is used with default values, except for <code>nrow, start, same.dates, no.na, empty.sec</code>, which can be explicitly passed as arguments, and <code>sec.names</code> depending on tickers found in the CSV file. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
-<h2 id="value-1">Value</h2>
-<p>a list where each element is the historical data of a CSV group.<br />If <code>use.xts=TRUE</code>, elements are xts object, where each column is the historical data of a security.<br />If <code>use.xts=FALSE</code>, elements are sub-list, where each element is the historical data of a security.<br />If there is only one group, the first (and unique) element of the list will be returned.</p>
-<h1 id="br.bulk.idx">br.bulk.idx</h1>
-<h2 id="description">Description</h2>
+    ) 
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>con
+:   the connection token returned from br.open(). If <code>NULL</code> simulated values are generated.<br/>
+file
+:   path to CSV file.<br/>
+start
+:   start date. Can be a Date object or an ISO string without separators. Defaults to 5 days before current date.<br/>
+field
+:   String denoting the Bloomberg field queried. Defaults to &ldquo;PX_LAST&rdquo;. If the field is wrong or not accessible, data will be empty but no error will be raised.<br/>
+cols
+:   Logical or integer vector for selecting CSV columns (ticker groups). Defaults to all columns.<br/>
+addtype
+:   If a string denoting the security type, it will be added to all tickers; if TRUE &ldquo;Equity&rdquo;, will be added; if FALSE (the default), nothing will be added.<br/>
+showtype
+:   if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.<br/>
+use.xts
+:   if TRUE (the default) each group will be formatted as an xts object else as a list.<br/>
+comma
+:   to be set to FALSE for (non-English) CSV, using semicolon as separator.<br/>
+nrow
+:   maximum number of simulated rows (actual is random). Ignored if <code>con!=NULL</code>, it defaults to 5.
+empty.sec
+:   ratio of securities returning no data. Ignored if <code>con!=NULL</code>, it defaults to 0.</p>
+
+<h2>Details</h2>
+
+<p>Empty CSV cells or cells interpreted as NAs will be ignored.<br/>
+If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. This function is used with default values, except for <code>nrow, start, same.dates, no.na, empty.sec</code>, which can be explicitly passed as arguments, and <code>sec.names</code> depending on tickers found in the CSV file. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
+
+<h2>Value</h2>
+
+<p>a list where each element is the historical data of a CSV group.<br/>
+If <code>use.xts=TRUE</code>, elements are xts object, where each column is the historical data of a security.<br/>
+If <code>use.xts=FALSE</code>, elements are sub-list, where each element is the historical data of a security.<br/>
+If there is only one group, the first (and unique) element of the list will be returned.  </p>
+
+<h1>br.bulk.idx</h1>
+
+<h2>Description</h2>
+
 <p>Returns the historical data for the constituents of an index in xts or list format.</p>
-<h2 id="usage-2">Usage</h2>
+
+<h2>Usage</h2>
+
 <pre><code>br.bulk.idx(con, index, start = Sys.Date() - 5, field = &quot;PX_LAST&quot;,  
      showtype = FALSE, include.idx = TRUE, use.xts = TRUE, nsec = 50,  
-     price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0, sec.names = NULL)  </code></pre>
-<h2 id="arguments-2">Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open(). If <code>NULL</code> simulated values are generated.<br />
-</dd>
-<dt>index</dt>
-<dd>string denoting the index ticker with or without the final security type label ('Index')<br />
-</dd>
-<dt>include.idx</dt>
-<dd>if TRUE (default) returns also historical data for the index.<br />
-</dd>
-<dt>nsec</dt>
-<dd>number of simulated index constituents. Ignored if <code>con!=NULL</code>, it defaults to 10.<br />
-</dd>
-<dt>sec.names</dt>
-<dd>character vector with names of sampled index constituents. Ignored if <code>con!=NULL</code>. By default security names are like 'memb1', 'memb2', etc.<br />
-</dd>
-</dl>
-<p>For other arguments see the function <code>br.bulk.csv</code></p>
-<h2 id="details-2">Details</h2>
-<p>If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. This function is used with default values, except for <code>nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names</code>.</p>
-<h2 id="value-2">Value</h2>
-<p>If <code>use.xts=TRUE</code>, an xts object, where each column is the historical data of a constituent.<br />If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a constituent.<br />If <code>include.idx=TRUE</code>, the last column or element will be the historical data of the index.</p>
-<h1 id="br.desc">br.desc</h1>
-<h2 id="description-1">Description</h2>
+     price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0, sec.names = NULL)  
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>con
+:   the connection token returned from br.open(). If <code>NULL</code> simulated values are generated.<br/>
+index
+:   string denoting the index ticker with or without the final security type label (&#39;Index&#39;)<br/>
+include.idx
+:   if TRUE (default) returns also historical data for the index.<br/>
+nsec
+:   number of simulated index constituents. Ignored if <code>con!=NULL</code>, it defaults to 10.<br/>
+sec.names
+:   character vector with names of sampled index constituents. Ignored if <code>con!=NULL</code>. By default security names are like &#39;memb1&#39;, &#39;memb2&#39;, etc.<br/>
+For other arguments see the function <code>br.bulk.csv</code></p>
+
+<h2>Details</h2>
+
+<p>If <code>con=NULL</code>,  values are simulated by means of <code>br.sample()</code>. This function is used with default values, except for <code>nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names</code>.</p>
+
+<h2>Value</h2>
+
+<p>If <code>use.xts=TRUE</code>, an xts object, where each column is the historical data of a constituent.<br/>
+If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a constituent.<br/>
+If <code>include.idx=TRUE</code>, the last column or element will be the historical data of the index.  </p>
+
+<h1>br.desc</h1>
+
+<h2>Description</h2>
+
 <p>Get security descriptions.</p>
-<h2 id="usage-3">Usage</h2>
-<pre><code>br.desc(con, tik)</code></pre>
-<h2 id="arguments-3">Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()
-</dd>
-<dt>tik</dt>
-<dd>string denoting the ticker queried for data
-</dd>
-</dl>
-<h2 id="value-3">Value</h2>
+
+<h2>Usage</h2>
+
+<pre><code>br.desc(con, tik)
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>con
+:   the connection token returned from br.open()
+tik
+:   string denoting the ticker queried for data </p>
+
+<h2>Value</h2>
+
 <p>A data frame containing the value of the Bloomberg fields form <code>ds001</code> to <code>ds009</code> and the long field <code>CIE_DES_BULK</code>.</p>
-<h1 id="br.bulk.desc">br.bulk.desc</h1>
-<h2 id="description-2">Description</h2>
+
+<h1>br.bulk.desc</h1>
+
+<h2>Description</h2>
+
 <p>Get security descriptions for a vector of tickers.</p>
-<h2 id="usage-4">Usage</h2>
-<pre><code>br.bulk.desc(con, tiks) </code></pre>
-<h2 id="arguments-4">Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()
-</dd>
-<dt>tiks</dt>
-<dd>character vector of the tickers queried for data
-</dd>
-</dl>
-<h2 id="value-4">Value</h2>
+
+<h2>Usage</h2>
+
+<pre><code>br.bulk.desc(con, tiks) 
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>con
+:    the connection token returned from br.open()
+tiks
+:    character vector of the tickers queried for data</p>
+
+<h2>Value</h2>
+
 <p>A list of data frames, each representing the description of a security. For the format of data frames see the function <code>br.desc</code>.</p>
-<h1 id="br.sample">br.sample</h1>
-<h2 id="description-3">Description</h2>
+
+<h1>br.sample</h1>
+
+<h2>Description</h2>
+
 <p>Return simulated historical data for n securities in xts or df format.</p>
-<h2 id="usage-5">Usage</h2>
+
+<h2>Usage</h2>
+
 <pre><code>br.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
-   jitter=0, same.dates=FALSE, no.na=FALSE, empty.sec=0, df=FALSE, sec.names=NULL)</code></pre>
-<h2 id="arguments-5">Arguments</h2>
-<dl>
-<dt>nrow</dt>
-<dd>number of simulated data points for each security; if <code>same.dates=FALSE</code>, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities.
-</dd>
-<dt>nsec</dt>
-<dd>number of simulated securities (defaults to 1).
-</dd>
-<dt>price</dt>
-<dd>if TRUE (default), simulated values are non-negative.
-</dd>
-<dt>start</dt>
-<dd>start date. Can be a Date object or an ISO string without separators. Defaults to current date.
-</dd>
-<dt>mean</dt>
-<dd>mean of security generated values. If <code>price=TRUE</code>, default to 10 else defaults to 0.1.
-</dd>
-<dt>sd</dt>
-<dd>sd of security generated values. It defaults to 1.
-</dd>
-<dt>jitter</dt>
-<dd>modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.
-</dd>
-<dt>same.dates</dt>
-<dd>if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed <code>nrow</code>.
-</dd>
-<dt>no.na</dt>
-<dd>if <code>same.dates=FALSE</code>, when merging sampled security data NAs are likely to be produced. If <code>no.na=FALSE</code> (default) they will be left, otherwise they will be removed using R <code>na.omit</code>
-</dd>
-<dt>df</dt>
-<dd>if FALSE (default), the output will be an xts object, else the output will be a data frame with the first column containing the dates of the sampled data.
-</dd>
-<dt>sec.names</dt>
-<dd>character vector for column names. If <code>df=FALSE</code> the length of the vector should be equal to <code>nsec</code>, else to <code>nsec + 1</code> (because of the first column containing dates). By default security names are like 'sample1', 'sample2', etc. and the date column is named 'date'.
-</dd>
-<dt>empty.sec</dt>
-<dd>ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.
-</dd>
-</dl>
-<h2 id="value-5">Value</h2>
-<p>If <code>df=TRUE</code>, a data frame object, where the first column is the vector with all generated dates merged and each subsequent column contains the sampled data of a security. If <code>df=FALSE</code>, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if <code>same.dates=FALSE</code> and/or <code>empty.sec!=0</code> generated data points will have different length and the the date gaps will be filled with NAs, except if <code>no.na=TRUE</code>. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with <code>dimnames(*)[[2]]</code>.</p>
-<h1 id="internal-bbg-functions">Internal bbg functions</h1>
-<h2 id="description-4">Description:</h2>
+   jitter=0, same.dates=FALSE, no.na=FALSE, empty.sec=0, df=FALSE, sec.names=NULL)
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>nrow
+:   number of simulated data points for each security; if <code>same.dates=FALSE</code>, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities.
+nsec
+:   number of simulated securities (defaults to 1).
+price
+:   if TRUE (default), simulated values are non-negative.
+start
+:   start date. Can be a Date object or an ISO string without separators. Defaults to current date.
+mean
+:   mean of security generated values. If <code>price=TRUE</code>, default to 10 else defaults to 0.1.
+sd
+:   sd of security generated values. It defaults to 1.
+jitter
+:   modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.
+same.dates
+:   if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed <code>nrow</code>.
+no.na
+:   if <code>same.dates=FALSE</code>, when merging sampled security data NAs are likely to be produced. If <code>no.na=FALSE</code> (default) they will be left, otherwise they will be removed using R <code>na.omit</code>
+df
+:   if FALSE (default), the output will be an xts object, else the output will be a data frame with the first column containing the dates of the sampled data.
+sec.names
+:   character vector for column names. If <code>df=FALSE</code> the length of the vector should be equal to <code>nsec</code>, else to <code>nsec + 1</code> (because of the first column containing dates). By default security names are like &#39;sample1&#39;, &#39;sample2&#39;, etc. and the date column is named &#39;date&#39;.
+empty.sec
+:   ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.</p>
+
+<h2>Value</h2>
+
+<p>If <code>df=TRUE</code>, a data frame object, where the first column is the vector with all generated dates merged and each  subsequent column contains the sampled data of a security. If <code>df=FALSE</code>, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if <code>same.dates=FALSE</code> and/or <code>empty.sec!=0</code> generated data points will have different length and the the date gaps will be filled with NAs, except if <code>no.na=TRUE</code>. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with <code>dimnames(*)[[2]]</code>. </p>
+
+<h1>Internal bbg functions</h1>
+
+<h2>Description:</h2>
+
 <p>Returns the historical data for the constituents of an index in xts or list format.</p>
-<h2 id="usage-6">Usage:</h2>
+
+<h2>Usage:</h2>
+
 <pre><code>.br.is.con(con)
 .br.types
 .br.check.type(type) 
 .br.cuttype(type)
-.br.jar()</code></pre>
-<h2 id="arguments-6">Arguments:</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()
-</dd>
-<dt>type</dt>
-<dd>a string representing the security type
-</dd>
-</dl>
-<h2 id="details-3">Details</h2>
-<p><code>.br.is.con</code> checks for the validity of a connection token. <code>.br.types</code> is a character vector with security types suitable as an argument for <code>br.bulk*</code> functions. <code>.br.check.type</code> checks if a type matches <code>.br.types</code>. <code>.br.cuttype</code> cuts trailing security type from character vector. <code>.br.jar()</code> returns the path to the blpapi*.jar</p>
-<h1 id="manage-connections">Manage connections</h1>
-<h2 id="description-5">Description</h2>
-<p>Open and close the connection to the Bloomberg service.</p>
-<h2 id="usage-7">Usage</h2>
+.br.jar()
+</code></pre>
+
+<h2>Arguments:</h2>
+
+<p>con
+:   the connection token returned from br.open()
+type
+:   a string representing the security type</p>
+
+<h2>Details</h2>
+
+<p><code>.br.is.con</code> checks for the validity of a connection token.
+<code>.br.types</code> is a character vector with security types suitable as an argument for <code>br.bulk*</code> functions.
+<code>.br.check.type</code> checks if a type matches <code>.br.types</code>.
+<code>.br.cuttype</code> cuts trailing security type from character vector.
+<code>.br.jar()</code> returns the path to the blpapi*.jar</p>
+
+<h1>Manage connections</h1>
+
+<h2>Description</h2>
+
+<p>Open and close the connection to the Bloomberg service. </p>
+
+<h2>Usage</h2>
+
 <pre><code>br.open()
-br.close(con)</code></pre>
-<h2 id="arguments-7">Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()
-</dd>
-</dl>
-<h2 id="example">Example</h2>
+br.close(con)
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>con
+:   the connection token returned from br.open()</p>
+
+<h2>Example</h2>
+
 <pre><code>con=br.open() ## Open the connection and get the token
 ## Get market data
-br.close(con) ## Use the token to release the connection</code></pre>
-<h1 id="time-extension-functions">Time extension functions</h1>
-<h2 id="description-6">Description</h2>
+br.close(con) ## Use the token to release the connection
+</code></pre>
+
+<h1>Time extension functions</h1>
+
+<h2>Description</h2>
+
 <p>Functions to get, set dates.</p>
-<h2 id="usage-8">Usage</h2>
+
+<h2>Usage</h2>
+
 <pre><code>day(d)
 month(d)
 year(d)
@@ -226,18 +429,25 @@ d %+% n
 d %-% n
 last.day(d)
 day.us(d1, d2)
-delete.all()</code></pre>
-<h2 id="arguments-8">Arguments</h2>
-<dl>
-<dt>d, d1, d2</dt>
-<dd>objects of class date
-</dd>
-<dt>x</dt>
-<dd>an integer representing the day/month/year
-</dd>
-<dt>n</dt>
-<dd>an integer representing the months to add/subtract
-</dd>
-</dl>
-<h2 id="details-4">Details</h2>
-<p>If <code>component</code> is <code>day</code>, <code>month</code> or <code>year</code>: <code>component(d)</code> returns the <em>component</em> of the date <code>d</code> as an integer; <code>component(d, n)</code> returns the date <code>d</code> with the <em>component</em> set to the integer <code>n</code>; <code>component(d)= n</code> sets to the <em>component</em> of the date <code>d</code> to the integer <code>n</code>.<br /><code>%+%</code> and <code>%-%</code> add and subtract months to a date.<br /><code>last.day</code> returns last day of the month as an integer. <code>day.us</code> calculates date differences with the US convention.<br /><code>delete.all</code> deletes all objects (variables) from memory.</p>
+delete.all()
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>d, d1, d2
+:   objects of class date
+x
+:   an integer representing the day/month/year
+n
+:   an integer representing the months to add/subtract</p>
+
+<h2>Details</h2>
+
+<p>If <code>component</code> is <code>day</code>, <code>month</code> or <code>year</code>: <code>component(d)</code> returns the <em>component</em> of the date <code>d</code> as an integer; <code>component(d, n)</code> returns the date <code>d</code> with the <em>component</em> set to the integer <code>n</code>; <code>component(d)= n</code> sets to the <em>component</em> of the date <code>d</code> to the integer <code>n</code>.<br/>
+<code>%+%</code> and <code>%-%</code> add and subtract months to a date.<br/>
+<code>last.day</code> returns last day of the month as an integer. <code>day.us</code> calculates date differences with the US convention.<br/>
+<code>delete.all</code> deletes all objects (variables) from memory. </p>
+
+</body>
+
+</html>

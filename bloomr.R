@@ -1,4 +1,11 @@
 
+## ----setup, include=FALSE------------------------------------------------
+##rm(list=ls(all=TRUE))
+library(knitr)
+library(markdown)
+opts_chunk$set(tidy.opts=list(width.cutoff=60))
+
+
 ## ----br.bulk.tiks, include=FALSE-----------------------------------------
 br.bulk.tiks=function(
     con,  
@@ -171,7 +178,7 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
         price=price,
         nrow=nrow,
         same.dates=same.dates,
-        no.na=same.dates,
+        no.na=no.na,
         empty.sec=empty.sec
         )
 }

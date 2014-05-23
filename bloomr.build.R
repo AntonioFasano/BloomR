@@ -117,73 +117,57 @@ loadLib= function(lib){
 downloads=function(work, overwrite){
 
     ## Get certificates from curl site
-    cert=makePath(work, 'cacert.pem')
-    if(overwrite || !file.exists(cert))
-        if(!download.bin(certurl, cert)$succ)  stop('\nDownload error')
+    download.nice(work, certurl, 'cacert.pem', overwrite,
+                  "Curl Certificates")
 
     ## peazip
+    desc="Peazip files"
+    mess.down(desc)
     fpath=makePath(work, pzip)
-    if(overwrite || !file.exists(fpath)){                     
+    if(chk.write(fpath, overwrite, desc, stop=FALSE)){
         url=sfFirstbyProject(pzip, '[[:digit:]]') #get release dir 
         url=sfFirstbyUrl(url, "portable[^\"]*?WINDOWS")
         url=sfDirLink(url)
         sfBDown(url, fpath)   
-    } else cat(pzip, ' already exists', '\n')
+    }
     
     ## portabler
+    desc="main R files"
+    mess.down(desc)
     fpath=makePath(work, rport)
-    if(overwrite || !file.exists(fpath)){
+    if(chk.write(fpath, overwrite, desc, stop=FALSE)){
         url=sfFirstbyProject(rport, 'Portable')
         url=sfFirstbyUrl(url, '[[:digit:]]')        
         url=sfFirstbyUrl(url, 'exe[^.]')        
         url=sfDirLink(url)
-        sfBDown(url, fpath)   
-    } else cat(rport, 'already exists', '\n')
-
-    ## openjdk
-    fpath=makePath(work, javazip)
-    if(overwrite || !file.exists(fpath)){
-        cat(paste('Downloading', javaurl, '\n'))
-        if(!download.bin(javaurl, fpath, cert=cert)$succ)  stop('\nDownload error')
+        sfBDown(url, fpath)
     }
-    
+
+    ## Openjdk
+    download.nice(work, javaurl, javazip, overwrite,
+                  "Java files")
+
     ## Bloomberg API
-    fpath=makePath(work, apizip)
-    if(overwrite || !file.exists(fpath)){
-        cat(paste('Downloading', apiurl, '\n'))
-        if(!download.bin(apiurl, fpath)$succ)  stop('\nDownload error')
-    }
+    download.nice(work, apiurl, apizip, overwrite,
+                  "Bloomberg API")
+        
+    ## CRAN packages
+    makeDir(makePath(work, "packs"), TRUE, del=FALSE)
+    packs= strsplit(gsub('(^ +)|( +$)', '', packlist), split=' +')[[1]]    
+    for(pack in packs) # Loop over packs and download them 
+        download.nice(work, cran.geturl(pack), makePath("packs", pack), overwrite,
+                  pack)
     
-    ##  CRAN packages
-    packd=makePath(work, "packs"); makeDir(packd, overwrite)
-    packs= strsplit(gsub('(^ +)|( +$)', '', packlist), split=' +')[[1]]
-    if(overwrite || !file.exists(fpath)){
-        ## Loop over packs and download them 
-        for(pack in packs){
-            url= cran.geturl(pack)
-            fpath=makePath(packd, pack)
-            cat(paste('Downloading', pack, '\n'))
-            if(!download.bin(url, fpath)$succ)  stop('\nDownload error')
-        }
-    }
-
     ## rbbg
-    fpath=makePath(packd, rbbgzip)
-    if(overwrite || !file.exists(fpath)){
-        cat(paste('Downloading', rbbgurl, '\n'))
-        if(!download.bin(rbbgurl, fpath)$succ)  stop('\nDownload error')
-    }
-
+    download.nice(work, rbbgurl, rbbgzip, overwrite,
+                  "rbbg files")
+    
     ## ahkscript
-    fpath=makePath(work, ahkzip)
-    if(overwrite || !file.exists(fpath)){
-        cat(paste('Downloading', ahkurl, '\n'))
-        if(!download.bin(ahkurl, fpath)$succ)  stop('\nDownload error')
-    }
-    
-    
+    download.nice(work, ahkurl, ahkzip, overwrite,
+                  "ahkscript")
     
 }
+
 
 ### Expand components
 expand=function(work, overwrite){
@@ -462,6 +446,16 @@ cran.geturl=function(pack){
 
 ###== Donwload helpers ==
 
+### Nice user info and overwrite managements for downloads 
+download.nice=function(work, from, to, overwrite, desc, cert=FALSE){
+    to=makePath(work, to)
+    cat("\nDownloading", desc, "\n")    
+    if(!chk.write(to, overwrite, desc, stop=FALSE)) return()
+    cat("from\n", from, "\n")
+    cert= if(cert)  makePath(work, 'cacert.pem') else  NULL
+    if(!download.bin(from, to, cert)$succ) stop('\nDownload error')
+}
+
 ### Download html page with simple progress and stop on error
 download.html=function(url, refr=NULL){
     
@@ -580,23 +574,27 @@ chk.dir=function(dir){
 }
 
 ### Check if we can overwrite (non-empty dir) 
-chk.write=function(path, over, desc=""){
+chk.write=function(path, over, desc="", stop=TRUE){
 
     if(nzchar(desc)) desc=paste(desc, '\n')
 
-    ## Ret if  non-exisitng path
-    if(!is.path(path)) return
+    ## Ret if non-exisitng path
+    if(!is.path(path)) return(TRUE)
     
     ## Break on no right to overwrite (unless it is an empty dir)
     ## note: a file is considered a non-empty dir
-    if(!over && !is.empty(path)){
-        exit.p(path, desc, "already exists")}
-    else{ 
-        warn.p(path, desc, "already exists")}
-        
+    if(is.path(path) && !is.empty(path)){   
+        if(over){
+            warn.p(path, desc, "already exist(s)")}
+        else {
+            if(stop)  exit.p(path, desc, "already exist(s)")
+            warn.p(path, desc, "already exist(s)\nSkipping action!")
+            return(FALSE)
+        }
+    }
+    return(TRUE)
 }
        
-
 ### Delete dir and break on fail 
 del.dir=function(dir){
     unlink(dir,recursive=TRUE)
@@ -609,7 +607,7 @@ del.dir=function(dir){
 
 
 ### Create a dir with overwrite options and dir desc, in case of error 
-makeDir=function(dir, overwrite, desc=""){
+makeDir=function(dir, overwrite, desc="", del=TRUE){
 
     ## Inform user with desc if any
     if(nzchar(desc)) cat("\nCreating", desc, '\n')    
@@ -618,7 +616,7 @@ makeDir=function(dir, overwrite, desc=""){
     chk.write(dir, overwrite, desc)
 
     ## Go
-    del.dir(dir)    
+    if(del) del.dir(dir)    
     dir.create(dir, showWarnings = FALSE)  
 
     ## Unable to create? 
@@ -683,8 +681,11 @@ exit.p=function(path, desc, mess){
 
 ### Exisintg paths warn
 warn.p=function(path, desc, mess){
-    cat(mess.p(path, desc, mess), "\n")
+    cat("Warning:", mess.p(path, desc, mess), "\n")
 }
 
+mess.down=function(desc){
+    cat("\nDownloading", desc, "\n")
+}
 
 
