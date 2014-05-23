@@ -684,6 +684,7 @@ warn.p=function(path, desc, mess){
     cat("Warning:", mess.p(path, desc, mess), "\n")
 }
 
+### Generic download info for custom download
 mess.down=function(desc){
     cat("\nDownloading", desc, "\n")
 }

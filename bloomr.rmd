@@ -4,8 +4,6 @@
 
 ```{r setup, include=FALSE}
 ##rm(list=ls(all=TRUE))
-require(knitr)
-require(markdown)
 opts_chunk$set(tidy.opts=list(width.cutoff=60))
 ```
 
@@ -700,7 +698,9 @@ delete.all= function() rm(list=ls(all=TRUE))
 
 ```
 
-```{r unitests, eval=FALSE, include=FALSE}
+```{r build, eval=FALSE, include=FALSE}
+require(knitr)
+require(markdown)
 knit("bloomr.rmd")
 purl("bloomr.rmd")
 markdownToHTML("bloomr.md", "bloomr.html")

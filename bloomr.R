@@ -1,8 +1,6 @@
 
 ## ----setup, include=FALSE------------------------------------------------
 ##rm(list=ls(all=TRUE))
-library(knitr)
-library(markdown)
 opts_chunk$set(tidy.opts=list(width.cutoff=60))
 
 
@@ -380,6 +378,15 @@ day.us=function(d1, d2){
 ## misc func
 delete.all= function() rm(list=ls(all=TRUE))
 
+
+
+## ----build, eval=FALSE, include=FALSE------------------------------------
+## require(knitr)
+## require(markdown)
+## knit("bloomr.rmd")
+## purl("bloomr.rmd")
+## markdownToHTML("bloomr.md", "bloomr.html")
+## shell("pandoc bloomr.md -o blomer.pdf", shell=Sys.getenv("COMSPEC"))
 
 
 ## ----unitests, eval=FALSE, include=FALSE---------------------------------
