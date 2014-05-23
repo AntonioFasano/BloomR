@@ -1,7 +1,6 @@
 
 ## ----setup, include=FALSE------------------------------------------------
 ##rm(list=ls(all=TRUE))
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
 
 
 ## ----br.bulk.tiks, include=FALSE-----------------------------------------
@@ -383,6 +382,7 @@ delete.all= function() rm(list=ls(all=TRUE))
 ## ----build, eval=FALSE, include=FALSE------------------------------------
 ## require(knitr)
 ## require(markdown)
+## opts_chunk$set(tidy.opts=list(width.cutoff=60))
 ## knit("bloomr.rmd")
 ## purl("bloomr.rmd")
 ## markdownToHTML("bloomr.md", "bloomr.html")

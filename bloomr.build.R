@@ -575,7 +575,8 @@ chk.dir=function(dir){
 
 ### Check if we can overwrite (non-empty dir) 
 chk.write=function(path, over, desc="", stop=TRUE){
-
+### Empty dir are overwritten without prompt
+    
     if(nzchar(desc)) desc=paste(desc, '\n')
 
     ## Ret if non-exisitng path
