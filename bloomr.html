@@ -240,7 +240,8 @@ If there is only one group, the first (and unique) element of the list will be r
 
 <pre><code>br.bulk.idx(con, index, start = Sys.Date() - 5, field = &quot;PX_LAST&quot;,  
      showtype = FALSE, include.idx = TRUE, use.xts = TRUE, nsec = 50,  
-     price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0, sec.names = NULL)  
+     price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0,  
+     sec.names = NULL)  
 </code></pre>
 
 <h2>Arguments</h2>
@@ -319,8 +320,9 @@ tiks
 
 <h2>Usage</h2>
 
-<pre><code>br.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
-   jitter=0, same.dates=FALSE, no.na=FALSE, empty.sec=0, df=FALSE, sec.names=NULL)
+<pre><code>br.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(),
+mean=ifelse(price, 10, 0.1), sd=1, jitter=0, same.dates=FALSE, no.na=FALSE,  
+empty.sec=0, df=FALSE, sec.names=NULL)
 </code></pre>
 
 <h2>Arguments</h2>
@@ -358,7 +360,7 @@ empty.sec
 
 <h2>Description:</h2>
 
-<p>Returns the historical data for the constituents of an index in xts or list format.</p>
+<p>Internal functions not to be used by the end user</p>
 
 <h2>Usage:</h2>
 
@@ -388,12 +390,14 @@ type
 
 <h2>Description</h2>
 
-<p>Open and close the connection to the Bloomberg service. </p>
+<p>Open and close the connection to the Bloomberg service.<br/>
+<code>rm.all</code> deletes all objects (variables) from memory. </p>
 
 <h2>Usage</h2>
 
 <pre><code>br.open()
 br.close(con)
+rm.all()
 </code></pre>
 
 <h2>Arguments</h2>
@@ -403,9 +407,39 @@ br.close(con)
 
 <h2>Example</h2>
 
-<pre><code>con=br.open() ## Open the connection and get the token
-## Get market data
-br.close(con) ## Use the token to release the connection
+<pre><code>con=br.open() # Open the connection and get the token and load some data
+
+br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
+## Loading MSFT US Equity 
+## Loading AMZN US Equity 
+##            MSFT US AMZN US
+## 2014-05-23   40.12  312.24
+## 2014-05-27   40.19  310.82
+
+br.close(con) # Use the token to release the connection
+</code></pre>
+
+<h1>Deprecated functions</h1>
+
+<h2>Description</h2>
+
+<p>Functions not used anymore generating an informative error</p>
+
+<h2>Usage</h2>
+
+<pre><code>bbg.open()
+bbg.close(con)
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>con
+:   the connection token returned from br.open()</p>
+
+<h2>Example</h2>
+
+<pre><code>con=bbg.open()
+##  Sorry &#39;bbg.open&#39; is now deprecated. Please use br.open().
 </code></pre>
 
 <h1>Time extension functions</h1>
@@ -429,7 +463,6 @@ d %+% n
 d %-% n
 last.day(d)
 day.us(d1, d2)
-delete.all()
 </code></pre>
 
 <h2>Arguments</h2>
@@ -445,8 +478,7 @@ n
 
 <p>If <code>component</code> is <code>day</code>, <code>month</code> or <code>year</code>: <code>component(d)</code> returns the <em>component</em> of the date <code>d</code> as an integer; <code>component(d, n)</code> returns the date <code>d</code> with the <em>component</em> set to the integer <code>n</code>; <code>component(d)= n</code> sets to the <em>component</em> of the date <code>d</code> to the integer <code>n</code>.<br/>
 <code>%+%</code> and <code>%-%</code> add and subtract months to a date.<br/>
-<code>last.day</code> returns last day of the month as an integer. <code>day.us</code> calculates date differences with the US convention.<br/>
-<code>delete.all</code> deletes all objects (variables) from memory. </p>
+<code>last.day</code> returns last day of the month as an integer. <code>day.us</code> calculates date differences with the US convention.  </p>
 
 </body>
 

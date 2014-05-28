@@ -323,12 +323,17 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
 
 
 ## ----connections, include=FALSE------------------------------------------
-
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
 br.close=function(conn)  blpDisconnect(conn)
 
 ## misc func
-delete.all= function() rm(list=ls(all=TRUE))
+rm.all= function() rm(list=ls(all=TRUE))
+
+
+
+## ----deprecated, include=FALSE-------------------------------------------
+bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
+bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
 
 
 
@@ -375,7 +380,7 @@ day.us=function(d1, d2){
 }
 
 ## misc func
-delete.all= function() rm(list=ls(all=TRUE))
+rm.all= function() rm(list=ls(all=TRUE))
 
 
 
@@ -386,41 +391,15 @@ delete.all= function() rm(list=ls(all=TRUE))
 ## knit("bloomr.rmd")
 ## purl("bloomr.rmd")
 ## markdownToHTML("bloomr.md", "bloomr.html")
-## shell("pandoc bloomr.md -o blomer.pdf", shell=Sys.getenv("COMSPEC"))
+## shell("pandoc bloomr.md -o bloomr.pdf", shell=Sys.getenv("COMSPEC"))
+## markdownToHTML("README.md", "README.html")
 
 
 ## ----unitests, eval=FALSE, include=FALSE---------------------------------
-## 
-## #Unit tests
-## #=========
-## 
-## ## pars
-## 
-## file='test.csv'
-## start="20060101"
-## field="PX_LAST"
-## cols=NULL
-## cols=1
-## addtype=NULL
-## addtype='Equity'
-## 
-## 
-## #con=br.open()
-## #
-## #start="20140301"
-## #dat=
-## #    br.bulk.csv(con, file, field="PX_LAST", cols=c(1), use.xts=TRUE)
-## #
-## #save(dat, file='test.RData', compress='xz')
-## #save(dat, file='test.RData')
-## #
-## #br.close(con)
-## #
-## #x=setNames(br.sample(4,1), field); data.frame(date=time(x), x)
-## #br.bulk.tiks(con,  lab, start=Sys.Date()-5, field="PX_LAST", addtype=TRUE)
-## #br.bulk.desc(con, c("MSFT US EQUITY", "ASSGEN 10.125 07/10/2042 Corp"))
-## # br.bulk.idx(con, "SX5E Index", start=Sys.Date()-5, field="PX_LAST")
-## 
+## con=br.open()
+## br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+## br.bulk.idx(con, "SX5E Index", field="PX_LAST")
+## br.close(con)
 ## 
 
 

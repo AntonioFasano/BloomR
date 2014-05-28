@@ -1,23 +1,203 @@
-<h1 id="bloomr">BloomR</h1>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>BloomR</title>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 { 
+   font-size:2.2em; 
+}
+
+h2 { 
+   font-size:1.8em; 
+}
+
+h3 { 
+   font-size:1.4em; 
+}
+
+h4 { 
+   font-size:1.0em; 
+}
+
+h5 { 
+   font-size:0.9em; 
+}
+
+h6 { 
+   font-size:0.8em; 
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * { 
+      background: transparent !important; 
+      color: black !important; 
+      filter:none !important; 
+      -ms-filter: none !important; 
+   }
+
+   body { 
+      font-size:12pt; 
+      max-width:100%; 
+   }
+       
+   a, a:visited { 
+      text-decoration: underline; 
+   }
+
+   hr { 
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote { 
+      padding-right: 1em; 
+      page-break-inside: avoid; 
+   }
+
+   tr, img { 
+      page-break-inside: avoid; 
+   }
+
+   img { 
+      max-width: 100% !important; 
+   }
+
+   @page :left { 
+      margin: 15mm 20mm 15mm 10mm; 
+   }
+     
+   @page :right { 
+      margin: 15mm 10mm 15mm 20mm; 
+   }
+
+   p, h2, h3 { 
+      orphans: 3; widows: 3; 
+   }
+
+   h2, h3 { 
+      page-break-after: avoid; 
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h1>BloomR</h1>
+
 <p><em>Portable R for Bloomberg</em></p>
-<h2 id="whats-new">What's new</h2>
-<h3 id="bloomr-0.2.1-beta">BloomR-0.2.1 Beta</h3>
+
+<h2>What&#39;s new</h2>
+
+<h3>BloomR-0.2.2-dev</h3>
+
 <ul>
 <li>Only 64 bit</li>
 <li>Updated to R-3.1.0</li>
 <li>New functions for bulk download from CSV files tickers, from index constituents or from strings.</li>
 <li>Sample download to prepare script at home and test on terminal later.</li>
 <li>Bulk and non-bulk download of many description fields.</li>
+<li><code>bbg.*</code> suffix is deprecated now use <code>br.*</code></li>
+<li>A formal documentation</li>
 </ul>
-<h2 id="manual">Manual</h2>
-<p>TODO Find in your BloomR directory the subdirectory <code>help</code> intended for learning and reference material.<br />As this is development version the help resources are not yet finalised!</p>
-<h2 id="build-instructions">Build instructions</h2>
-<h3 id="for-the-impatient">For the impatient</h3>
+
+<h2>Manual</h2>
+
+<p>TODO
+Find in your BloomR directory the subdirectory <code>help</code> intended for learning and reference material.<br/>
+As this is development version the help resources are not yet finalised!</p>
+
+<h2>Build instructions</h2>
+
+<h3>For the impatient</h3>
+
 <p>Download <a href="https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.r">bloomr.build.R</a> and under R for Windows issue:</p>
+
 <pre><code>source(&quot;path\to\bloomr.build.R&quot;)
-makeBloomR(&quot;path\to\workDir&quot;)</code></pre>
-<p>You will find your portable BloomR directory inside your <code>workDir</code>.</p>
-<h3 id="more-options-and-requirements">More options and requirements</h3>
-<p>A decent R version is needed 3+ (perhaps older version will do).<br /><code>.Platform$OS.type == &quot;windows&quot;</code>. <code>XML</code> and <code>Rcurl</code> packages are needed, but if missing, the build script will try to download and install them.<br />R should be able to connect to the Internet.</p>
-<p>If you want to find <code>BloomR.zip</code> too in your work directory use:</p>
-<pre><code>makeBloomR(&quot;path\to\workDir&quot;, zip = TRUE)   ##&lt;- coming soon </code></pre>
+makeBloomR(&quot;path\to\workDir&quot;)
+</code></pre>
+
+<p>You will find your portable BloomR directory  inside your <code>workDir</code>.</p>
+
+<h3>More options and requirements</h3>
+
+<p>A decent R version is needed 3+ (perhaps older version will do).<br/>
+<code>.Platform$OS.type == &quot;windows&quot;</code>. <code>XML</code> and <code>Rcurl</code> packages are needed, but if missing, the build script will try to download and install them.<br/>
+R should be able to connect to the Internet.</p>
+
+<p>If you want to find  <code>BloomR.zip</code> too in your work directory use:</p>
+
+<pre><code>makeBloomR(&quot;path\to\workDir&quot;, zip = TRUE)
+</code></pre>
+
+<!--  LocalWords:  BloomR Bloomberg CSV
+ -->
+
+</body>
+
+</html>

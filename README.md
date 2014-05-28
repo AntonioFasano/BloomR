@@ -7,13 +7,15 @@ BloomR
 What's new
 ----------
 
-### BloomR-0.2.1 Beta
+### BloomR-0.2.2-dev
 
 - Only 64 bit
 - Updated to R-3.1.0
 - New functions for bulk download from CSV files tickers, from index constituents or from strings.
 - Sample download to prepare script at home and test on terminal later.
 - Bulk and non-bulk download of many description fields.
+- `bbg.*` suffix is deprecated now use `br.*`
+- A formal documentation
 
 Manual
 ------
@@ -43,4 +45,7 @@ R should be able to connect to the Internet.
 
 If you want to find  `BloomR.zip` too in your work directory use:
 
-	makeBloomR("path\to\workDir", zip = TRUE)   ##<- coming soon 
+	makeBloomR("path\to\workDir", zip = TRUE)
+
+<!--  LocalWords:  BloomR Bloomberg CSV
+ -->

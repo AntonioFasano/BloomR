@@ -107,7 +107,8 @@ Usage
 
 	br.bulk.idx(con, index, start = Sys.Date() - 5, field = "PX_LAST",  
 	     showtype = FALSE, include.idx = TRUE, use.xts = TRUE, nsec = 50,  
-         price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0, sec.names = NULL)  
+         price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0,  
+		 sec.names = NULL)  
 
 Arguments
 ---------
@@ -199,8 +200,9 @@ Return simulated historical data for n securities in xts or df format.
 
 Usage
 -----
-    br.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
-       jitter=0, same.dates=FALSE, no.na=FALSE, empty.sec=0, df=FALSE, sec.names=NULL)
+    br.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(),
+	mean=ifelse(price, 10, 0.1), sd=1, jitter=0, same.dates=FALSE, no.na=FALSE,  
+	empty.sec=0, df=FALSE, sec.names=NULL)
 
 Arguments
 ---------
@@ -243,7 +245,7 @@ Internal bbg functions
 
 Description:
 ------------
-Returns the historical data for the constituents of an index in xts or list format.
+Internal functions not to be used by the end user
 
 Usage:
 ------
@@ -278,12 +280,51 @@ Manage connections
 
 Description
 ------------
-Open and close the connection to the Bloomberg service. 
+Open and close the connection to the Bloomberg service.  
+`rm.all` deletes all objects (variables) from memory. 
+
 
 Usage
 -----
     br.open()
     br.close(con)
+	rm.all()
+	
+Arguments
+---------
+con
+:   the connection token returned from br.open()
+
+Example
+-------
+
+    con=br.open() # Open the connection and get the token and load some data
+    	
+    br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+    ## Loading MSFT US Equity 
+    ## Loading AMZN US Equity 
+    ##            MSFT US AMZN US
+    ## 2014-05-23   40.12  312.24
+    ## 2014-05-27   40.19  310.82
+
+    br.close(con) # Use the token to release the connection
+
+
+
+
+
+
+Deprecated functions
+====================
+
+Description
+------------
+Functions not used anymore generating an informative error
+
+Usage
+-----
+    bbg.open()
+    bbg.close(con)
  
 Arguments
 ---------
@@ -293,10 +334,8 @@ con
 Example
 -------
 
-    con=br.open() ## Open the connection and get the token
-    ## Get market data
-    br.close(con) ## Use the token to release the connection
-
+    con=bbg.open()
+	##  Sorry 'bbg.open' is now deprecated. Please use br.open().
 
 
 
@@ -324,7 +363,6 @@ Usage
     d %-% n
     last.day(d)
     day.us(d1, d2)
-    delete.all()
 
 Arguments
 ---------
@@ -341,7 +379,6 @@ Details
 If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
 `%+%` and `%-%` add and subtract months to a date.  
 `last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
-`delete.all` deletes all objects (variables) from memory. 
 
 
 
