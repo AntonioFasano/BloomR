@@ -159,7 +159,7 @@ downloads=function(work, overwrite){
                   pack)
     
     ## rbbg
-    download.nice(work, rbbgurl, rbbgzip, overwrite,
+    download.nice(makePath(work, "packs"), rbbgurl, rbbgzip, overwrite,
                   "rbbg files")
     
     ## ahkscript
