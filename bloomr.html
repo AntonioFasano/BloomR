@@ -150,35 +150,6 @@ hr {
 <body>
 <h1>BloomR facility functions</h1>
 
-<h1>br.bulk.tiks</h1>
-
-<p><em>Bulk historical data</em><br/>
-Returns the historical data for a vector of tickers in xts or list format</p>
-
-<h2>Usage</h2>
-
-<pre><code>br.bulk.tiks(con, tiks, start=Sys.Date()-5, field=&quot;PX_LAST&quot;,
-    addtype=FALSE, showtype=FALSE, use.xts=TRUE,
-    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0) 
-</code></pre>
-
-<h2>Arguments</h2>
-
-<p>tiks
-:   character vector of the tickers queried for data  </p>
-
-<p>For other arguments see the function <code>br.bulk.csv</code> </p>
-
-<h2>Details</h2>
-
-<p>If an element of <code>tiks</code> is <code>NA</code> or empty (<code>&quot;&quot;</code>) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.<br/>
-If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. Sampled values are based on default values of <code>br.sample()</code>, but it is possible to set explicitly  <code>start, same.dates, no.na, empty.sec</code>; <code>sec.names</code> depends on <code>tiks</code> argument. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
-
-<h2>Value</h2>
-
-<p>If <code>use.xts=TRUE</code>, an xts object, where each column is the historical data of a security.<br/>
-If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a security.</p>
-
 <h1>br.bulk.csv </h1>
 
 <p><em>Historical data from grouped tickers in a CSV files</em><br/>
@@ -230,6 +201,28 @@ If <code>use.xts=TRUE</code>, elements are xts object, where each column is the 
 If <code>use.xts=FALSE</code>, elements are sub-list, where each element is the historical data of a security.<br/>
 If there is only one group, the first (and unique) element of the list will be returned.  </p>
 
+<h1>br.bulk.desc</h1>
+
+<h2>Description</h2>
+
+<p>Get security descriptions for a vector of tickers.</p>
+
+<h2>Usage</h2>
+
+<pre><code>br.bulk.desc(con, tiks) 
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>con
+:    the connection token returned from br.open()
+tiks
+:    character vector of the tickers queried for data</p>
+
+<h2>Value</h2>
+
+<p>A list of data frames, each representing the description of a security. For the format of data frames see the function <code>br.desc</code>.</p>
+
 <h1>br.bulk.idx</h1>
 
 <h2>Description</h2>
@@ -268,6 +261,35 @@ For other arguments see the function <code>br.bulk.csv</code></p>
 If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a constituent.<br/>
 If <code>include.idx=TRUE</code>, the last column or element will be the historical data of the index.  </p>
 
+<h1>br.bulk.tiks</h1>
+
+<p><em>Bulk historical data</em><br/>
+Returns the historical data for a vector of tickers in xts or list format</p>
+
+<h2>Usage</h2>
+
+<pre><code>br.bulk.tiks(con, tiks, start=Sys.Date()-5, field=&quot;PX_LAST&quot;,
+    addtype=FALSE, showtype=FALSE, use.xts=TRUE,
+    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0) 
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>tiks
+:   character vector of the tickers queried for data  </p>
+
+<p>For other arguments see the function <code>br.bulk.csv</code> </p>
+
+<h2>Details</h2>
+
+<p>If an element of <code>tiks</code> is <code>NA</code> or empty (<code>&quot;&quot;</code>) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.<br/>
+If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. Sampled values are based on default values of <code>br.sample()</code>, but it is possible to set explicitly  <code>start, same.dates, no.na, empty.sec</code>; <code>sec.names</code> depends on <code>tiks</code> argument. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
+
+<h2>Value</h2>
+
+<p>If <code>use.xts=TRUE</code>, an xts object, where each column is the historical data of a security.<br/>
+If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a security.</p>
+
 <h1>br.desc</h1>
 
 <h2>Description</h2>
@@ -289,28 +311,6 @@ tik
 <h2>Value</h2>
 
 <p>A data frame containing the value of the Bloomberg fields form <code>ds001</code> to <code>ds009</code> and the long field <code>CIE_DES_BULK</code>.</p>
-
-<h1>br.bulk.desc</h1>
-
-<h2>Description</h2>
-
-<p>Get security descriptions for a vector of tickers.</p>
-
-<h2>Usage</h2>
-
-<pre><code>br.bulk.desc(con, tiks) 
-</code></pre>
-
-<h2>Arguments</h2>
-
-<p>con
-:    the connection token returned from br.open()
-tiks
-:    character vector of the tickers queried for data</p>
-
-<h2>Value</h2>
-
-<p>A list of data frames, each representing the description of a security. For the format of data frames see the function <code>br.desc</code>.</p>
 
 <h1>br.sample</h1>
 
@@ -356,6 +356,29 @@ empty.sec
 
 <p>If <code>df=TRUE</code>, a data frame object, where the first column is the vector with all generated dates merged and each  subsequent column contains the sampled data of a security. If <code>df=FALSE</code>, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if <code>same.dates=FALSE</code> and/or <code>empty.sec!=0</code> generated data points will have different length and the the date gaps will be filled with NAs, except if <code>no.na=TRUE</code>. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with <code>dimnames(*)[[2]]</code>. </p>
 
+<h1>Deprecated functions</h1>
+
+<h2>Description</h2>
+
+<p>Functions not used anymore generating an informative error</p>
+
+<h2>Usage</h2>
+
+<pre><code>bbg.open()
+bbg.close(con)
+</code></pre>
+
+<h2>Arguments</h2>
+
+<p>con
+:   the connection token returned from br.open()</p>
+
+<h2>Example</h2>
+
+<pre><code>con=bbg.open()
+##  Sorry &#39;bbg.open&#39; is now deprecated. Please use br.open().
+</code></pre>
+
 <h1>Internal bbg functions</h1>
 
 <h2>Description:</h2>
@@ -390,14 +413,12 @@ type
 
 <h2>Description</h2>
 
-<p>Open and close the connection to the Bloomberg service.<br/>
-<code>rm.all</code> deletes all objects (variables) from memory. </p>
+<p>Open and close the connection to the Bloomberg service.   </p>
 
 <h2>Usage</h2>
 
 <pre><code>br.open()
 br.close(con)
-rm.all()
 </code></pre>
 
 <h2>Arguments</h2>
@@ -419,27 +440,17 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
 br.close(con) # Use the token to release the connection
 </code></pre>
 
-<h1>Deprecated functions</h1>
+<h1>Misc functions</h1>
 
 <h2>Description</h2>
 
-<p>Functions not used anymore generating an informative error</p>
+<p><code>rm.all</code> deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot).
+<code>rm.var</code> deletes non-function objects from memory.</p>
 
 <h2>Usage</h2>
 
-<pre><code>bbg.open()
-bbg.close(con)
-</code></pre>
-
-<h2>Arguments</h2>
-
-<p>con
-:   the connection token returned from br.open()</p>
-
-<h2>Example</h2>
-
-<pre><code>con=bbg.open()
-##  Sorry &#39;bbg.open&#39; is now deprecated. Please use br.open().
+<pre><code>rm.all()
+rm.var()
 </code></pre>
 
 <h1>Time extension functions</h1>

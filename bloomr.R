@@ -3,6 +3,114 @@
 ##rm(list=ls(all=TRUE))
 
 
+## ----br.bulk.csv, include=FALSE------------------------------------------
+br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
+    addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
+    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
+    )
+{
+
+    ## Check csv file
+    if(!file.exists(file)) stop(paste('Unable to find the csv file', file))
+    if(comma) csv=read.csv(file=file, as.is=TRUE) else{
+        csv=read.csv2(file=file, as.is=TRUE)}
+
+    ## Check cols arg
+    if(!is.null(cols)){
+        if(is.logical(cols) && !length(cols)==ncol(csv))
+            stop(paste('Length of logical vector', paste(cols, collapse=' '),
+                       'not equal to number of groups in', file))
+
+        if(is.integer(cols) && max(cols)>ncol(csv))
+            stop(paste('Unable to subset groups in', file, 'with columns', paste(cols, collapse=' ')))
+
+        if(!is.logical(cols) && !all(cols%%1==0)) stop(paste(
+         "'Col argument should be an integer or a logical vector of the same length of the groups in", file))
+        csv=csv[cols]        
+    }
+
+    ## Get group names and count
+    gnams=names(csv)
+    gcnt=ncol(csv)
+
+    ## Loop groups in csv
+    grps=list()
+    for(g in 1:gcnt){
+        cat('Processing', gnams[g],  '\n')
+        x=list(br.bulk.tiks(con, csv[[g]],
+            start, field, addtype, showtype, use.xts,
+            price=price, nrow=nrow, same.dates=FALSE, no.na=FALSE, empty.sec=empty.sec))
+        names(x)=gnams[g]
+        grps=c(grps, x)        
+    }
+    if(length(grps)==1) grps=grps[[1]]
+    grps
+}
+
+
+## ----br.bulk.desc, include=FALSE-----------------------------------------
+br.bulk.desc=function(con, tiks) {
+
+    LL = lapply(tiks, function(tik){
+        cat('Reading', tik,  '\n')
+        br.desc(con, tik)             
+    })
+    names(LL)=tiks
+    LL
+}
+
+
+
+## ----br.bulk.idx, include=FALSE------------------------------------------
+br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
+    include.idx=TRUE, use.xts=TRUE,
+    nsec=10, price=TRUE, nrow=5,
+    same.dates=FALSE, no.na=FALSE, empty.sec=0, sec.names = NULL
+    )
+{
+   
+    ## Check connection
+    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter')
+
+    ## Check index format. Add 'INDEX' if missing
+    if(!is.character(index)) stop('Index should be a string')
+    if(length(index)>1) stop('Only one index')
+    if(!grepl("INDEX$", toupper(index))) index=paste(index, 'INDEX') 
+
+    ## Get index members
+    if(is.null(con)) tiks=paste0('memb', 1:nsec) else{
+        tiks=bds(con, index, 'INDX_MEMBERS')
+        tiks=paste(tiks[[1]], 'Equity')
+    }
+
+    ## Check sec.names
+    if(is.null(con) && !is.null(sec.names)) {
+        if(!is.character(sec.names)) stop("'sec.names' should be a character vector")
+        if(length(sec.names)!=nsec) stop("'sec.names' length should be equal to the number of index constituents")
+        tiks=sec.names
+    }
+    
+    ## Include index?
+    if(include.idx) tiks=c(tiks, index)
+
+    ## Get data
+    br.bulk.tiks(
+        con=con, 
+        tiks=tiks, 
+        start=start,
+        field=field,
+        addtype=FALSE,
+        showtype=showtype,
+        use.xts=use.xts,
+        price=price,
+        nrow=nrow,
+        same.dates=same.dates,
+        no.na=no.na,
+        empty.sec=empty.sec
+        )
+}
+
+
 ## ----br.bulk.tiks, include=FALSE-----------------------------------------
 br.bulk.tiks=function(
     con,  
@@ -86,101 +194,6 @@ br.bulk.tiks=function(
 }
 
 
-## ----br.bulk.csv, include=FALSE------------------------------------------
-br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
-    addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
-    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
-    )
-{
-
-    ## Check csv file
-    if(!file.exists(file)) stop(paste('Unable to find the csv file', file))
-    if(comma) csv=read.csv(file=file, as.is=TRUE) else{
-        csv=read.csv2(file=file, as.is=TRUE)}
-
-    ## Check cols arg
-    if(!is.null(cols)){
-        if(is.logical(cols) && !length(cols)==ncol(csv))
-            stop(paste('Length of logical vector', paste(cols, collapse=' '),
-                       'not equal to number of groups in', file))
-
-        if(is.integer(cols) && max(cols)>ncol(csv))
-            stop(paste('Unable to subset groups in', file, 'with columns', paste(cols, collapse=' ')))
-
-        if(!is.logical(cols) && !all(cols%%1==0)) stop(paste(
-         "'Col argument should be an integer or a logical vector of the same length of the groups in", file))
-        csv=csv[cols]        
-    }
-
-    ## Get group names and count
-    gnams=names(csv)
-    gcnt=ncol(csv)
-
-    ## Loop groups in csv
-    grps=list()
-    for(g in 1:gcnt){
-        cat('Processing', gnams[g],  '\n')
-        x=list(br.bulk.tiks(con, csv[[g]],
-            start, field, addtype, showtype, use.xts,
-            price=price, nrow=nrow, same.dates=FALSE, no.na=FALSE, empty.sec=empty.sec))
-        names(x)=gnams[g]
-        grps=c(grps, x)        
-    }
-    if(length(grps)==1) grps=grps[[1]]
-    grps
-}
-
-
-## ----br.bulk.idx, include=FALSE------------------------------------------
-br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
-    include.idx=TRUE, use.xts=TRUE,
-    nsec=10, price=TRUE, nrow=5,
-    same.dates=FALSE, no.na=FALSE, empty.sec=0, sec.names = NULL
-    )
-{
-   
-    ## Check connection
-    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter')
-
-    ## Check index format. Add 'INDEX' if missing
-    if(!is.character(index)) stop('Index should be a string')
-    if(length(index)>1) stop('Only one index')
-    if(!grepl("INDEX$", toupper(index))) index=paste(index, 'INDEX') 
-
-    ## Get index members
-    if(is.null(con)) tiks=paste0('memb', 1:nsec) else{
-        tiks=bds(con, index, 'INDX_MEMBERS')
-        tiks=paste(tiks[[1]], 'Equity')
-    }
-
-    ## Check sec.names
-    if(is.null(con) && !is.null(sec.names)) {
-        if(!is.character(sec.names)) stop("'sec.names' should be a character vector")
-        if(length(sec.names)!=nsec) stop("'sec.names' length should be equal to the number of index constituents")
-        tiks=sec.names
-    }
-    
-    ## Include index?
-    if(include.idx) tiks=c(tiks, index)
-
-    ## Get data
-    br.bulk.tiks(
-        con=con, 
-        tiks=tiks, 
-        start=start,
-        field=field,
-        addtype=FALSE,
-        showtype=showtype,
-        use.xts=use.xts,
-        price=price,
-        nrow=nrow,
-        same.dates=same.dates,
-        no.na=no.na,
-        empty.sec=empty.sec
-        )
-}
-
-
 ## ----br.desc, include=FALSE----------------------------------------------
 br.desc=function(con, tik)
 {
@@ -208,19 +221,6 @@ br.desc=function(con, tik)
     rownames(x)=rnams
     x
 }
-
-
-## ----br.bulk.desc, include=FALSE-----------------------------------------
-br.bulk.desc=function(con, tiks) {
-
-    LL = lapply(tiks, function(tik){
-        cat('Reading', tik,  '\n')
-        br.desc(con, tik)             
-    })
-    names(LL)=tiks
-    LL
-}
-
 
 
 ## ----br.sample, include=FALSE--------------------------------------------
@@ -290,6 +290,12 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
 }
 
 
+## ----deprecated, include=FALSE-------------------------------------------
+bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
+bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
+
+
+
 ## ----bbg-internal, include=FALSE-----------------------------------------
 
 ## Check connection token
@@ -326,14 +332,16 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
 br.close=function(conn)  blpDisconnect(conn)
 
-## misc func
-rm.all= function() rm(list=ls(all=TRUE))
 
 
+## ----miscfunc, include=FALSE---------------------------------------------
 
-## ----deprecated, include=FALSE-------------------------------------------
-bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
-bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
+#Clean up
+rm.all=function() ## Remove visible and invisible objects
+    rm(list=ls(all=TRUE, envir=parent.frame()), envir=parent.frame())
+
+rm.var=function() ## Remove visible non-function objects
+    rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
 
 
 
@@ -379,9 +387,6 @@ day.us=function(d1, d2){
     as.numeric(d2-d1-x)
 }
 
-## misc func
-rm.all= function() rm(list=ls(all=TRUE))
-
 
 
 ## ----build, eval=FALSE, include=FALSE------------------------------------
@@ -393,6 +398,8 @@ rm.all= function() rm(list=ls(all=TRUE))
 ## markdownToHTML("bloomr.md", "bloomr.html")
 ## shell("pandoc bloomr.md -o bloomr.pdf", shell=Sys.getenv("COMSPEC"))
 ## markdownToHTML("README.md", "README.html")
+## read.head=function()readLines('bloomr.rmd')[grep("^=+", tx)-1]
+## 
 
 
 ## ----unitests, eval=FALSE, include=FALSE---------------------------------

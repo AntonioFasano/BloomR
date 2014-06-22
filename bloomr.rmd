@@ -8,6 +8,231 @@
 
 
 
+br.bulk.csv 
+===========
+*Historical data from grouped tickers in a CSV files*  
+Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels. 
+
+
+Usage
+------
+    br.bulk.csv(con, file, start = Sys.Date() - 5, field = "PX_LAST", 
+        cols = NULL, addtype = FALSE, showtype = FALSE, use.xts = TRUE, 
+        comma = TRUE,
+	    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
+		) 
+  
+Arguments
+----------
+con
+:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+file
+:   path to CSV file.  
+start
+:   start date. Can be a Date object or an ISO string without separators. Defaults to 5 days before current date.  
+field
+:   String denoting the Bloomberg field queried. Defaults to "PX_LAST". If the field is wrong or not accessible, data will be empty but no error will be raised.  
+cols
+:   Logical or integer vector for selecting CSV columns (ticker groups). Defaults to all columns.  
+addtype
+:   If a string denoting the security type, it will be added to all tickers; if TRUE "Equity", will be added; if FALSE (the default), nothing will be added.  
+showtype
+:   if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.  
+use.xts
+:   if TRUE (the default) each group will be formatted as an xts object else as a list.  
+comma
+:   to be set to FALSE for (non-English) CSV, using semicolon as separator.  
+nrow
+:   maximum number of simulated rows (actual is random). Ignored if `con!=NULL`, it defaults to 5.
+empty.sec
+:   ratio of securities returning no data. Ignored if `con!=NULL`, it defaults to 0.
+
+Details
+-------
+Empty CSV cells or cells interpreted as NAs will be ignored.  
+If `con=NULL`, values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, start, same.dates, no.na, empty.sec`, which can be explicitly passed as arguments, and `sec.names` depending on tickers found in the CSV file. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
+
+Value
+-----
+a list where each element is the historical data of a CSV group.  
+If `use.xts=TRUE`, elements are xts object, where each column is the historical data of a security.  
+If `use.xts=FALSE`, elements are sub-list, where each element is the historical data of a security.  
+If there is only one group, the first (and unique) element of the list will be returned.  
+
+
+```{r br.bulk.csv, include=FALSE}
+br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
+    addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
+    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
+    )
+{
+
+    ## Check csv file
+    if(!file.exists(file)) stop(paste('Unable to find the csv file', file))
+    if(comma) csv=read.csv(file=file, as.is=TRUE) else{
+        csv=read.csv2(file=file, as.is=TRUE)}
+
+    ## Check cols arg
+    if(!is.null(cols)){
+        if(is.logical(cols) && !length(cols)==ncol(csv))
+            stop(paste('Length of logical vector', paste(cols, collapse=' '),
+                       'not equal to number of groups in', file))
+
+        if(is.integer(cols) && max(cols)>ncol(csv))
+            stop(paste('Unable to subset groups in', file, 'with columns', paste(cols, collapse=' ')))
+
+        if(!is.logical(cols) && !all(cols%%1==0)) stop(paste(
+         "'Col argument should be an integer or a logical vector of the same length of the groups in", file))
+        csv=csv[cols]        
+    }
+
+    ## Get group names and count
+    gnams=names(csv)
+    gcnt=ncol(csv)
+
+    ## Loop groups in csv
+    grps=list()
+    for(g in 1:gcnt){
+        cat('Processing', gnams[g],  '\n')
+        x=list(br.bulk.tiks(con, csv[[g]],
+            start, field, addtype, showtype, use.xts,
+            price=price, nrow=nrow, same.dates=FALSE, no.na=FALSE, empty.sec=empty.sec))
+        names(x)=gnams[g]
+        grps=c(grps, x)        
+    }
+    if(length(grps)==1) grps=grps[[1]]
+    grps
+}
+```
+
+br.bulk.desc
+=============
+
+Description
+-----------
+Get security descriptions for a vector of tickers.
+
+Usage
+-----
+    br.bulk.desc(con, tiks) 
+
+Arguments
+---------
+con
+:    the connection token returned from br.open()
+tiks
+:    character vector of the tickers queried for data
+
+Value
+-----
+A list of data frames, each representing the description of a security. For the format of data frames see the function `br.desc`.
+
+
+```{r br.bulk.desc, include=FALSE}
+br.bulk.desc=function(con, tiks) {
+
+    LL = lapply(tiks, function(tik){
+        cat('Reading', tik,  '\n')
+        br.desc(con, tik)             
+    })
+    names(LL)=tiks
+    LL
+}
+
+```
+
+
+br.bulk.idx
+============
+
+Description
+-----------
+Returns the historical data for the constituents of an index in xts or list format.
+
+Usage
+-----
+
+	br.bulk.idx(con, index, start = Sys.Date() - 5, field = "PX_LAST",  
+	     showtype = FALSE, include.idx = TRUE, use.xts = TRUE, nsec = 50,  
+         price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0,  
+		 sec.names = NULL)  
+
+Arguments
+---------
+con
+:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+index
+:   string denoting the index ticker with or without the final security type label ('Index')  
+include.idx
+:   if TRUE (default) returns also historical data for the index.  
+nsec
+:   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
+sec.names
+:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.  
+For other arguments see the function `br.bulk.csv`
+
+Details
+-------
+If `con=NULL`,  values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names`.
+
+Value
+-----
+If `use.xts=TRUE`, an xts object, where each column is the historical data of a constituent.  
+If `use.xts=FALSE`, a list, where each element is the historical data of a constituent.  
+If `include.idx=TRUE`, the last column or element will be the historical data of the index.  
+
+
+```{r br.bulk.idx, include=FALSE}
+br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
+    include.idx=TRUE, use.xts=TRUE,
+    nsec=10, price=TRUE, nrow=5,
+    same.dates=FALSE, no.na=FALSE, empty.sec=0, sec.names = NULL
+    )
+{
+   
+    ## Check connection
+    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter')
+
+    ## Check index format. Add 'INDEX' if missing
+    if(!is.character(index)) stop('Index should be a string')
+    if(length(index)>1) stop('Only one index')
+    if(!grepl("INDEX$", toupper(index))) index=paste(index, 'INDEX') 
+
+    ## Get index members
+    if(is.null(con)) tiks=paste0('memb', 1:nsec) else{
+        tiks=bds(con, index, 'INDX_MEMBERS')
+        tiks=paste(tiks[[1]], 'Equity')
+    }
+
+    ## Check sec.names
+    if(is.null(con) && !is.null(sec.names)) {
+        if(!is.character(sec.names)) stop("'sec.names' should be a character vector")
+        if(length(sec.names)!=nsec) stop("'sec.names' length should be equal to the number of index constituents")
+        tiks=sec.names
+    }
+    
+    ## Include index?
+    if(include.idx) tiks=c(tiks, index)
+
+    ## Get data
+    br.bulk.tiks(
+        con=con, 
+        tiks=tiks, 
+        start=start,
+        field=field,
+        addtype=FALSE,
+        showtype=showtype,
+        use.xts=use.xts,
+        price=price,
+        nrow=nrow,
+        same.dates=same.dates,
+        no.na=no.na,
+        empty.sec=empty.sec
+        )
+}
+```
+
+
 br.bulk.tiks
 =============
 *Bulk historical data*  
@@ -120,194 +345,6 @@ br.bulk.tiks=function(
 }
 ```
 
-
-br.bulk.csv 
-===========
-*Historical data from grouped tickers in a CSV files*  
-Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels. 
-
-
-Usage
-------
-    br.bulk.csv(con, file, start = Sys.Date() - 5, field = "PX_LAST", 
-        cols = NULL, addtype = FALSE, showtype = FALSE, use.xts = TRUE, 
-        comma = TRUE,
-	    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
-		) 
-  
-Arguments
-----------
-con
-:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
-file
-:   path to CSV file.  
-start
-:   start date. Can be a Date object or an ISO string without separators. Defaults to 5 days before current date.  
-field
-:   String denoting the Bloomberg field queried. Defaults to "PX_LAST". If the field is wrong or not accessible, data will be empty but no error will be raised.  
-cols
-:   Logical or integer vector for selecting CSV columns (ticker groups). Defaults to all columns.  
-addtype
-:   If a string denoting the security type, it will be added to all tickers; if TRUE "Equity", will be added; if FALSE (the default), nothing will be added.  
-showtype
-:   if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.  
-use.xts
-:   if TRUE (the default) each group will be formatted as an xts object else as a list.  
-comma
-:   to be set to FALSE for (non-English) CSV, using semicolon as separator.  
-nrow
-:   maximum number of simulated rows (actual is random). Ignored if `con!=NULL`, it defaults to 5.
-empty.sec
-:   ratio of securities returning no data. Ignored if `con!=NULL`, it defaults to 0.
-
-Details
--------
-Empty CSV cells or cells interpreted as NAs will be ignored.  
-If `con=NULL`, values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, start, same.dates, no.na, empty.sec`, which can be explicitly passed as arguments, and `sec.names` depending on tickers found in the CSV file. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
-
-Value
------
-a list where each element is the historical data of a CSV group.  
-If `use.xts=TRUE`, elements are xts object, where each column is the historical data of a security.  
-If `use.xts=FALSE`, elements are sub-list, where each element is the historical data of a security.  
-If there is only one group, the first (and unique) element of the list will be returned.  
-
-
-```{r br.bulk.csv, include=FALSE}
-br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
-    addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
-    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
-    )
-{
-
-    ## Check csv file
-    if(!file.exists(file)) stop(paste('Unable to find the csv file', file))
-    if(comma) csv=read.csv(file=file, as.is=TRUE) else{
-        csv=read.csv2(file=file, as.is=TRUE)}
-
-    ## Check cols arg
-    if(!is.null(cols)){
-        if(is.logical(cols) && !length(cols)==ncol(csv))
-            stop(paste('Length of logical vector', paste(cols, collapse=' '),
-                       'not equal to number of groups in', file))
-
-        if(is.integer(cols) && max(cols)>ncol(csv))
-            stop(paste('Unable to subset groups in', file, 'with columns', paste(cols, collapse=' ')))
-
-        if(!is.logical(cols) && !all(cols%%1==0)) stop(paste(
-         "'Col argument should be an integer or a logical vector of the same length of the groups in", file))
-        csv=csv[cols]        
-    }
-
-    ## Get group names and count
-    gnams=names(csv)
-    gcnt=ncol(csv)
-
-    ## Loop groups in csv
-    grps=list()
-    for(g in 1:gcnt){
-        cat('Processing', gnams[g],  '\n')
-        x=list(br.bulk.tiks(con, csv[[g]],
-            start, field, addtype, showtype, use.xts,
-            price=price, nrow=nrow, same.dates=FALSE, no.na=FALSE, empty.sec=empty.sec))
-        names(x)=gnams[g]
-        grps=c(grps, x)        
-    }
-    if(length(grps)==1) grps=grps[[1]]
-    grps
-}
-```
-
-br.bulk.idx
-============
-
-Description
------------
-Returns the historical data for the constituents of an index in xts or list format.
-
-Usage
------
-
-	br.bulk.idx(con, index, start = Sys.Date() - 5, field = "PX_LAST",  
-	     showtype = FALSE, include.idx = TRUE, use.xts = TRUE, nsec = 50,  
-         price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0,  
-		 sec.names = NULL)  
-
-Arguments
----------
-con
-:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
-index
-:   string denoting the index ticker with or without the final security type label ('Index')  
-include.idx
-:   if TRUE (default) returns also historical data for the index.  
-nsec
-:   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
-sec.names
-:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.  
-For other arguments see the function `br.bulk.csv`
-
-Details
--------
-If `con=NULL`,  values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names`.
-
-Value
------
-If `use.xts=TRUE`, an xts object, where each column is the historical data of a constituent.  
-If `use.xts=FALSE`, a list, where each element is the historical data of a constituent.  
-If `include.idx=TRUE`, the last column or element will be the historical data of the index.  
-
-
-```{r br.bulk.idx, include=FALSE}
-br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
-    include.idx=TRUE, use.xts=TRUE,
-    nsec=10, price=TRUE, nrow=5,
-    same.dates=FALSE, no.na=FALSE, empty.sec=0, sec.names = NULL
-    )
-{
-   
-    ## Check connection
-    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter')
-
-    ## Check index format. Add 'INDEX' if missing
-    if(!is.character(index)) stop('Index should be a string')
-    if(length(index)>1) stop('Only one index')
-    if(!grepl("INDEX$", toupper(index))) index=paste(index, 'INDEX') 
-
-    ## Get index members
-    if(is.null(con)) tiks=paste0('memb', 1:nsec) else{
-        tiks=bds(con, index, 'INDX_MEMBERS')
-        tiks=paste(tiks[[1]], 'Equity')
-    }
-
-    ## Check sec.names
-    if(is.null(con) && !is.null(sec.names)) {
-        if(!is.character(sec.names)) stop("'sec.names' should be a character vector")
-        if(length(sec.names)!=nsec) stop("'sec.names' length should be equal to the number of index constituents")
-        tiks=sec.names
-    }
-    
-    ## Include index?
-    if(include.idx) tiks=c(tiks, index)
-
-    ## Get data
-    br.bulk.tiks(
-        con=con, 
-        tiks=tiks, 
-        start=start,
-        field=field,
-        addtype=FALSE,
-        showtype=showtype,
-        use.xts=use.xts,
-        price=price,
-        nrow=nrow,
-        same.dates=same.dates,
-        no.na=no.na,
-        empty.sec=empty.sec
-        )
-}
-```
-
 br.desc
 ========
 
@@ -360,41 +397,6 @@ br.desc=function(con, tik)
 ```
 
 
-br.bulk.desc
-=============
-
-Description
------------
-Get security descriptions for a vector of tickers.
-
-Usage
------
-    br.bulk.desc(con, tiks) 
-
-Arguments
----------
-con
-:    the connection token returned from br.open()
-tiks
-:    character vector of the tickers queried for data
-
-Value
------
-A list of data frames, each representing the description of a security. For the format of data frames see the function `br.desc`.
-
-
-```{r br.bulk.desc, include=FALSE}
-br.bulk.desc=function(con, tiks) {
-
-    LL = lapply(tiks, function(tik){
-        cat('Reading', tik,  '\n')
-        br.desc(con, tik)             
-    })
-    names(LL)=tiks
-    LL
-}
-
-```
 
 
 br.sample
@@ -509,6 +511,35 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
 ```
 
 
+Deprecated functions
+====================
+
+Description
+------------
+Functions not used anymore generating an informative error
+
+Usage
+-----
+    bbg.open()
+    bbg.close(con)
+ 
+Arguments
+---------
+con
+:   the connection token returned from br.open()
+
+Example
+-------
+
+    con=bbg.open()
+	##  Sorry 'bbg.open' is now deprecated. Please use br.open().
+
+```{r deprecated, include=FALSE}
+bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
+bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
+
+```
+
 
 Internal bbg functions
 =======================
@@ -579,15 +610,13 @@ Manage connections
 
 Description
 ------------
-Open and close the connection to the Bloomberg service.  
-`rm.all` deletes all objects (variables) from memory. 
+Open and close the connection to the Bloomberg service.   
 
 
 Usage
 -----
     br.open()
     br.close(con)
-	rm.all()
 	
 Arguments
 ---------
@@ -614,37 +643,32 @@ Example
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
 br.close=function(conn)  blpDisconnect(conn)
 
-## misc func
-rm.all= function() rm(list=ls(all=TRUE))
-
 ```
 
-Deprecated functions
-====================
+
+Misc functions
+==============
 
 Description
 ------------
-Functions not used anymore generating an informative error
+`rm.all` deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot).
+`rm.var` deletes non-function objects from memory.
+
 
 Usage
 -----
-    bbg.open()
-    bbg.close(con)
- 
-Arguments
----------
-con
-:   the connection token returned from br.open()
+	rm.all()
+	rm.var()
+	
 
-Example
--------
+```{r miscfunc, include=FALSE}
 
-    con=bbg.open()
-	##  Sorry 'bbg.open' is now deprecated. Please use br.open().
+#Clean up
+rm.all=function() ## Remove visible and invisible objects
+    rm(list=ls(all=TRUE, envir=parent.frame()), envir=parent.frame())
 
-```{r deprecated, include=FALSE}
-bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
-bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
+rm.var=function() ## Remove visible non-function objects
+    rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
 
 ```
 
@@ -731,9 +755,6 @@ day.us=function(d1, d2){
     as.numeric(d2-d1-x)
 }
 
-## misc func
-rm.all= function() rm(list=ls(all=TRUE))
-
 ```
 
 ```{r build, eval=FALSE, include=FALSE}
@@ -745,6 +766,8 @@ purl("bloomr.rmd")
 markdownToHTML("bloomr.md", "bloomr.html")
 shell("pandoc bloomr.md -o bloomr.pdf", shell=Sys.getenv("COMSPEC"))
 markdownToHTML("README.md", "README.html")
+read.head=function() {x=readLines('bloomr.rmd'); x[grep("^=+", x)-1]}
+
 ```
 
 ```{r unitests, eval=FALSE, include=FALSE}

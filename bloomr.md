@@ -7,39 +7,6 @@
 
 
 
-br.bulk.tiks
-=============
-*Bulk historical data*  
-Returns the historical data for a vector of tickers in xts or list format
-
-Usage
-------
-    br.bulk.tiks(con, tiks, start=Sys.Date()-5, field="PX_LAST",
-		addtype=FALSE, showtype=FALSE, use.xts=TRUE,
-		price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0) 
-  
-Arguments
----------
-tiks
-:   character vector of the tickers queried for data  
-
-For other arguments see the function `br.bulk.csv` 
-
-Details
---------
-If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.  
-If `con=NULL`, values are simulated by means of `br.sample()`. Sampled values are based on default values of `br.sample()`, but it is possible to set explicitly  `start, same.dates, no.na, empty.sec`; `sec.names` depends on `tiks` argument. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
-
-Value
-------
-If `use.xts=TRUE`, an xts object, where each column is the historical data of a security.  
-If `use.xts=FALSE`, a list, where each element is the historical data of a security.
-
-
-
-
-
-
 br.bulk.csv 
 ===========
 *Historical data from grouped tickers in a CSV files*  
@@ -95,6 +62,33 @@ If there is only one group, the first (and unique) element of the list will be r
 
 
 
+br.bulk.desc
+=============
+
+Description
+-----------
+Get security descriptions for a vector of tickers.
+
+Usage
+-----
+    br.bulk.desc(con, tiks) 
+
+Arguments
+---------
+con
+:    the connection token returned from br.open()
+tiks
+:    character vector of the tickers queried for data
+
+Value
+-----
+A list of data frames, each representing the description of a security. For the format of data frames see the function `br.desc`.
+
+
+
+
+
+
 br.bulk.idx
 ============
 
@@ -138,6 +132,39 @@ If `include.idx=TRUE`, the last column or element will be the historical data of
 
 
 
+
+br.bulk.tiks
+=============
+*Bulk historical data*  
+Returns the historical data for a vector of tickers in xts or list format
+
+Usage
+------
+    br.bulk.tiks(con, tiks, start=Sys.Date()-5, field="PX_LAST",
+		addtype=FALSE, showtype=FALSE, use.xts=TRUE,
+		price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0) 
+  
+Arguments
+---------
+tiks
+:   character vector of the tickers queried for data  
+
+For other arguments see the function `br.bulk.csv` 
+
+Details
+--------
+If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.  
+If `con=NULL`, values are simulated by means of `br.sample()`. Sampled values are based on default values of `br.sample()`, but it is possible to set explicitly  `start, same.dates, no.na, empty.sec`; `sec.names` depends on `tiks` argument. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
+
+Value
+------
+If `use.xts=TRUE`, an xts object, where each column is the historical data of a security.  
+If `use.xts=FALSE`, a list, where each element is the historical data of a security.
+
+
+
+
+
 br.desc
 ========
 
@@ -160,31 +187,6 @@ Value
 -----
 A data frame containing the value of the Bloomberg fields form `ds001` to `ds009` and the long field `CIE_DES_BULK`.
 
-
-
-
-
-br.bulk.desc
-=============
-
-Description
------------
-Get security descriptions for a vector of tickers.
-
-Usage
------
-    br.bulk.desc(con, tiks) 
-
-Arguments
----------
-con
-:    the connection token returned from br.open()
-tiks
-:    character vector of the tickers queried for data
-
-Value
------
-A list of data frames, each representing the description of a security. For the format of data frames see the function `br.desc`.
 
 
 
@@ -239,6 +241,32 @@ If `df=TRUE`, a data frame object, where the first column is the vector with all
 
 
 
+Deprecated functions
+====================
+
+Description
+------------
+Functions not used anymore generating an informative error
+
+Usage
+-----
+    bbg.open()
+    bbg.close(con)
+ 
+Arguments
+---------
+con
+:   the connection token returned from br.open()
+
+Example
+-------
+
+    con=bbg.open()
+	##  Sorry 'bbg.open' is now deprecated. Please use br.open().
+
+
+
+
 
 Internal bbg functions
 =======================
@@ -280,15 +308,13 @@ Manage connections
 
 Description
 ------------
-Open and close the connection to the Bloomberg service.  
-`rm.all` deletes all objects (variables) from memory. 
+Open and close the connection to the Bloomberg service.   
 
 
 Usage
 -----
     br.open()
     br.close(con)
-	rm.all()
 	
 Arguments
 ---------
@@ -314,28 +340,21 @@ Example
 
 
 
-Deprecated functions
-====================
+
+Misc functions
+==============
 
 Description
 ------------
-Functions not used anymore generating an informative error
+`rm.all` deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot).
+`rm.var` deletes non-function objects from memory.
+
 
 Usage
 -----
-    bbg.open()
-    bbg.close(con)
- 
-Arguments
----------
-con
-:   the connection token returned from br.open()
-
-Example
--------
-
-    con=bbg.open()
-	##  Sorry 'bbg.open' is now deprecated. Please use br.open().
+	rm.all()
+	rm.var()
+	
 
 
 
