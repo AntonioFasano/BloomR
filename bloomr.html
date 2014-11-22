@@ -215,9 +215,9 @@ If there is only one group, the first (and unique) element of the list will be r
 <h2>Arguments</h2>
 
 <p>con
-:    the connection token returned from br.open()
+:    the connection token returned from br.open()<br/>
 tiks
-:    character vector of the tickers queried for data</p>
+:    character vector of the tickers queried for data  </p>
 
 <h2>Value</h2>
 
@@ -304,9 +304,9 @@ If <code>use.xts=FALSE</code>, a list, where each element is the historical data
 <h2>Arguments</h2>
 
 <p>con
-:   the connection token returned from br.open()
+:   the connection token returned from br.open()<br/>
 tik
-:   string denoting the ticker queried for data </p>
+:   string denoting the ticker queried for data  </p>
 
 <h2>Value</h2>
 
@@ -328,29 +328,29 @@ empty.sec=0, df=FALSE, sec.names=NULL)
 <h2>Arguments</h2>
 
 <p>nrow
-:   number of simulated data points for each security; if <code>same.dates=FALSE</code>, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities.
+:   number of simulated data points for each security; if <code>same.dates=FALSE</code>, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities.<br/>
 nsec
-:   number of simulated securities (defaults to 1).
+:   number of simulated securities (defaults to 1).<br/>
 price
-:   if TRUE (default), simulated values are non-negative.
+:   if TRUE (default), simulated values are non-negative.<br/>
 start
-:   start date. Can be a Date object or an ISO string without separators. Defaults to current date.
+:   start date. Can be a Date object or an ISO string without separators. Defaults to current date.<br/>
 mean
-:   mean of security generated values. If <code>price=TRUE</code>, default to 10 else defaults to 0.1.
+:   mean of security generated values. If <code>price=TRUE</code>, default to 10 else defaults to 0.1.<br/>
 sd
-:   sd of security generated values. It defaults to 1.
+:   sd of security generated values. It defaults to 1.<br/>
 jitter
-:   modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.
+:   modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.<br/>
 same.dates
-:   if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed <code>nrow</code>.
+:   if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed <code>nrow</code>.<br/>
 no.na
-:   if <code>same.dates=FALSE</code>, when merging sampled security data NAs are likely to be produced. If <code>no.na=FALSE</code> (default) they will be left, otherwise they will be removed using R <code>na.omit</code>
+:   if <code>same.dates=FALSE</code>, when merging sampled security data NAs are likely to be produced. If <code>no.na=FALSE</code> (default) they will be left, otherwise they will be removed using R <code>na.omit</code><br/>
 df
 :   if FALSE (default), the output will be an xts object, else the output will be a data frame with the first column containing the dates of the sampled data.
-sec.names
-:   character vector for column names. If <code>df=FALSE</code> the length of the vector should be equal to <code>nsec</code>, else to <code>nsec + 1</code> (because of the first column containing dates). By default security names are like &#39;sample1&#39;, &#39;sample2&#39;, etc. and the date column is named &#39;date&#39;.
+sec.names<br/>
+:   character vector for column names. If <code>df=FALSE</code> the length of the vector should be equal to <code>nsec</code>, else to <code>nsec + 1</code> (because of the first column containing dates). By default security names are like &#39;sample1&#39;, &#39;sample2&#39;, etc. and the date column is named &#39;date&#39;.<br/>
 empty.sec
-:   ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.</p>
+:   ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.  </p>
 
 <h2>Value</h2>
 
@@ -397,9 +397,9 @@ bbg.close(con)
 <h2>Arguments:</h2>
 
 <p>con
-:   the connection token returned from br.open()
+:   the connection token returned from br.open()<br/>
 type
-:   a string representing the security type</p>
+:   a string representing the security type  </p>
 
 <h2>Details</h2>
 
@@ -479,9 +479,9 @@ day.us(d1, d2)
 <h2>Arguments</h2>
 
 <p>d, d1, d2
-:   objects of class date
+:   objects of class date<br/>
 x
-:   an integer representing the day/month/year
+:   an integer representing the day/month/year<br/>
 n
 :   an integer representing the months to add/subtract</p>
 

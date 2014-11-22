@@ -10,7 +10,7 @@ What's new
 ### BloomR-0.2.2-dev
 
 - Only 64 bit
-- Updated to R-3.1.0
+- Updated to R-3.1.2
 - New functions for bulk download from CSV files tickers, from index constituents or from strings.
 - Sample download to prepare script at home and test on terminal later.
 - Bulk and non-bulk download of many description fields.

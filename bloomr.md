@@ -76,9 +76,9 @@ Usage
 Arguments
 ---------
 con
-:    the connection token returned from br.open()
+:    the connection token returned from br.open()  
 tiks
-:    character vector of the tickers queried for data
+:    character vector of the tickers queried for data  
 
 Value
 -----
@@ -166,7 +166,7 @@ If `use.xts=FALSE`, a list, where each element is the historical data of a secur
 
 
 br.desc
-========
+=======
 
 Description
 -----------
@@ -179,9 +179,9 @@ Usage
 Arguments
 ---------
 con
-:   the connection token returned from br.open()
+:   the connection token returned from br.open()  
 tik
-:   string denoting the ticker queried for data 
+:   string denoting the ticker queried for data  
 
 Value
 -----
@@ -209,29 +209,29 @@ Usage
 Arguments
 ---------
 nrow
-:   number of simulated data points for each security; if `same.dates=FALSE`, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities.
+:   number of simulated data points for each security; if `same.dates=FALSE`, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities.  
 nsec
-:   number of simulated securities (defaults to 1).
+:   number of simulated securities (defaults to 1).  
 price
-:   if TRUE (default), simulated values are non-negative.
+:   if TRUE (default), simulated values are non-negative.  
 start
-:   start date. Can be a Date object or an ISO string without separators. Defaults to current date.
+:   start date. Can be a Date object or an ISO string without separators. Defaults to current date.  
 mean
-:   mean of security generated values. If `price=TRUE`, default to 10 else defaults to 0.1.
+:   mean of security generated values. If `price=TRUE`, default to 10 else defaults to 0.1.  
 sd
-:   sd of security generated values. It defaults to 1.
+:   sd of security generated values. It defaults to 1.  
 jitter
-:   modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.
+:   modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.  
 same.dates
-:   if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed `nrow`.
+:   if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed `nrow`.  
 no.na
-:   if `same.dates=FALSE`, when merging sampled security data NAs are likely to be produced. If `no.na=FALSE` (default) they will be left, otherwise they will be removed using R `na.omit`
+:   if `same.dates=FALSE`, when merging sampled security data NAs are likely to be produced. If `no.na=FALSE` (default) they will be left, otherwise they will be removed using R `na.omit`  
 df
 :   if FALSE (default), the output will be an xts object, else the output will be a data frame with the first column containing the dates of the sampled data.
-sec.names
-:   character vector for column names. If `df=FALSE` the length of the vector should be equal to `nsec`, else to `nsec + 1` (because of the first column containing dates). By default security names are like 'sample1', 'sample2', etc. and the date column is named 'date'.
+sec.names  
+:   character vector for column names. If `df=FALSE` the length of the vector should be equal to `nsec`, else to `nsec + 1` (because of the first column containing dates). By default security names are like 'sample1', 'sample2', etc. and the date column is named 'date'.  
 empty.sec
-:   ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.
+:   ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.  
 
 Value
 -----
@@ -287,9 +287,9 @@ Usage:
 Arguments:
 ----------
 con
-:   the connection token returned from br.open()
+:   the connection token returned from br.open()  
 type
-:   a string representing the security type
+:   a string representing the security type  
 
 Details
 -------
@@ -386,9 +386,9 @@ Usage
 Arguments
 ---------
 d, d1, d2
-:   objects of class date
+:   objects of class date  
 x
-:   an integer representing the day/month/year
+:   an integer representing the day/month/year  
 n
 :   an integer representing the months to add/subtract
 

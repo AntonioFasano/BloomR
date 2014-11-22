@@ -1,12 +1,4 @@
 
-:: set "BLOOMR=%~dp0"
-:: cd %BLOOMR% 
-::  
-:: set JAVA_HOME=%RPORT%FAS\CommonFiles\Java
-:: path %JAVA_HOME%\bin;%path%
-:: start FAS\bin\i386\Rgui.exe  --internet2 LANGUAGE=en
-
-
 :: BloomR Environment Diagnostic
 :: =============================
 

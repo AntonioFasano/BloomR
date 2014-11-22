@@ -337,10 +337,12 @@ br.close=function(conn)  blpDisconnect(conn)
 ## ----miscfunc, include=FALSE---------------------------------------------
 
 #Clean up
-rm.all=function() ## Remove visible and invisible objects
+## Remove visible and invisible objects
+rm.all=function() 
     rm(list=ls(all=TRUE, envir=parent.frame()), envir=parent.frame())
 
-rm.var=function() ## Remove visible non-function objects
+## Remove visible non-function objects
+rm.var=function() 
     rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
 
 
@@ -398,7 +400,7 @@ day.us=function(d1, d2){
 ## markdownToHTML("bloomr.md", "bloomr.html")
 ## shell("pandoc bloomr.md -o bloomr.pdf", shell=Sys.getenv("COMSPEC"))
 ## markdownToHTML("README.md", "README.html")
-## read.head=function()readLines('bloomr.rmd')[grep("^=+", tx)-1]
+## read.head=function() {x=readLines('bloomr.rmd'); x[grep("^=+", x)-1]}
 ## 
 
 
