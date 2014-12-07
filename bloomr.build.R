@@ -558,7 +558,10 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
 
 ### Conv: "my/sub dir" -> "\"my\\sub dir\""
 wPath=function(path){
+    op <- options("useFancyQuotes")
+    options(useFancyQuotes = FALSE)
     path=dQuote(path)
+    options(op)
     chartr("/", "\\", path)
 }
 

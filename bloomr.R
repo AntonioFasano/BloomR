@@ -1,6 +1,4 @@
 
-## ----setup, include=FALSE------------------------------------------------
-##rm(list=ls(all=TRUE))
 
 
 ## ----br.bulk.csv, include=FALSE------------------------------------------
@@ -36,7 +34,7 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     ## Loop groups in csv
     grps=list()
     for(g in 1:gcnt){
-        cat('Processing', gnams[g],  '\n')
+        cat('Processing', gnams[g],  '...\n')
         x=list(br.bulk.tiks(con, csv[[g]],
             start, field, addtype, showtype, use.xts,
             price=price, nrow=nrow, same.dates=FALSE, no.na=FALSE, empty.sec=empty.sec))
@@ -46,6 +44,32 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     if(length(grps)==1) grps=grps[[1]]
     grps
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## ----br.bulk.desc, include=FALSE-----------------------------------------
@@ -58,6 +82,8 @@ br.bulk.desc=function(con, tiks) {
     names(LL)=tiks
     LL
 }
+
+
 
 
 
@@ -109,6 +135,8 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
         empty.sec=empty.sec
         )
 }
+
+
 
 
 ## ----br.bulk.tiks, include=FALSE-----------------------------------------
@@ -328,9 +356,11 @@ bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br
 
 
 
+
+
 ## ----connections, include=FALSE------------------------------------------
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
-br.close=function(conn)  blpDisconnect(conn)
+br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
 
 
 
@@ -391,24 +421,7 @@ day.us=function(d1, d2){
 
 
 
-## ----build, eval=FALSE, include=FALSE------------------------------------
-## require(knitr)
-## require(markdown)
-## opts_chunk$set(tidy.opts=list(width.cutoff=60))
-## knit("bloomr.rmd")
-## purl("bloomr.rmd")
-## markdownToHTML("bloomr.md", "bloomr.html")
-## shell("pandoc bloomr.md -o bloomr.pdf", shell=Sys.getenv("COMSPEC"))
-## markdownToHTML("README.md", "README.html")
-## read.head=function() {x=readLines('bloomr.rmd'); x[grep("^=+", x)-1]}
-## 
 
 
-## ----unitests, eval=FALSE, include=FALSE---------------------------------
-## con=br.open()
-## br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
-## br.bulk.idx(con, "SX5E Index", field="PX_LAST")
-## br.close(con)
-## 
 
 

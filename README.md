@@ -29,7 +29,7 @@ Build instructions
 
 ### For the impatient
 
-Download [bloomr.build.R](https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.r) and under R for Windows issue:
+Download [bloomr.build.R](https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.R) (make sure your browser does not change its extension to ".html" or ".txt") and under R for Windows issue:
 
 	source("path\to\bloomr.build.R")
 	makeBloomR("path\to\workDir")

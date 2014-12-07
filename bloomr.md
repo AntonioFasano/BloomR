@@ -1,14 +1,24 @@
-
 # BloomR facility functions
+R topics documented:
+-----------
+[br.bulk.csv](#br.bulk.csv)   
+[br.bulk.desc](#br.bulk.desc)   
+[br.bulk.idx](#br.bulk.idx)   
+[br.bulk.tiks](#br.bulk.tiks)   
+[br.desc](br.desc)   
+[br.sample](#br.sample)   
+[Deprecated functions](#deprecated.functions)   
+[Internal BloomR functions](#Internal)   
+[Manage connections](#connections)   
+[Misc functions](misc.functions)   
+[Time extension functions](#time.functions)   
 
 
 
 
 
-
-
-br.bulk.csv 
-===========
+br.bulk.csv{#br.bulk.csv}
+========================
 *Historical data from grouped tickers in a CSV files*  
 Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels. 
 
@@ -42,7 +52,7 @@ use.xts
 comma
 :   to be set to FALSE for (non-English) CSV, using semicolon as separator.  
 nrow
-:   maximum number of simulated rows (actual is random). Ignored if `con!=NULL`, it defaults to 5.
+:   maximum number of simulated rows (actual is random). Ignored if `con!=NULL`, it defaults to 5.  
 empty.sec
 :   ratio of securities returning no data. Ignored if `con!=NULL`, it defaults to 0.
 
@@ -61,9 +71,258 @@ If there is only one group, the first (and unique) element of the list will be r
 
 
 
+Demonstration
+-------------
 
-br.bulk.desc
-=============
+
+A sample CSV with Bloomberg tickers will look like follows:
+
+
+
+```r
+read.csv("res/br.tck.csv")
+```
+
+```
+##          Financial     Technology      Indices
+## 1   3988 HK Equity QCOM US Equity    DJI Index
+## 2      C US Equity CSCO US Equity DJUSFN Index
+## 3 601288 CH Equity  700 HK Equity  W1TEC Index
+## 4    BAC US Equity  IBM US Equity             
+## 5   HSBA LN Equity INTC US Equity
+```
+
+```r
+# This file is part of BloomR and anyway available here:
+# XXXXXXXX
+```
+
+
+Note: 
+
+* CSV group headers are mandatory;
+* Group headers need not to be the same length. 
+
+We can now download data:
+
+
+
+
+```r
+con=NULL
+```
+
+```r
+data=br.bulk.csv(con, "res/br.tck.csv") 
+```
+
+```
+## Processing Financial ...
+## Loading 3988 HK Equity 
+## Loading C US Equity 
+## Loading 601288 CH Equity 
+## Loading BAC US Equity 
+## Loading HSBA LN Equity 
+## Processing Technology ...
+## Loading QCOM US Equity 
+## Loading CSCO US Equity 
+## Loading 700 HK Equity 
+## Loading IBM US Equity 
+## Loading INTC US Equity 
+## Processing Indices ...
+## Loading DJI Index 
+## Loading DJUSFN Index 
+## Loading W1TEC Index
+```
+
+Above you see some info about data being processed that we will not show anymore in the following.
+
+If you want to have detailed ticker descriptions,  see [br.bulk.desc Example](#br.bulk.desc.exem). Downloaded data look like follows:
+
+
+```r
+data
+```
+
+```
+## $Financial
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2014-12-01      NA 10.037        NA     NA      NA
+## 2014-12-02   9.829 11.735        NA     NA   10.23
+## 2014-12-04   9.285     NA        NA 10.877      NA
+## 2014-12-05      NA     NA    10.315     NA      NA
+## 
+## $Technology
+##            QCOM US CSCO US 700 HK IBM US INTC US
+## 2014-12-01   9.813      NA  8.241 10.042   8.255
+## 2014-12-02      NA   8.755 10.065     NA      NA
+## 2014-12-03   9.866  11.023 10.033  9.851      NA
+## 2014-12-04      NA      NA     NA  9.499      NA
+## 2014-12-05   9.422   9.693  7.329 11.023   9.117
+## 
+## $Indices
+##               DJI DJUSFN W1TEC
+## 2014-12-03 10.288     NA    NA
+## 2014-12-04     NA 10.085    NA
+## 2014-12-05 10.278     NA 9.095
+```
+
+Note:
+
+* The name of the securities tickers is stored without the security type: "Equity", "Index", etc.  
+If this piece of info is significant for you, pass `showtype = TRUE`.   
+
+* Time series start date defaults to 5 days before current date, unless you set `start` to: 
+an R Date object (`start=as.Date("2014/9/30")`) or to a  more friendly ISO string (`start="20140930")`).     
+
+Data are stored as a list of xts objects, each representing one group of tickers in the CSV file.
+
+
+
+```r
+length(data)
+```
+
+```
+## [1] 3
+```
+
+```r
+names(data)
+```
+
+```
+## [1] "Financial"  "Technology" "Indices"
+```
+
+```r
+class(data$Financial)
+```
+
+```
+## [1] "xts" "zoo"
+```
+
+If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:
+
+
+```r
+data=br.bulk.csv(con, "res/br.tck.csv", use.xts=FALSE) 
+```
+
+
+```r
+length(data)
+```
+
+```
+## [1] 3
+```
+
+```r
+names(data)
+```
+
+```
+## [1] "Financial"  "Technology" "Indices"
+```
+
+```r
+class(data$Financial)
+```
+
+```
+## [1] "list"
+```
+
+```r
+length(data$Financial)
+```
+
+```
+## [1] 5
+```
+
+```r
+names(data$Financial)
+```
+
+```
+## [1] "3988 HK"   "C US"      "601288 CH" "BAC US"    "HSBA LN"
+```
+
+```r
+class(data$Financial$`BAC US`)
+```
+
+```
+## [1] "data.frame"
+```
+
+By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
+
+
+```r
+data=br.bulk.csv(con, "res/br.tck.csv", field = "PX_OPEN") 
+```
+
+You can choose to import only some of the CSV groups 
+
+
+```r
+data=br.bulk.csv(con, "res/br.tck.csv", cols=c(1,3))
+## or equivalently:
+data=br.bulk.csv(con, "res/br.tck.csv", cols=c(TRUE, FALSE, TRUE))
+```
+
+```r
+names(data)
+```
+
+```
+## [1] "Financial" "Indices"
+```
+ 
+In the CSV file, if your tickers represent all equities, you can omit the type.   
+
+Consider this CSV:
+
+
+```r
+read.csv("res/br.eqt.csv")
+```
+
+```
+##   Financial Technology
+## 1   3988 HK    QCOM US
+## 2      C US    CSCO US
+## 3 601288 CH     700 HK
+## 4    BAC US     IBM US
+## 5   HSBA LN    INTC US
+```
+
+```r
+# This file is part of BloomR and anyway available here:
+# XXXXXXXX
+```
+
+Note how the "Equity" type is missing! But you can use this CSV file with `addtype`:
+
+
+```r
+data=br.bulk.csv(con, "res/br.eqt.csv", addtype=TRUE)
+```
+
+Before going home, don't forget to:
+
+
+```r
+br.close(con)
+```
+
+
+br.bulk.desc{#br.bulk.desc}
+===========================
 
 Description
 -----------
@@ -87,10 +346,21 @@ A list of data frames, each representing the description of a security. For the 
 
 
 
+Example {#br.bulk.desc.exem}
+----------------------------
 
 
-br.bulk.idx
-============
+```r
+con=br.open()
+data=read.csv("res/br.tck.csv", as.is=TRUE)
+br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
+br.close(con)
+```
+
+
+
+br.bulk.idx{#br.bulk.idx}
+========================
 
 Description
 -----------
@@ -132,9 +402,8 @@ If `include.idx=TRUE`, the last column or element will be the historical data of
 
 
 
-
-br.bulk.tiks
-=============
+br.bulk.tiks{#br.bulk.tiks}
+==========================
 *Bulk historical data*  
 Returns the historical data for a vector of tickers in xts or list format
 
@@ -163,10 +432,25 @@ If `use.xts=FALSE`, a list, where each element is the historical data of a secur
 
 
 
+Example
+-------
 
 
-br.desc
-=======
+```r
+con=br.open() # Open the connection and get the token and load some data
+br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.close(con) # Use the token to release the connection
+```
+
+See Also
+--------
+
+[br.bulk.csv](#br.bulk.csv)
+
+
+
+br.desc{br.desc}
+================
 
 Description
 -----------
@@ -192,9 +476,8 @@ A data frame containing the value of the Bloomberg fields form `ds001` to `ds009
 
 
 
-
-br.sample
-==========
+br.sample{#br.sample}
+====================
 
 Description
 ------------
@@ -227,8 +510,8 @@ same.dates
 no.na
 :   if `same.dates=FALSE`, when merging sampled security data NAs are likely to be produced. If `no.na=FALSE` (default) they will be left, otherwise they will be removed using R `na.omit`  
 df
-:   if FALSE (default), the output will be an xts object, else the output will be a data frame with the first column containing the dates of the sampled data.
-sec.names  
+:   if FALSE (default), the output will be an xts object, else the output will be a data frame with the first column containing the dates of the sampled data.  
+sec.names
 :   character vector for column names. If `df=FALSE` the length of the vector should be equal to `nsec`, else to `nsec + 1` (because of the first column containing dates). By default security names are like 'sample1', 'sample2', etc. and the date column is named 'date'.  
 empty.sec
 :   ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.  
@@ -240,9 +523,8 @@ If `df=TRUE`, a data frame object, where the first column is the vector with all
 
 
 
-
-Deprecated functions
-====================
+Deprecated functions{#deprecated.functions}
+===========================================
 
 Description
 ------------
@@ -267,9 +549,8 @@ Example
 
 
 
-
-Internal bbg functions
-=======================
+Internal BloomR functions{#Internal}
+=====================================
 
 Description:
 ------------
@@ -302,9 +583,8 @@ Details
 
 
 
-
-Manage connections
-==================
+Manage connections{#connections}
+===============================
 
 Description
 ------------
@@ -321,28 +601,28 @@ Arguments
 con
 :   the connection token returned from br.open()
 
+Details
+-------
+
+`br.open` returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to `br.close`. If you are using simulated data and so your connection token is NULL, closing the connection is optional. Anyway running `br.close(con)`, even if `con==NULL` avoids adding this line when you switch to a actual data download.
+
+
 Example
 -------
 
-    con=br.open() # Open the connection and get the token and load some data
-    	
-    br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
-    ## Loading MSFT US Equity 
-    ## Loading AMZN US Equity 
-    ##            MSFT US AMZN US
-    ## 2014-05-23   40.12  312.24
-    ## 2014-05-27   40.19  310.82
 
-    br.close(con) # Use the token to release the connection
+```r
+con=br.open() # Open the connection and get the token and load some data
+br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.close(con) # Use the token to release the connection
+```
 
 
 
 
 
-
-
-Misc functions
-==============
+Misc functions{misc.functions}
+==============================
 
 Description
 ------------
@@ -359,9 +639,8 @@ Usage
 
 
 
-
-Time extension functions
-=========================
+Time extension functions{#time.functions}
+=========================================
 
 Description
 ------------
@@ -398,7 +677,6 @@ Details
 If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
 `%+%` and `%-%` add and subtract months to a date.  
 `last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
-
 
 
 

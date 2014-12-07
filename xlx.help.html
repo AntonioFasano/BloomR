@@ -52,482 +52,198 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 
 
 
-<div id="bloomr-facility-functions" class="section level1">
-<h1>BloomR facility functions</h1>
-<div id="r-topics-documented" class="section level2">
-<h2>R topics documented:</h2>
-<p><a href="#br.bulk.csv">br.bulk.csv</a><br /><a href="#br.bulk.desc">br.bulk.desc</a><br /><a href="#br.bulk.idx">br.bulk.idx</a><br /><a href="#br.bulk.tiks">br.bulk.tiks</a><br /><a href="br.desc" class="uri">br.desc</a><br /><a href="#br.sample">br.sample</a><br /><a href="#deprecated.functions">Deprecated functions</a><br /><a href="#Internal">Internal BloomR functions</a><br /><a href="#connections">Manage connections</a><br /><a href="misc.functions">Misc functions</a><br /><a href="#time.functions">Time extension functions</a></p>
+<div id="read.xlx" class="section level1">
+<h1>read.xlx</h1>
+<div id="by-antonio-fasano" class="section level2">
+<h2>by Antonio Fasano</h2>
+<p>There is a new function in the <code>read.*</code> family, <code>read.xlx</code>, which can read Excel xlsx workbook sheets into R data frames. Some features are:</p>
+<ul>
+<li>It can import all, one, or a selection of sheets, where specific sheets are requested by means of their name.</li>
+<li>It can import not all the sheet’s cells, but those comprised in a named range</li>
+<li>it can distinguish between cells formatted as numbers, percent, text and dates,</li>
+<li>Date cells are recognised whatever the language locale.</li>
+<li>Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.<br /></li>
+<li>The filter is not based on any external engine and does not requires Excel to be installed at all. It’s pure R code, so you can read xlsx files on Linux systems.</li>
+</ul>
 </div>
 </div>
-<div id="br.bulk.csv" class="section level1">
-<h1>br.bulk.csv</h1>
-<p><em>Historical data from grouped tickers in a CSV files</em><br />Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels.</p>
-<div id="usage" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.bulk.csv(con, file, start = Sys.Date() - 5, field = &quot;PX_LAST&quot;, 
-    cols = NULL, addtype = FALSE, showtype = FALSE, use.xts = TRUE, 
-    comma = TRUE,
-    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
-    ) </code></pre>
-</div>
-<div id="arguments" class="section level2">
-<h2>Arguments</h2>
+<div id="synopsis" class="section level1">
+<h1>Synopsis</h1>
+<pre><code>read.xlx(
+    file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL,
+    keepblanks=FALSE, allchars=FALSE, general='character', info) </code></pre>
 <dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open(). If <code>NULL</code> simulated values are generated.<br />file
+<dt>file</dt>
+<dd>path to xlsx file.
 </dd>
-<dd>path to CSV file.<br />start
+<dt>sheets</dt>
+<dd>character vector with sheet names to read or NULL to read all.
 </dd>
-<dd>start date. Can be a Date object or an ISO string without separators. Defaults to 5 days before current date.<br />field
+<dt>header.sheets</dt>
+<dd>TRUE if, for all sheets, the first row is a header line to be used for column names. It can also be a logical vector whose values are TRUE (FALSE) for each sheet with (without) header.
 </dd>
-<dd>String denoting the Bloomberg field queried. Defaults to “PX_LAST”. If the field is wrong or not accessible, data will be empty but no error will be raised.<br />cols
+<dt>header.ranges</dt>
+<dd>TRUE if, for all named ranges in <code>range</code>, the first row is a header line to be used for column names. It can also be a logical vector whose values are TRUE (FALSE) for each named range with (without) header.
 </dd>
-<dd>Logical or integer vector for selecting CSV columns (ticker groups). Defaults to all columns.<br />addtype
+<dt>ranges</dt>
+<dd>character vector with sheet names to read or NULL to not read use them.
 </dd>
-<dd>If a string denoting the security type, it will be added to all tickers; if TRUE “Equity”, will be added; if FALSE (the default), nothing will be added.<br />showtype
+<dt>keepblanks</dt>
+<dd>if true do not import rows or columns having only empty cells.
 </dd>
-<dd>if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.<br />use.xts
+<dt>allchars</dt>
+<dd>If false do not infer cell style, but use always R character class.
 </dd>
-<dd>if TRUE (the default) each group will be formatted as an xts object else as a list.<br />comma
-</dd>
-<dd>to be set to FALSE for (non-English) CSV, using semicolon as separator.<br />nrow
-</dd>
-<dd>maximum number of simulated rows (actual is random). Ignored if <code>con!=NULL</code>, it defaults to 5.<br />empty.sec
-</dd>
-<dd>ratio of securities returning no data. Ignored if <code>con!=NULL</code>, it defaults to 0.
+<dt>general</dt>
+<dd>map Excel general format to ‘character’ or ‘numeric’.
 </dd>
 </dl>
-</div>
+<p>info : list of: sheets’ name; vector whose names are ranges and values their sheets; vector whose names are ranges and values their references.</p>
+<p>simplify : remove enclosing list for a single item.</p>
 <div id="details" class="section level2">
 <h2>Details</h2>
-<p>Empty CSV cells or cells interpreted as NAs will be ignored.<br />If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. This function is used with default values, except for <code>nrow, start, same.dates, no.na, empty.sec</code>, which can be explicitly passed as arguments, and <code>sec.names</code> depending on tickers found in the CSV file. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
+<p>If <code>header.sheets</code> is a logical vector, its length should match the length of the workbook sheets, including empty sheets, or the length of <code>sheets</code> if this argument is not NULL. Similarly, if <code>header.ranges</code> is a logical vector, its length should match the length of <code>range</code>.</p>
+<p><code>info</code> can be used only with <code>file</code>. The elements name of the list returned are: wbsheets, rgsheets, rgrefs.</p>
 </div>
-<div id="value" class="section level2">
-<h2>Value</h2>
-<p>a list where each element is the historical data of a CSV group.<br />If <code>use.xts=TRUE</code>, elements are xts object, where each column is the historical data of a security.<br />If <code>use.xts=FALSE</code>, elements are sub-list, where each element is the historical data of a security.<br />If there is only one group, the first (and unique) element of the list will be returned.</p>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>Currently the script is not in package form so, after downloading it, just source the R source with:</p>
+<pre><code>source('path\to\readxlx.r')</code></pre>
+<p>You are done.</p>
 </div>
-<div id="demonstration" class="section level2">
-<h2>Demonstration</h2>
-<p>A sample CSV with Bloomberg tickers will look like follows:</p>
-<pre class="r"><code>read.csv(&quot;res/br.tck.csv&quot;)</code></pre>
-<pre><code>##          Financial     Technology      Indices
-## 1   3988 HK Equity QCOM US Equity    DJI Index
-## 2      C US Equity CSCO US Equity DJUSFN Index
-## 3 601288 CH Equity  700 HK Equity  W1TEC Index
-## 4    BAC US Equity  IBM US Equity             
-## 5   HSBA LN Equity INTC US Equity</code></pre>
-<pre class="r"><code># This file is part of BloomR and anyway available here:
-# XXXXXXXX</code></pre>
-<p>Note:</p>
-<ul>
-<li>CSV group headers are mandatory;</li>
-<li>Group headers need not to be the same length.</li>
-</ul>
-<p>We can now download data:</p>
-<pre class="r"><code>con=NULL</code></pre>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;) </code></pre>
-<pre><code>## Processing Financial ...
-## Loading 3988 HK Equity 
-## Loading C US Equity 
-## Loading 601288 CH Equity 
-## Loading BAC US Equity 
-## Loading HSBA LN Equity 
-## Processing Technology ...
-## Loading QCOM US Equity 
-## Loading CSCO US Equity 
-## Loading 700 HK Equity 
-## Loading IBM US Equity 
-## Loading INTC US Equity 
-## Processing Indices ...
-## Loading DJI Index 
-## Loading DJUSFN Index 
-## Loading W1TEC Index</code></pre>
-<p>Above you see some info about data being processed that we will not show anymore in the following.</p>
-<p>If you want to have detailed ticker descriptions, see <a href="#br.bulk.desc.exem">br.bulk.desc Example</a>. Downloaded data look like follows:</p>
-<pre class="r"><code>data</code></pre>
-<pre><code>## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2014-12-01      NA 10.037        NA     NA      NA
-## 2014-12-02   9.829 11.735        NA     NA   10.23
-## 2014-12-04   9.285     NA        NA 10.877      NA
-## 2014-12-05      NA     NA    10.315     NA      NA
-## 
-## $Technology
-##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2014-12-01   9.813      NA  8.241 10.042   8.255
-## 2014-12-02      NA   8.755 10.065     NA      NA
-## 2014-12-03   9.866  11.023 10.033  9.851      NA
-## 2014-12-04      NA      NA     NA  9.499      NA
-## 2014-12-05   9.422   9.693  7.329 11.023   9.117
-## 
-## $Indices
-##               DJI DJUSFN W1TEC
-## 2014-12-03 10.288     NA    NA
-## 2014-12-04     NA 10.085    NA
-## 2014-12-05 10.278     NA 9.095</code></pre>
-<p>Note:</p>
-<ul>
-<li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />If this piece of info is significant for you, pass <code>showtype = TRUE</code>.</p></li>
-<li><p>Time series start date defaults to 5 days before current date, unless you set <code>start</code> to: an R Date object (<code>start=as.Date(&quot;2014/9/30&quot;)</code>) or to a more friendly ISO string (<code>start=&quot;20140930&quot;)</code>).</p></li>
-</ul>
-<p>Data are stored as a list of xts objects, each representing one group of tickers in the CSV file.</p>
-<pre class="r"><code>length(data)</code></pre>
-<pre><code>## [1] 3</code></pre>
-<pre class="r"><code>names(data)</code></pre>
-<pre><code>## [1] &quot;Financial&quot;  &quot;Technology&quot; &quot;Indices&quot;</code></pre>
-<pre class="r"><code>class(data$Financial)</code></pre>
-<pre><code>## [1] &quot;xts&quot; &quot;zoo&quot;</code></pre>
-<p>If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:</p>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, use.xts=FALSE) </code></pre>
-<pre class="r"><code>length(data)</code></pre>
-<pre><code>## [1] 3</code></pre>
-<pre class="r"><code>names(data)</code></pre>
-<pre><code>## [1] &quot;Financial&quot;  &quot;Technology&quot; &quot;Indices&quot;</code></pre>
-<pre class="r"><code>class(data$Financial)</code></pre>
+<div id="use-it-in-the-simplest-form" class="section level2">
+<h2>Use it in the simplest form</h2>
+<p>Assume you have the spreadsheet <code>survey.xlsx</code>, with consisting of an empty sheet and two sheets <code>Survey1</code> and <code>Survey2</code> with plain formatted data like the following (anyway a <code>survey.xlsx</code> spreadsheet should accompany this manual):</p>
+<p><img src="data:image/png;base64,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" alt="figure" /></p>
+<p>A file should come together with this manual, <code>survey.xlsx</code> which you can use to run the same code as here.</p>
+<p>To import the file with all sheets simply run:</p>
+<pre class="r"><code>surv=read.xlx('survey.xlsx')</code></pre>
+<p>The result of your import is:</p>
+<pre class="r"><code>class(surv)</code></pre>
 <pre><code>## [1] &quot;list&quot;</code></pre>
-<pre class="r"><code>length(data$Financial)</code></pre>
-<pre><code>## [1] 5</code></pre>
-<pre class="r"><code>names(data$Financial)</code></pre>
-<pre><code>## [1] &quot;3988 HK&quot;   &quot;C US&quot;      &quot;601288 CH&quot; &quot;BAC US&quot;    &quot;HSBA LN&quot;</code></pre>
-<pre class="r"><code>class(data$Financial$`BAC US`)</code></pre>
+<pre class="r"><code>surv</code></pre>
+<pre><code>## $Survey1
+##       1     2
+## 1  Boys Girls
+## 2    10    20
+## 3    30    40
+## 6 Young   Old
+## 7  &lt;NA&gt;    20
+## 8    30    40
+## 
+## $Survey2
+##    1  3
+## 1 EU US
+## 2 10 20
+## 3 30 40</code></pre>
+<pre class="r"><code>lapply(surv, class)</code></pre>
+<pre><code>## $Survey1
+## [1] &quot;data.frame&quot;
+## 
+## $Survey2
+## [1] &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>names(surv$Survey1) </code></pre>
+<pre><code>## [1] &quot;1&quot; &quot;2&quot;</code></pre>
+<p>Following the general convention for the <code>read.*</code> family of functions, the sheets are converted into data frames, plus data frames are wrapped into a list. The data frame comprising the list are named like the equivalent Excel sheet, here <code>Survey1</code> and <code>$Survey2</code>. As you guess from the output:</p>
+<ol style="list-style-type: decimal">
+<li><p>Blank sheets are by default not imported.</p></li>
+<li><p>By default Excel column letters are converted to digits and set as the name of the data frame columns.</p></li>
+<li><p>Blank lines, that is whole blank rows or columns, are removed, instead single blank cells inside data tables are reported as NA.</p></li>
+<li><p>By default it is possible to identify skipped blank lines by reading the sequence of row and column numbers.</p></li>
+</ol>
+<p>In case cells are not plain formatted and formatting inside columns is inconsistent R will coerce incoherent cell to the column prevailing format and issue a warning.</p>
+</div>
+<div id="import-individual-workbook-items" class="section level2">
+<h2>Import individual workbook items</h2>
+<p>We can customise the default behaviour. For example let us assume we want to import only the sheet “Survey2”</p>
+<pre class="r"><code>surv= read.xlx('survey.xlsx', sheets=c('survey2'))</code></pre>
+<p>As usual for a single item <code>sheets=c(&quot;survey2&quot;)</code> can be shortened as <code>sheets='survey2'</code></p>
+<p>Note that, respecting Excel convention the name is not case sensitive, so <code>survey2</code> works even if the actual sheet name is <code>Survey2</code>. The name used in the importing command will be the one stored in R, in case you later need to address it.</p>
+<p>Another thing is that, since you asked for a single sheet, there is no need to wrap it in a now worthless list:</p>
+<pre class="r"><code>class(surv)</code></pre>
 <pre><code>## [1] &quot;data.frame&quot;</code></pre>
-<p>By defaults time series list values from the Bloomberg “PX_LAST” field. To change the default field use:</p>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, field = &quot;PX_OPEN&quot;) </code></pre>
-<p>You can choose to import only some of the CSV groups</p>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, cols=c(1,3))
-## or equivalently:
-data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, cols=c(TRUE, FALSE, TRUE))</code></pre>
-<pre class="r"><code>names(data)</code></pre>
-<pre><code>## [1] &quot;Financial&quot; &quot;Indices&quot;</code></pre>
-<p>In the CSV file, if your tickers represent all equities, you can omit the type.</p>
-<p>Consider this CSV:</p>
-<pre class="r"><code>read.csv(&quot;res/br.eqt.csv&quot;)</code></pre>
-<pre><code>##   Financial Technology
-## 1   3988 HK    QCOM US
-## 2      C US    CSCO US
-## 3 601288 CH     700 HK
-## 4    BAC US     IBM US
-## 5   HSBA LN    INTC US</code></pre>
-<pre class="r"><code># This file is part of BloomR and anyway available here:
-# XXXXXXXX</code></pre>
-<p>Note how the “Equity” type is missing! But you can use this CSV file with <code>addtype</code>:</p>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.eqt.csv&quot;, addtype=TRUE)</code></pre>
-<p>Before going home, don’t forget to:</p>
-<pre class="r"><code>br.close(con)</code></pre>
+<pre class="r"><code>surv</code></pre>
+<pre><code>##    1  3
+## 1 EU US
+## 2 10 20
+## 3 30 40</code></pre>
+<p>What about using the first sheet row as the data table names?</p>
+<pre class="r"><code>surv=read.xlx('survey.xlsx', sheets=c(&quot;survey1&quot;, &quot;survey2&quot;), header.sheets=c(FALSE, TRUE))</code></pre>
+<p>With <code>header.sheets</code> we say for which imported sheets first row should be used for labelling data frame. In our case this is resp. <code>FALSE</code>, <code>TRUE</code> for “survey1”, “survey2”. In fact:</p>
+<pre class="r"><code>surv</code></pre>
+<pre><code>## $survey1
+##       1     2
+## 1  Boys Girls
+## 2    10    20
+## 3    30    40
+## 6 Young   Old
+## 7  &lt;NA&gt;    20
+## 8    30    40
+## 
+## $survey2
+##   EU US
+## 2 10 20
+## 3 30 40</code></pre>
+<pre class="r"><code>names(surv$survey2)</code></pre>
+<pre><code>## [1] &quot;EU&quot; &quot;US&quot;</code></pre>
+<p>There are no more digits for data frame names, but the names, taken from the first sheet row, are <code>&quot;EU&quot; &quot;US&quot;</code>.</p>
+<p><code>header.sheets</code> are recycled. So <code>sheets=c(&quot;survey1&quot;, &quot;survey2&quot;), header.sheets=TRUE</code> means that for both “survey1” and “survey2” the first row will be used for labeling.</p>
+<p>Note that the letter case is the same as the issued command, therefore now it is lowercase, while before it was the original case used in the file.</p>
+<p>It is possible to query for named ranges too. The file <code>survey.xlsx</code> contains the named ranges <code>education</code> and <code>students</code>.</p>
+<pre class="r"><code>surv= read.xlx('survey.xlsx', ranges=c('education', 'students'))</code></pre>
+<pre class="r"><code>surv</code></pre>
+<pre><code>## $education
+##       1   2
+## 6 Young Old
+## 7  &lt;NA&gt;  20
+## 8    30  40
+## 
+## $students
+##      1     2
+## 1 Boys Girls
+## 2   10    20
+## 3   30    40</code></pre>
+<p>Again we can use the first line as header:</p>
+<pre class="r"><code>surv= read.xlx('survey.xlsx', ranges='education', header.ranges=TRUE)</code></pre>
+<pre class="r"><code>surv</code></pre>
+<pre><code>##   Young Old
+## 7  &lt;NA&gt;  20
+## 8    30  40</code></pre>
 </div>
-</div>
-<div id="br.bulk.desc" class="section level1">
-<h1>br.bulk.desc</h1>
-<div id="description" class="section level2">
-<h2>Description</h2>
-<p>Get security descriptions for a vector of tickers.</p>
-</div>
-<div id="usage-1" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.bulk.desc(con, tiks) </code></pre>
-</div>
-<div id="arguments-1" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()<br />tiks
-</dd>
-<dd>character vector of the tickers queried for data
-</dd>
-</dl>
-</div>
-<div id="value-1" class="section level2">
-<h2>Value</h2>
-<p>A list of data frames, each representing the description of a security. For the format of data frames see the function <code>br.desc</code>.</p>
-</div>
-<div id="br.bulk.desc.exem" class="section level2">
-<h2>Example</h2>
-<pre class="r"><code>con=br.open()
-data=read.csv(&quot;res/br.tck.csv&quot;, as.is=TRUE)
-br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
-br.close(con)</code></pre>
-</div>
-</div>
-<div id="br.bulk.idx" class="section level1">
-<h1>br.bulk.idx</h1>
-<div id="description-1" class="section level2">
-<h2>Description</h2>
-<p>Returns the historical data for the constituents of an index in xts or list format.</p>
-</div>
-<div id="usage-2" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.bulk.idx(con, index, start = Sys.Date() - 5, field = &quot;PX_LAST&quot;,  
-     showtype = FALSE, include.idx = TRUE, use.xts = TRUE, nsec = 50,  
-     price = TRUE, nrow = 5, same.dates=FALSE, no.na=FALSE, empty.sec = 0,  
-     sec.names = NULL)  </code></pre>
-</div>
-<div id="arguments-2" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open(). If <code>NULL</code> simulated values are generated.<br />index
-</dd>
-<dd>string denoting the index ticker with or without the final security type label (‘Index’)<br />include.idx
-</dd>
-<dd>if TRUE (default) returns also historical data for the index.<br />nsec
-</dd>
-<dd>number of simulated index constituents. Ignored if <code>con!=NULL</code>, it defaults to 10.<br />sec.names
-</dd>
-<dd>character vector with names of sampled index constituents. Ignored if <code>con!=NULL</code>. By default security names are like ‘memb1’, ‘memb2’, etc.<br />For other arguments see the function <code>br.bulk.csv</code>
-</dd>
-</dl>
-</div>
-<div id="details-1" class="section level2">
-<h2>Details</h2>
-<p>If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. This function is used with default values, except for <code>nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names</code>.</p>
-</div>
-<div id="value-2" class="section level2">
-<h2>Value</h2>
-<p>If <code>use.xts=TRUE</code>, an xts object, where each column is the historical data of a constituent.<br />If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a constituent.<br />If <code>include.idx=TRUE</code>, the last column or element will be the historical data of the index.</p>
-</div>
-</div>
-<div id="br.bulk.tiks" class="section level1">
-<h1>br.bulk.tiks</h1>
-<p><em>Bulk historical data</em><br />Returns the historical data for a vector of tickers in xts or list format</p>
-<div id="usage-3" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.bulk.tiks(con, tiks, start=Sys.Date()-5, field=&quot;PX_LAST&quot;,
-    addtype=FALSE, showtype=FALSE, use.xts=TRUE,
-    price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0) </code></pre>
-</div>
-<div id="arguments-3" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>tiks</dt>
-<dd>character vector of the tickers queried for data
-</dd>
-</dl>
-<p>For other arguments see the function <code>br.bulk.csv</code></p>
-</div>
-<div id="details-2" class="section level2">
-<h2>Details</h2>
-<p>If an element of <code>tiks</code> is <code>NA</code> or empty (<code>&quot;&quot;</code>) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.<br />If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. Sampled values are based on default values of <code>br.sample()</code>, but it is possible to set explicitly <code>start, same.dates, no.na, empty.sec</code>; <code>sec.names</code> depends on <code>tiks</code> argument. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
-</div>
-<div id="value-3" class="section level2">
-<h2>Value</h2>
-<p>If <code>use.xts=TRUE</code>, an xts object, where each column is the historical data of a security.<br />If <code>use.xts=FALSE</code>, a list, where each element is the historical data of a security.</p>
-</div>
-<div id="example" class="section level2">
-<h2>Example</h2>
-<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
-br.close(con) # Use the token to release the connection</code></pre>
-</div>
-<div id="see-also" class="section level2">
-<h2>See Also</h2>
-<p><a href="#br.bulk.csv">br.bulk.csv</a></p>
-</div>
-</div>
-<div id="br.descbr.desc" class="section level1">
-<h1>br.desc{br.desc}</h1>
-<div id="description-2" class="section level2">
-<h2>Description</h2>
-<p>Get security descriptions.</p>
-</div>
-<div id="usage-4" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.desc(con, tik)</code></pre>
-</div>
-<div id="arguments-4" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()<br />tik
-</dd>
-<dd>string denoting the ticker queried for data
-</dd>
-</dl>
-</div>
-<div id="value-4" class="section level2">
-<h2>Value</h2>
-<p>A data frame containing the value of the Bloomberg fields form <code>ds001</code> to <code>ds009</code> and the long field <code>CIE_DES_BULK</code>.</p>
-</div>
-</div>
-<div id="br.sample" class="section level1">
-<h1>br.sample</h1>
-<div id="description-3" class="section level2">
-<h2>Description</h2>
-<p>Return simulated historical data for n securities in xts or df format.</p>
-</div>
-<div id="usage-5" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(),
-mean=ifelse(price, 10, 0.1), sd=1, jitter=0, same.dates=FALSE, no.na=FALSE,  
-empty.sec=0, df=FALSE, sec.names=NULL)</code></pre>
-</div>
-<div id="arguments-5" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>nrow</dt>
-<dd>number of simulated data points for each security; if <code>same.dates=FALSE</code>, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities.<br />nsec
-</dd>
-<dd>number of simulated securities (defaults to 1).<br />price
-</dd>
-<dd>if TRUE (default), simulated values are non-negative.<br />start
-</dd>
-<dd>start date. Can be a Date object or an ISO string without separators. Defaults to current date.<br />mean
-</dd>
-<dd>mean of security generated values. If <code>price=TRUE</code>, default to 10 else defaults to 0.1.<br />sd
-</dd>
-<dd>sd of security generated values. It defaults to 1.<br />jitter
-</dd>
-<dd>modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.<br />same.dates
-</dd>
-<dd>if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed <code>nrow</code>.<br />no.na
-</dd>
-<dd>if <code>same.dates=FALSE</code>, when merging sampled security data NAs are likely to be produced. If <code>no.na=FALSE</code> (default) they will be left, otherwise they will be removed using R <code>na.omit</code><br />df
-</dd>
-<dd>if FALSE (default), the output will be an xts object, else the output will be a data frame with the first column containing the dates of the sampled data.<br />sec.names
-</dd>
-<dd>character vector for column names. If <code>df=FALSE</code> the length of the vector should be equal to <code>nsec</code>, else to <code>nsec + 1</code> (because of the first column containing dates). By default security names are like ‘sample1’, ‘sample2’, etc. and the date column is named ‘date’.<br />empty.sec
-</dd>
-<dd>ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.
-</dd>
-</dl>
-</div>
-<div id="value-5" class="section level2">
-<h2>Value</h2>
-<p>If <code>df=TRUE</code>, a data frame object, where the first column is the vector with all generated dates merged and each subsequent column contains the sampled data of a security. If <code>df=FALSE</code>, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if <code>same.dates=FALSE</code> and/or <code>empty.sec!=0</code> generated data points will have different length and the the date gaps will be filled with NAs, except if <code>no.na=TRUE</code>. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with <code>dimnames(*)[[2]]</code>.</p>
-</div>
-</div>
-<div id="deprecated.functions" class="section level1">
-<h1>Deprecated functions</h1>
-<div id="description-4" class="section level2">
-<h2>Description</h2>
-<p>Functions not used anymore generating an informative error</p>
-</div>
-<div id="usage-6" class="section level2">
-<h2>Usage</h2>
-<pre><code>bbg.open()
-bbg.close(con)</code></pre>
-</div>
-<div id="arguments-6" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()
-</dd>
-</dl>
-</div>
-<div id="example-1" class="section level2">
-<h2>Example</h2>
-<pre><code>con=bbg.open()
-##  Sorry 'bbg.open' is now deprecated. Please use br.open().</code></pre>
-</div>
-</div>
-<div id="Internal" class="section level1">
-<h1>Internal BloomR functions</h1>
-<div id="description-5" class="section level2">
-<h2>Description:</h2>
-<p>Internal functions not to be used by the end user</p>
-</div>
-<div id="usage-7" class="section level2">
-<h2>Usage:</h2>
-<pre><code>.br.is.con(con)
-.br.types
-.br.check.type(type) 
-.br.cuttype(type)
-.br.jar()</code></pre>
-</div>
-<div id="arguments-7" class="section level2">
-<h2>Arguments:</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()<br />type
-</dd>
-<dd>a string representing the security type
-</dd>
-</dl>
-</div>
-<div id="details-3" class="section level2">
-<h2>Details</h2>
-<p><code>.br.is.con</code> checks for the validity of a connection token. <code>.br.types</code> is a character vector with security types suitable as an argument for <code>br.bulk*</code> functions. <code>.br.check.type</code> checks if a type matches <code>.br.types</code>. <code>.br.cuttype</code> cuts trailing security type from character vector. <code>.br.jar()</code> returns the path to the blpapi*.jar</p>
-</div>
-</div>
-<div id="connections" class="section level1">
-<h1>Manage connections</h1>
-<div id="description-6" class="section level2">
-<h2>Description</h2>
-<p>Open and close the connection to the Bloomberg service.</p>
-</div>
-<div id="usage-8" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.open()
-br.close(con)</code></pre>
-</div>
-<div id="arguments-8" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>the connection token returned from br.open()
-</dd>
-</dl>
-</div>
-<div id="details-4" class="section level2">
-<h2>Details</h2>
-<p><code>br.open</code> returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to <code>br.close</code>. If you are using simulated data and so your connection token is NULL, closing the connection is optional. Anyway running <code>br.close(con)</code>, even if <code>con==NULL</code> avoids adding this line when you switch to a actual data download.</p>
-</div>
-<div id="example-2" class="section level2">
-<h2>Example</h2>
-<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
-br.close(con) # Use the token to release the connection</code></pre>
-</div>
-</div>
-<div id="misc-functionsmisc.functions" class="section level1">
-<h1>Misc functions{misc.functions}</h1>
-<div id="description-7" class="section level2">
-<h2>Description</h2>
-<p><code>rm.all</code> deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot). <code>rm.var</code> deletes non-function objects from memory.</p>
-</div>
-<div id="usage-9" class="section level2">
-<h2>Usage</h2>
-<pre><code>rm.all()
-rm.var()</code></pre>
-</div>
-</div>
-<div id="time.functions" class="section level1">
-<h1>Time extension functions</h1>
-<div id="description-8" class="section level2">
-<h2>Description</h2>
-<p>Functions to get, set dates.</p>
-</div>
-<div id="usage-10" class="section level2">
-<h2>Usage</h2>
-<pre><code>day(d)
-month(d)
-year(d)
-day(d, n)
-month(d, n)
-year(d, n)
-day(d)=x
-month(d)=x
-year(d)=x
-d %+% n
-d %-% n
-last.day(d)
-day.us(d1, d2)</code></pre>
-</div>
-<div id="arguments-9" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>d, d1, d2</dt>
-<dd>objects of class date<br />x
-</dd>
-<dd>an integer representing the day/month/year<br />n
-</dd>
-<dd>an integer representing the months to add/subtract
-</dd>
-</dl>
-</div>
-<div id="details-5" class="section level2">
-<h2>Details</h2>
-<p>If <code>component</code> is <code>day</code>, <code>month</code> or <code>year</code>: <code>component(d)</code> returns the <em>component</em> of the date <code>d</code> as an integer; <code>component(d, n)</code> returns the date <code>d</code> with the <em>component</em> set to the integer <code>n</code>; <code>component(d)= n</code> sets to the <em>component</em> of the date <code>d</code> to the integer <code>n</code>.<br /><code>%+%</code> and <code>%-%</code> add and subtract months to a date.<br /><code>last.day</code> returns last day of the month as an integer. <code>day.us</code> calculates date differences with the US convention.</p>
+<div id="details-for-the-non-causal-user" class="section level2">
+<h2>Details for the non causal user</h2>
+<p>Sheets are converted into data frame following other <code>read.*</code> function behaviour, which means that the values of a column share a common type. Anyway in the same Excel column different cells can have different formats. Why loosing this information? It would have been possible to use a list object to model a sheet and so retain the differences, but most of the R statistic functions can effectively operate when at least at column level the formats are the same. That being said, when in a column there are different cell formats the prevailing compatible styles, will be applied to all. This willoften involve a the “character”, because it is always compatible with numeric formats too.</p>
+<p>Given this recognised Excel style as R equivalent are:</p>
+<ul>
+<li>number, accounting, currency, fraction, scientific: converted to R numeric format</li>
+<li>percent: converted to R numeric format, with “percent” attribute</li>
+<li>date: converted to R date or datetime format</li>
+<li>time: converted to R time format</li>
+<li>text: converted to R character format</li>
+<li>general: converted to R character format</li>
+</ul>
+<p>To see how this works in practice:</p>
+<pre class="r"><code>surv=read.xlx('survey.xlsx', &quot;survey2&quot;)</code></pre>
+<pre class="r"><code>surv</code></pre>
+<pre><code>##    1  3
+## 1 EU US
+## 2 10 20
+## 3 30 40</code></pre>
+<p>If the Excel user has not set a specific cell style. All cells have the Excel “general” format and the general format is mapped to R “character”.</p>
+<p>Let us assume that the user has explicitly set the values in row 2 and 3 to the Excel number style. Given the previous command</p>
+<pre class="r"><code> surv[[1]]</code></pre>
+<pre><code>## [1] &quot;EU&quot; &quot;10&quot; &quot;30&quot;</code></pre>
+<pre class="r"><code>class(surv[[1]])</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<p>Numeric values 10 and 30 are converted to character to be compatible with the string “EU”.</p>
+<p>If you want to reduce the progress messages printed (perhaps because you are using a number of batch jobs), use:</p>
+<pre><code>suppressMessages( x=read.xlx('survey.xlsx') )</code></pre>
+<p>You will only get one line of +’s. I am thinking if it is convenient to totally abolish it.</p>
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->
+<!--  LocalWords:  xlsx Setup
+ -->
 </div>
 </div>
 
