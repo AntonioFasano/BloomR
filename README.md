@@ -91,7 +91,7 @@ If you want to find  `BloomR.zip` too in your work directory use:
 
     
 <!-- Local Variables: -->
-<!-- mode: markdown -->s
+<!-- mode: markdown -->
 <!-- End: -->
 
 <!--  LocalWords:  BloomR Bloomberg CSV
