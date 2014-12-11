@@ -4,6 +4,10 @@
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
 
+## Credit where credit's due
+## Several  ideas where taken from code blogs and forums like Stack Overflow. 
+## Please help me to give credits where credit's due.
+
 read.xlx= function(
     file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL,
     keepblanks=FALSE, allchars=FALSE, general='character', simplify=TRUE, info=FALSE) {
