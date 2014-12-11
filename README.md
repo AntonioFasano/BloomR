@@ -7,10 +7,11 @@ BloomR
 What's new
 ----------
 
-### BloomR-0.3-dev
+### BloomR-1.0-dev
 
 Improvements over debut version 0.1
 
+- BloomR development is now open source on Github.com.
 - Only 64 bit (it means less space)
 - Updated to R-3.1.2
 - New functions for bulk download using tickers from CSV files, from index constituents or from ticker (character) vectors.
@@ -19,6 +20,9 @@ Improvements over debut version 0.1
 - `bbg.*` suffix is deprecated now use `br.*`
 - A formal documentation (see bloomr.html, or bloomr.pdf)
 - Demo and examples.
+- BloomR can be downloaded as a binary or generated from an R script. So you can stay yourself updated with the latest version of R (and related packages).
+
+
 
 Plus read.xlx joins the family. With this function you can  can read Excel xlsx workbook sheets into R data frames.  Some features are:
 
