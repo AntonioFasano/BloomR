@@ -9,7 +9,7 @@ What's new
 
 ### BloomR-1.0-dev
 
-Improvements over debut version 0.1
+Improvements over Début version:
 
 - BloomR development is now open source on Github.com.
 - Only 64 bit (it means less space)
@@ -24,7 +24,7 @@ Improvements over debut version 0.1
 
 
 
-Plus read.xlx joins the family. With this function you can  can read Excel xlsx workbook sheets into R data frames.  Some features are:
+Plus read.xlx joins the family. With this function you can read Excel xlsx workbook sheets into R data frames.  Some features are:
 
 * It can import all, one, or a selection of sheets, where specific sheets are requested by means of their name.
 * Instead of importing all the sheets' cells, it can import only those comprised in a named range.
