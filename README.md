@@ -15,10 +15,10 @@ Improvements over Début version:
 - Only 64 bit (it means less space).
 - Updated to R-3.1.2.
 - New functions for bulk download using tickers from CSV files, from index constituents or from ticker vectors.
-- More consistent naming scheme: simulated download allows to prepare script at home and test on Bloomberg terminal later.
+- Simulated download allows to prepare script at home and test on Bloomberg terminal later.
 - Bulk and non-bulk download of many description fields.
-- `bbg.*` suffix is deprecated now use `br.*`
-- A formal documentation (see bloomr.html, or bloomr.pdf)
+- More consistent naming scheme: `bbg.*` suffix is deprecated now, use `br.*`
+- A formal documentation (see bloomr.html or [bloomr.pdf](https://github.com/AntonioFasano/BloomR/blob/master/bloomr.pdf?raw=true))
 - Demo and examples.
 - BloomR can be downloaded as a binary or generated from an R script. So you can stay always updated with the latest version of R (and related packages).
 
@@ -32,22 +32,22 @@ Plus read.xlx joins the family. With this function you can read Excel xlsx workb
 * Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.  
 * The filter is not based on any external engine and does not requires Excel to be installed at all. It's pure R code, so you can read xlsx files on Linux systems. 
 
-See xlx.html, or xlx.pdf user manual for more.
+See xlx.help.html, or [xlx.help.pdf](https://github.com/AntonioFasano/BloomR/blob/master/xlx.help.pdf?raw=true) user manual for more.
 
-The new version of the BloomR manual for the lecturers (in slide format) is coming soon. 
+The new version of the BloomR manual for lecturers (in slide format) is coming soon. 
  
  
 Documentation
 -------------
 
 Find in your BloomR directory the subdirectory `help` intended for learning and reference material.  
-As this is development version the help resources are not yet finalised!
+As this is a development version the help resources are not yet finalised!
 
 Start to get results in BloomR immediately 
 ----------------------------------------
 
-1. Download [BloomR Turandot](https://www.sugarsync.com/pf/D9604848_697_6715279040")
-2. Extract the zip file on your USB drive (or wherever) 
+1. Download [BloomR Turandot](https://www.sugarsync.com/pf/D9604848_697_6715279040").
+2. Extract the zip file on your USB drive (or wherever).
 3. Run “BloomR.exe” in the main folder. 
 4. Log to Bloomberg service on the same PC (if you are not logged already).
 5. To get some data, type in the BloomR console:
@@ -64,18 +64,18 @@ Build instructions
 
 ### For the impatient
 
-Download [bloomr.build.R](https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.R) (as text file, *not as an HTML file*, and make sure your browser does not change ".R" extension to ".html" or ".txt") and under R for Windows issue:
+Download [bloomr.build.R](https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.R) (as a text file, *not as a HTML file*, and make sure your browser does not change ".R" extension to ".html" or ".txt"). In the console of R for Windows issue:
 
 	source("path\to\bloomr.build.R")
 	makeBloomR("path\to\workDir")
 
 
-You will find your portable BloomR directory  inside your `workDir`.
+You will find your portable BloomR directory  inside `workDir`.
 
 **Browser oddities**
 
-Downloading a file _as is_  from you browser can be tangled. Anyway choosing Text or All-Files in the save-as option from the save dialog, should do the trick. Then, double quoting the file name should give the proper extension, without extra suffix. Anyway, in as far as the format is text (not HTML), even if you get a distorted name like "bloomr_build_R.txt", you can always adjust the `source()`-path accordingly.   
-Yes, bowsers are strange sometmes. 
+Downloading a file _as is_  from you browser can be tangled. Anyway, choosing Text or All-Files in the save-as option from the save dialog should do the trick. Then, double quoting the file name should give the proper extension, without extra suffix. Anyway, in as far as the format is text (not HTML), even if you get a distorted name, like "bloomr_build_R.txt", you can always adjust the `source()`-path accordingly.   
+Yes, bowsers are strange sometimes. 
 
 
 ### More options and requirements
@@ -91,7 +91,7 @@ If you want to find  `BloomR.zip` too in your work directory use:
 
     
 <!-- Local Variables: -->
-<!-- mode: markdown -->
+<!-- mode: markdown -->s
 <!-- End: -->
 
 <!--  LocalWords:  BloomR Bloomberg CSV
