@@ -231,7 +231,8 @@ expand=function(work, overwrite){
 
 }
 
-### Make BloomR directory tree  
+### Make BloomR directory tree
+##  Note there is a move here: so debugging this step after moving will not work
 bloomrTree=function(work, overwrite){
 
     ## Make dir
@@ -275,7 +276,7 @@ bloomrTree=function(work, overwrite){
     download.git(work, "bloomr.pdf", "bloomR/help/bloomr.pdf", overwrite)
     download.git(work, "xlx.help.html", "bloomR/help/xlx.help.html", overwrite)     
     download.git(work, "xlx.help.pdf", "bloomR/help/xlx.help.pdf", overwrite)
-        
+    
 }
 
 
@@ -308,7 +309,7 @@ initScripts=function(work, overwrite){
     download.git(work, "res/semic.csv", "bloomR/mybloomr/semic.csv", overwrite)
     download.git(work, "res/tickers.csv", "bloomR/mybloomr/tickers.csv", overwrite)
     download.git(work, "res/tickers.eqt.csv", "bloomR/mybloomr/tickers.eqt.csv", overwrite)
-    download.git(work, "res/tickers.eqt.csv", "bloomR/mybloomr/tryme.r", overwrite)
+    download.git(work, "tryme.R", "bloomR/mybloomr/tryme.R", overwrite)
 
 
                

@@ -125,26 +125,27 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2014-12-06   9.467 10.769        NA  8.790   9.890
-## 2014-12-07   9.059     NA     9.860 10.691  12.437
-## 2014-12-08   8.371 11.569     8.998  9.486   7.979
-## 2014-12-09   7.570     NA        NA  9.240   8.734
-## 2014-12-10   8.828     NA     9.198 10.093   7.441
+## 2014-12-06   9.644 12.410        NA  9.790      NA
+## 2014-12-07      NA  9.224     9.827  9.614  11.418
+## 2014-12-08   9.973 11.997        NA 10.369      NA
+## 2014-12-09  10.126     NA        NA  8.941   8.666
+## 2014-12-10   9.233  8.719     9.522  9.793   8.718
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2014-12-06      NA  12.825     NA     NA      NA
-## 2014-12-07      NA      NA 11.158 10.786  10.087
-## 2014-12-08      NA      NA  9.370  9.416      NA
-## 2014-12-09      NA  11.270 11.030  8.976      NA
-## 2014-12-10   9.282      NA  9.587  8.681   9.467
+## 2014-12-06  10.794   9.612     NA 10.350      NA
+## 2014-12-07  10.598  10.702     NA  9.966      NA
+## 2014-12-08  10.382      NA     NA  9.577    9.93
+## 2014-12-09      NA  11.908   9.55     NA      NA
+## 2014-12-10  10.984  10.810     NA  8.737      NA
 ## 
 ## $Indices
-##              DJI DJUSFN  W1TEC
-## 2014-12-06    NA  9.316 11.329
-## 2014-12-07    NA     NA 11.491
-## 2014-12-08    NA     NA 11.053
-## 2014-12-09 9.985     NA     NA</code></pre>
+##               DJI DJUSFN  W1TEC
+## 2014-12-06     NA 11.427 10.125
+## 2014-12-07     NA  8.538 10.403
+## 2014-12-08  9.748 10.407 11.819
+## 2014-12-09     NA 10.908  9.645
+## 2014-12-10 10.406 11.452  8.693</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />If this piece of info is significant for you, pass <code>showtype = TRUE</code>.</p></li>
@@ -294,10 +295,11 @@ br.close(con)</code></pre>
 <pre><code>## Loading MSFT US Equity 
 ## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2014-12-06   8.252      NA
-## 2014-12-08      NA   9.239
-## 2014-12-09   9.707      NA
-## 2014-12-10      NA   8.411</code></pre>
+## 2014-12-06      NA  11.330
+## 2014-12-07   9.530  10.625
+## 2014-12-08   8.582   9.887
+## 2014-12-09   8.009  10.517
+## 2014-12-10      NA   9.146</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

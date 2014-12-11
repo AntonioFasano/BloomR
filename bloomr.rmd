@@ -8,10 +8,9 @@
 ## Set this to FALSE to work at home
 HAVEBBG=FALSE
 
+
 ## Shortcuts
-
 OTS=opts_template$set
-
 
 OTS(showonly= list(purl=FALSE, eval=FALSE,    include=TRUE))
 OTS(runonly=  list(purl=FALSE, eval=TRUE,     include=FALSE))
@@ -129,11 +128,11 @@ Demonstration
 
 A sample CSV with Bloomberg tickers will look like follows:
 
-```{r br.bulk.csv.demo1, opts.label='runonly'}
+```{r br.bulk.csv.demo1, purl=FALSE, opts.label='runonly'}
 read.csv("res/tickers.csv")
 ```
 
-```{r br.bulk.csv.demo1.show, opts.label='showonly'}
+```{r br.bulk.csv.demo1.show, purl=FALSE, opts.label='showonly'}
 read.csv("tickers.csv")
 ## This file is part of BloomR and anyway available here:
 ## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.csv
@@ -148,18 +147,18 @@ Note:
 
 We can now download data:
 
-```{r br.bulk.csv.demo2, opts.label='bbgtrue', results='hide'}
+```{r br.bulk.csv.demo2, purl=FALSE, opts.label='bbgtrue', results='hide'}
 con=br.open()
 ```
 
-```{r br.bulk.csv.demo2alt, opts.label='bbgfalse'}
+```{r br.bulk.csv.demo2alt, purl=FALSE, opts.label='bbgfalse'}
 con=NULL
 ```
-```{r br.bulk.csv.demo3, opts.label='runonly'}
+```{r br.bulk.csv.demo3, purl=FALSE, opts.label='runonly'}
 data=br.bulk.csv(con, "res/tickers.csv") 
 ```
 
-```{r br.bulk.csv.demo3.show, opts.label='showonly'}
+```{r br.bulk.csv.demo3.show, purl=FALSE, opts.label='showonly'}
 data=br.bulk.csv(con, "tickers.csv") 
 ```
 
@@ -182,7 +181,7 @@ an R Date object (`start=as.Date("2014/9/30")`) or to a  more friendly ISO strin
 Data are stored as a list of xts objects, each representing one group of tickers in the CSV file.
 
 
-```{r br.bulk.csv.demo5, opts.label='showrun'}
+```{r br.bulk.csv.demo5, purl=FALSE, opts.label='showrun'}
 length(data)
 names(data)
 class(data$Financial)
@@ -190,14 +189,14 @@ class(data$Financial)
 
 If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:
 
-```{r br.bulk.csv.demo6, opts.label='runonly', results='hide'}
+```{r br.bulk.csv.demo6, purl=FALSE, opts.label='runonly', results='hide'}
 data=br.bulk.csv(con, "res/tickers.csv", use.xts=FALSE) 
 ```
-```{r br.bulk.csv.demo6.show, opts.label='showonly'}
+```{r br.bulk.csv.demo6.show, purl=FALSE, opts.label='showonly'}
 data=br.bulk.csv(con, "tickers.csv", use.xts=FALSE) 
 ```
 
-```{r br.bulk.csv.demo7, opts.label='showrun'}
+```{r br.bulk.csv.demo7, purl=FALSE, opts.label='showrun'}
 length(data)
 names(data)
 class(data$Financial)
@@ -208,29 +207,29 @@ class(data$Financial$`BAC US`)
 
 By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
 
-```{r br.bulk.csv.demo8, opts.label='runonly',  results='hide'}
+```{r br.bulk.csv.demo8, purl=FALSE, opts.label='runonly',  results='hide'}
 data=br.bulk.csv(con, "res/tickers.csv", field = "PX_OPEN") 
 ```
 
-```{r br.bulk.csv.demo8.show, opts.label='showonly'}
+```{r br.bulk.csv.demo8.show, purl=FALSE, opts.label='showonly'}
 data=br.bulk.csv(con, "tickers.csv", field = "PX_OPEN") 
 ```
 
 
 You can choose to import only some of the CSV groups 
 
-```{r br.bulk.csv.demo9, opts.label='runonly'}
+```{r br.bulk.csv.demo9, purl=FALSE, opts.label='runonly'}
 data=br.bulk.csv(con, "res/tickers.csv", cols=c(1,3))
 ```
 
-```{r br.bulk.csv.demo9.show, opts.label='showonly'}
+```{r br.bulk.csv.demo9.show, purl=FALSE, opts.label='showonly'}
 data=br.bulk.csv(con, "tickers.csv", cols=c(1,3))
 ## or equivalently:
 data=br.bulk.csv(con, "tickers.csv", cols=c(TRUE, FALSE, TRUE))
 ```
 
 
-```{r br.bulk.csv.demo10, opts.label='showrun'}
+```{r br.bulk.csv.demo10, purl=FALSE, opts.label='showrun'}
 names(data)
 ```
  
@@ -238,11 +237,11 @@ In the CSV file, if your tickers represent all equities, you can omit the type.
 
 Consider this CSV:
 
-```{r br.bulk.csv.demo11, opts.label='runonly'}
+```{r br.bulk.csv.demo11, purl=FALSE, opts.label='runonly'}
 read.csv("res/tickers.eqt.csv")
 ```
 
-```{r br.bulk.csv.demo11.show, opts.label='showonly'}
+```{r br.bulk.csv.demo11.show, purl=FALSE, opts.label='showonly'}
 read.csv("tickers.eqt.csv")
 ## This file is part of BloomR and anyway available here:
 ## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv
@@ -251,11 +250,11 @@ read.csv("tickers.eqt.csv")
 
 Note how the "Equity" type is missing! But you can use this CSV file with `addtype`:
 
-```{r br.bulk.csv.demo12, opts.label='runonly', results='hide'}
+```{r br.bulk.csv.demo12, purl=FALSE, opts.label='runonly', results='hide'}
 data=br.bulk.csv(con, "res/tickers.eqt.csv", addtype=TRUE)
 ```
 
-```{r br.bulk.csv.demo12.show, opts.label='showonly'}
+```{r br.bulk.csv.demo12.show, purl=FALSE, opts.label='showonly'}
 data=br.bulk.csv(con, "tickers.eqt.csv", addtype=TRUE)
 ```
 
@@ -305,14 +304,14 @@ br.bulk.desc=function(con, tiks) {
 Example{#br.bulk.desc.exem}
 ----------------------------
 
-```{r br.bulk.desc.exem, opts.label='bbgtrue', results='hide'}
+```{r br.bulk.desc.exem, purl=FALSE, opts.label='bbgtrue', results='hide'}
 con=br.open()
 data=read.csv("res/tickers.csv", as.is=TRUE)
 br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
 br.close(con)
 ```
 
-```{r br.bulk.desc.exem.show, opts.label='showonly'}
+```{r br.bulk.desc.exem.show, purl=FALSE, opts.label='showonly'}
 con=br.open()
 data=read.csv("tickers.csv", as.is=TRUE)
 br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
@@ -972,7 +971,7 @@ topics=function(){
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}
 require(knitr)
 require(rmarkdown)
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
+opts.chunk$set(tidy.opts=list(width.cutoff=60))
 knit("bloomr.rmd")
 purl("bloomr.rmd")
 topics()

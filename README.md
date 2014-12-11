@@ -9,14 +9,22 @@ What's new
 
 ### BloomR-0.3-dev
 
-- Only 64 bit
+Improvements over debut version 0.1
+
+- Only 64 bit (it means less space)
 - Updated to R-3.1.2
-- New functions for bulk download from CSV files tickers, from index constituents or from strings.
+- New functions for bulk download using tickers from CSV files, from index constituents or from ticker (character) vectors.
 - Simulated download to prepare script at home and test on Bloomberg terminal later.
 - Bulk and non-bulk download of many description fields.
 - `bbg.*` suffix is deprecated now use `br.*`
-- A formal documentation
+- A formal documentation (see bloomr.html, or bloomr.pdf)
 - Demo and examples.
+
+Plus read.xlx joins the family:
+
+
+
+See xlx.html, or xlx.pdf user manual for more.
 
 
 Manual
