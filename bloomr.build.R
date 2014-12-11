@@ -273,8 +273,8 @@ bloomrTree=function(work, overwrite){
     makeDir(makePath(work, "bloomR/help"), overwrite, "BloomR help directory:")    
     download.git(work, "bloomr.html", "bloomR/help/bloomr.html", overwrite)        
     download.git(work, "bloomr.pdf", "bloomR/help/bloomr.pdf", overwrite)
-    download.git(work, "xlx.html", "bloomR/help/xlx.html", overwrite)        
-    download.git(work, "xlx.pdf", "bloomR/help/xlx.pdf", overwrite)
+    download.git(work, "xlx.help.html", "bloomR/help/xlx.help.html", overwrite)     
+    download.git(work, "xlx.help.pdf", "bloomR/help/xlx.help.pdf", overwrite)
         
 }
 
