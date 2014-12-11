@@ -46,28 +46,95 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
 }
 
 
+## ----br.bulk.csv.demo1, opts.label='runonly'-----------------------------
+read.csv("res/tickers.csv")
+
+
+## ----br.bulk.csv.demo1.show, opts.label='showonly'-----------------------
+read.csv("tickers.csv")
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.csv
+
+
+
+## ----br.bulk.csv.demo2, opts.label='bbgtrue', results='hide'-------------
+con=br.open()
+
+
+## ----br.bulk.csv.demo2alt, opts.label='bbgfalse'-------------------------
+con=NULL
+
+## ----br.bulk.csv.demo3, opts.label='runonly'-----------------------------
+data=br.bulk.csv(con, "res/tickers.csv") 
+
+
+## ----br.bulk.csv.demo3.show, opts.label='showonly'-----------------------
+data=br.bulk.csv(con, "tickers.csv") 
 
 
 
 
+## ----br.bulk.csv.demo5, opts.label='showrun'-----------------------------
+length(data)
+names(data)
+class(data$Financial)
+
+
+## ----br.bulk.csv.demo6, opts.label='runonly', results='hide'-------------
+data=br.bulk.csv(con, "res/tickers.csv", use.xts=FALSE) 
+
+## ----br.bulk.csv.demo6.show, opts.label='showonly'-----------------------
+data=br.bulk.csv(con, "tickers.csv", use.xts=FALSE) 
+
+
+## ----br.bulk.csv.demo7, opts.label='showrun'-----------------------------
+length(data)
+names(data)
+class(data$Financial)
+length(data$Financial)
+names(data$Financial)
+class(data$Financial$`BAC US`)
+
+
+## ----br.bulk.csv.demo8, opts.label='runonly',  results='hide'------------
+data=br.bulk.csv(con, "res/tickers.csv", field = "PX_OPEN") 
+
+
+## ----br.bulk.csv.demo8.show, opts.label='showonly'-----------------------
+data=br.bulk.csv(con, "tickers.csv", field = "PX_OPEN") 
+
+
+## ----br.bulk.csv.demo9, opts.label='runonly'-----------------------------
+data=br.bulk.csv(con, "res/tickers.csv", cols=c(1,3))
+
+
+## ----br.bulk.csv.demo9.show, opts.label='showonly'-----------------------
+data=br.bulk.csv(con, "tickers.csv", cols=c(1,3))
+## or equivalently:
+data=br.bulk.csv(con, "tickers.csv", cols=c(TRUE, FALSE, TRUE))
+
+
+## ----br.bulk.csv.demo10, opts.label='showrun'----------------------------
+names(data)
+
+
+## ----br.bulk.csv.demo11, opts.label='runonly'----------------------------
+read.csv("res/tickers.eqt.csv")
+
+
+## ----br.bulk.csv.demo11.show, opts.label='showonly'----------------------
+read.csv("tickers.eqt.csv")
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv
 
 
 
+## ----br.bulk.csv.demo12, opts.label='runonly', results='hide'------------
+data=br.bulk.csv(con, "res/tickers.eqt.csv", addtype=TRUE)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+## ----br.bulk.csv.demo12.show, opts.label='showonly'----------------------
+data=br.bulk.csv(con, "tickers.eqt.csv", addtype=TRUE)
 
 
 
@@ -85,6 +152,18 @@ br.bulk.desc=function(con, tiks) {
 
 
 
+## ----br.bulk.desc.exem, opts.label='bbgtrue', results='hide'-------------
+con=br.open()
+data=read.csv("res/tickers.csv", as.is=TRUE)
+br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
+br.close(con)
+
+
+## ----br.bulk.desc.exem.show, opts.label='showonly'-----------------------
+con=br.open()
+data=read.csv("tickers.csv", as.is=TRUE)
+br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
+br.close(con)
 
 
 ## ----br.bulk.idx, include=FALSE------------------------------------------
@@ -137,6 +216,10 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
 }
 
 
+## ----br.bulk.tiks.exem, bbgtrue------------------------------------------
+con=br.open() # Open the connection and get the token and load some data
+br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.close(con) # Use the token to release the connection
 
 
 ## ----br.bulk.tiks, include=FALSE-----------------------------------------
@@ -356,6 +439,11 @@ bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br
 
 
 
+## ----connections.exem, bbgtrue, results='hide'---------------------------
+con=br.open() # Open the connection and get the token and load some data
+br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.close(con) # Use the token to release the connection
+
 
 
 ## ----connections, include=FALSE------------------------------------------
@@ -418,6 +506,7 @@ day.us=function(d1, d2){
     #substract 1 for each 31d-month
     as.numeric(d2-d1-x)
 }
+
 
 
 

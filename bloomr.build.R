@@ -299,13 +299,21 @@ initScripts=function(work, overwrite){
     ## Get bloomr.R and xlx.R from Github
     to=makePath(work, "bloomR/main/share/bloomr")    
     makeDir(to, overwrite, "BloomR share directory:")
-    download.git(work, "bloomr.R", "bloomR/main/share/bloomr/bloomr.r", overwrite)
-    download.git(work, "xlx.R", "bloomR/main/share/bloomr/xlx.r", overwrite)
+    download.git(work, "bloomr.R", "bloomR/main/share/bloomr/bloomr.R", overwrite)
+    download.git(work, "xlx.R", "bloomR/main/share/bloomr/xlx.R", overwrite)
 
     
-    ## Make personal dir
+    ## Make personal dir with some sample files
     makeDir(makePath(work, 'bloomR/mybloomr'), overwrite, "personal directory:")
+    download.git(work, "res/semic.csv", "bloomR/mybloomr/semic.csv", overwrite)
+    download.git(work, "res/tickers.csv", "bloomR/mybloomr/tickers.csv", overwrite)
+    download.git(work, "res/tickers.eqt.csv", "bloomR/mybloomr/tickers.eqt.csv", overwrite)
+    download.git(work, "res/tickers.eqt.csv", "bloomR/mybloomr/tryme.r", overwrite)
 
+
+               
+
+    
     ## Make R bootstrapper
     makeBoot(work, overwrite)
 

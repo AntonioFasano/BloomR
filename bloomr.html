@@ -56,7 +56,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <h1>BloomR facility functions</h1>
 <div id="r-topics-documented" class="section level2">
 <h2>R topics documented:</h2>
-<p><a href="#br.bulk.csv">br.bulk.csv</a><br /><a href="#br.bulk.desc">br.bulk.desc</a><br /><a href="#br.bulk.idx">br.bulk.idx</a><br /><a href="#br.bulk.tiks">br.bulk.tiks</a><br /><a href="br.desc" class="uri">br.desc</a><br /><a href="#br.sample">br.sample</a><br /><a href="#deprecated.functions">Deprecated functions</a><br /><a href="#Internal">Internal BloomR functions</a><br /><a href="#connections">Manage connections</a><br /><a href="misc.functions">Misc functions</a><br /><a href="#time.functions">Time extension functions</a></p>
+<p><a href="#br.bulk.csv">br.bulk.csv</a><br /><a href="#br.bulk.desc">br.bulk.desc</a><br /><a href="#br.bulk.idx">br.bulk.idx</a><br /><a href="#br.bulk.tiks">br.bulk.tiks</a><br /><a href="#br.desc">br.desc</a><br /><a href="#br.sample">br.sample</a><br /><a href="#deprecated.functions">Deprecated functions</a><br /><a href="#Internal">Internal BloomR functions</a><br /><a href="#connections">Manage connections</a><br /><a href="#misc.functions">Misc functions</a><br /><a href="#time.functions">Time extension functions</a></p>
 </div>
 </div>
 <div id="br.bulk.csv" class="section level1">
@@ -109,15 +109,9 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <div id="demonstration" class="section level2">
 <h2>Demonstration</h2>
 <p>A sample CSV with Bloomberg tickers will look like follows:</p>
-<pre class="r"><code>read.csv(&quot;res/br.tck.csv&quot;)</code></pre>
-<pre><code>##          Financial     Technology      Indices
-## 1   3988 HK Equity QCOM US Equity    DJI Index
-## 2      C US Equity CSCO US Equity DJUSFN Index
-## 3 601288 CH Equity  700 HK Equity  W1TEC Index
-## 4    BAC US Equity  IBM US Equity             
-## 5   HSBA LN Equity INTC US Equity</code></pre>
-<pre class="r"><code># This file is part of BloomR and anyway available here:
-# XXXXXXXX</code></pre>
+<pre class="r"><code>read.csv(&quot;tickers.csv&quot;)
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.csv</code></pre>
 <p>Note:</p>
 <ul>
 <li>CSV group headers are mandatory;</li>
@@ -125,46 +119,32 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </ul>
 <p>We can now download data:</p>
 <pre class="r"><code>con=NULL</code></pre>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;) </code></pre>
-<pre><code>## Processing Financial ...
-## Loading 3988 HK Equity 
-## Loading C US Equity 
-## Loading 601288 CH Equity 
-## Loading BAC US Equity 
-## Loading HSBA LN Equity 
-## Processing Technology ...
-## Loading QCOM US Equity 
-## Loading CSCO US Equity 
-## Loading 700 HK Equity 
-## Loading IBM US Equity 
-## Loading INTC US Equity 
-## Processing Indices ...
-## Loading DJI Index 
-## Loading DJUSFN Index 
-## Loading W1TEC Index</code></pre>
+<pre class="r"><code>data=br.bulk.csv(con, &quot;tickers.csv&quot;) </code></pre>
 <p>Above you see some info about data being processed that we will not show anymore in the following.</p>
 <p>If you want to have detailed ticker descriptions, see <a href="#br.bulk.desc.exem">br.bulk.desc Example</a>. Downloaded data look like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2014-12-01      NA 10.037        NA     NA      NA
-## 2014-12-02   9.829 11.735        NA     NA   10.23
-## 2014-12-04   9.285     NA        NA 10.877      NA
-## 2014-12-05      NA     NA    10.315     NA      NA
+## 2014-12-06   9.467 10.769        NA  8.790   9.890
+## 2014-12-07   9.059     NA     9.860 10.691  12.437
+## 2014-12-08   8.371 11.569     8.998  9.486   7.979
+## 2014-12-09   7.570     NA        NA  9.240   8.734
+## 2014-12-10   8.828     NA     9.198 10.093   7.441
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2014-12-01   9.813      NA  8.241 10.042   8.255
-## 2014-12-02      NA   8.755 10.065     NA      NA
-## 2014-12-03   9.866  11.023 10.033  9.851      NA
-## 2014-12-04      NA      NA     NA  9.499      NA
-## 2014-12-05   9.422   9.693  7.329 11.023   9.117
+## 2014-12-06      NA  12.825     NA     NA      NA
+## 2014-12-07      NA      NA 11.158 10.786  10.087
+## 2014-12-08      NA      NA  9.370  9.416      NA
+## 2014-12-09      NA  11.270 11.030  8.976      NA
+## 2014-12-10   9.282      NA  9.587  8.681   9.467
 ## 
 ## $Indices
-##               DJI DJUSFN W1TEC
-## 2014-12-03 10.288     NA    NA
-## 2014-12-04     NA 10.085    NA
-## 2014-12-05 10.278     NA 9.095</code></pre>
+##              DJI DJUSFN  W1TEC
+## 2014-12-06    NA  9.316 11.329
+## 2014-12-07    NA     NA 11.491
+## 2014-12-08    NA     NA 11.053
+## 2014-12-09 9.985     NA     NA</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />If this piece of info is significant for you, pass <code>showtype = TRUE</code>.</p></li>
@@ -178,7 +158,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <pre class="r"><code>class(data$Financial)</code></pre>
 <pre><code>## [1] &quot;xts&quot; &quot;zoo&quot;</code></pre>
 <p>If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:</p>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, use.xts=FALSE) </code></pre>
+<pre class="r"><code>data=br.bulk.csv(con, &quot;tickers.csv&quot;, use.xts=FALSE) </code></pre>
 <pre class="r"><code>length(data)</code></pre>
 <pre><code>## [1] 3</code></pre>
 <pre class="r"><code>names(data)</code></pre>
@@ -192,26 +172,20 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <pre class="r"><code>class(data$Financial$`BAC US`)</code></pre>
 <pre><code>## [1] &quot;data.frame&quot;</code></pre>
 <p>By defaults time series list values from the Bloomberg “PX_LAST” field. To change the default field use:</p>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, field = &quot;PX_OPEN&quot;) </code></pre>
+<pre class="r"><code>data=br.bulk.csv(con, &quot;tickers.csv&quot;, field = &quot;PX_OPEN&quot;) </code></pre>
 <p>You can choose to import only some of the CSV groups</p>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, cols=c(1,3))
+<pre class="r"><code>data=br.bulk.csv(con, &quot;tickers.csv&quot;, cols=c(1,3))
 ## or equivalently:
-data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, cols=c(TRUE, FALSE, TRUE))</code></pre>
+data=br.bulk.csv(con, &quot;tickers.csv&quot;, cols=c(TRUE, FALSE, TRUE))</code></pre>
 <pre class="r"><code>names(data)</code></pre>
 <pre><code>## [1] &quot;Financial&quot; &quot;Indices&quot;</code></pre>
 <p>In the CSV file, if your tickers represent all equities, you can omit the type.</p>
 <p>Consider this CSV:</p>
-<pre class="r"><code>read.csv(&quot;res/br.eqt.csv&quot;)</code></pre>
-<pre><code>##   Financial Technology
-## 1   3988 HK    QCOM US
-## 2      C US    CSCO US
-## 3 601288 CH     700 HK
-## 4    BAC US     IBM US
-## 5   HSBA LN    INTC US</code></pre>
-<pre class="r"><code># This file is part of BloomR and anyway available here:
-# XXXXXXXX</code></pre>
+<pre class="r"><code>read.csv(&quot;tickers.eqt.csv&quot;)
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv</code></pre>
 <p>Note how the “Equity” type is missing! But you can use this CSV file with <code>addtype</code>:</p>
-<pre class="r"><code>data=br.bulk.csv(con, &quot;res/br.eqt.csv&quot;, addtype=TRUE)</code></pre>
+<pre class="r"><code>data=br.bulk.csv(con, &quot;tickers.eqt.csv&quot;, addtype=TRUE)</code></pre>
 <p>Before going home, don’t forget to:</p>
 <pre class="r"><code>br.close(con)</code></pre>
 </div>
@@ -243,7 +217,7 @@ data=br.bulk.csv(con, &quot;res/br.tck.csv&quot;, cols=c(TRUE, FALSE, TRUE))</co
 <div id="br.bulk.desc.exem" class="section level2">
 <h2>Example</h2>
 <pre class="r"><code>con=br.open()
-data=read.csv(&quot;res/br.tck.csv&quot;, as.is=TRUE)
+data=read.csv(&quot;tickers.csv&quot;, as.is=TRUE)
 br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
 br.close(con)</code></pre>
 </div>
@@ -314,17 +288,25 @@ br.close(con)</code></pre>
 </div>
 <div id="example" class="section level2">
 <h2>Example</h2>
-<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
-br.close(con) # Use the token to release the connection</code></pre>
+<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data</code></pre>
+<pre><code>## Error in br.open(): could not find function &quot;blpConnect&quot;</code></pre>
+<pre class="r"><code>br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></pre>
+<pre><code>## Loading MSFT US Equity 
+## Loading AMZN US Equity</code></pre>
+<pre><code>##            MSFT US AMZN US
+## 2014-12-06   8.252      NA
+## 2014-12-08      NA   9.239
+## 2014-12-09   9.707      NA
+## 2014-12-10      NA   8.411</code></pre>
+<pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">
 <h2>See Also</h2>
 <p><a href="#br.bulk.csv">br.bulk.csv</a></p>
 </div>
 </div>
-<div id="br.descbr.desc" class="section level1">
-<h1>br.desc{br.desc}</h1>
+<div id="br.desc" class="section level1">
+<h1>br.desc</h1>
 <div id="description-2" class="section level2">
 <h2>Description</h2>
 <p>Get security descriptions.</p>
@@ -474,13 +456,14 @@ br.close(con)</code></pre>
 </div>
 <div id="example-2" class="section level2">
 <h2>Example</h2>
-<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
+<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data</code></pre>
+<pre><code>## Error in br.open(): could not find function &quot;blpConnect&quot;</code></pre>
+<pre class="r"><code>br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
 br.close(con) # Use the token to release the connection</code></pre>
 </div>
 </div>
-<div id="misc-functionsmisc.functions" class="section level1">
-<h1>Misc functions{misc.functions}</h1>
+<div id="misc.functions" class="section level1">
+<h1>Misc functions</h1>
 <div id="description-7" class="section level2">
 <h2>Description</h2>
 <p><code>rm.all</code> deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot). <code>rm.var</code> deletes non-function objects from memory.</p>

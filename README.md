@@ -49,5 +49,11 @@ If you want to find  `BloomR.zip` too in your work directory use:
 
 	makeBloomR("path\to\workDir", zip = TRUE)
 
+
+    
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->
+
 <!--  LocalWords:  BloomR Bloomberg CSV
  -->

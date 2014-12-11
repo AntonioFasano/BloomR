@@ -5,13 +5,16 @@ R topics documented:
 [br.bulk.desc](#br.bulk.desc)   
 [br.bulk.idx](#br.bulk.idx)   
 [br.bulk.tiks](#br.bulk.tiks)   
-[br.desc](br.desc)   
+[br.desc](#br.desc)   
 [br.sample](#br.sample)   
 [Deprecated functions](#deprecated.functions)   
 [Internal BloomR functions](#Internal)   
 [Manage connections](#connections)   
-[Misc functions](misc.functions)   
+[Misc functions](#misc.functions)   
 [Time extension functions](#time.functions)   
+
+
+
 
 
 
@@ -79,22 +82,11 @@ A sample CSV with Bloomberg tickers will look like follows:
 
 
 
-```r
-read.csv("res/br.tck.csv")
-```
-
-```
-##          Financial     Technology      Indices
-## 1   3988 HK Equity QCOM US Equity    DJI Index
-## 2      C US Equity CSCO US Equity DJUSFN Index
-## 3 601288 CH Equity  700 HK Equity  W1TEC Index
-## 4    BAC US Equity  IBM US Equity             
-## 5   HSBA LN Equity INTC US Equity
-```
 
 ```r
-# This file is part of BloomR and anyway available here:
-# XXXXXXXX
+read.csv("tickers.csv")
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.csv
 ```
 
 
@@ -112,27 +104,10 @@ We can now download data:
 con=NULL
 ```
 
-```r
-data=br.bulk.csv(con, "res/br.tck.csv") 
-```
 
-```
-## Processing Financial ...
-## Loading 3988 HK Equity 
-## Loading C US Equity 
-## Loading 601288 CH Equity 
-## Loading BAC US Equity 
-## Loading HSBA LN Equity 
-## Processing Technology ...
-## Loading QCOM US Equity 
-## Loading CSCO US Equity 
-## Loading 700 HK Equity 
-## Loading IBM US Equity 
-## Loading INTC US Equity 
-## Processing Indices ...
-## Loading DJI Index 
-## Loading DJUSFN Index 
-## Loading W1TEC Index
+
+```r
+data=br.bulk.csv(con, "tickers.csv") 
 ```
 
 Above you see some info about data being processed that we will not show anymore in the following.
@@ -147,24 +122,26 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2014-12-01      NA 10.037        NA     NA      NA
-## 2014-12-02   9.829 11.735        NA     NA   10.23
-## 2014-12-04   9.285     NA        NA 10.877      NA
-## 2014-12-05      NA     NA    10.315     NA      NA
+## 2014-12-06   9.467 10.769        NA  8.790   9.890
+## 2014-12-07   9.059     NA     9.860 10.691  12.437
+## 2014-12-08   8.371 11.569     8.998  9.486   7.979
+## 2014-12-09   7.570     NA        NA  9.240   8.734
+## 2014-12-10   8.828     NA     9.198 10.093   7.441
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2014-12-01   9.813      NA  8.241 10.042   8.255
-## 2014-12-02      NA   8.755 10.065     NA      NA
-## 2014-12-03   9.866  11.023 10.033  9.851      NA
-## 2014-12-04      NA      NA     NA  9.499      NA
-## 2014-12-05   9.422   9.693  7.329 11.023   9.117
+## 2014-12-06      NA  12.825     NA     NA      NA
+## 2014-12-07      NA      NA 11.158 10.786  10.087
+## 2014-12-08      NA      NA  9.370  9.416      NA
+## 2014-12-09      NA  11.270 11.030  8.976      NA
+## 2014-12-10   9.282      NA  9.587  8.681   9.467
 ## 
 ## $Indices
-##               DJI DJUSFN W1TEC
-## 2014-12-03 10.288     NA    NA
-## 2014-12-04     NA 10.085    NA
-## 2014-12-05 10.278     NA 9.095
+##              DJI DJUSFN  W1TEC
+## 2014-12-06    NA  9.316 11.329
+## 2014-12-07    NA     NA 11.491
+## 2014-12-08    NA     NA 11.053
+## 2014-12-09 9.985     NA     NA
 ```
 
 Note:
@@ -206,8 +183,9 @@ class(data$Financial)
 If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:
 
 
+
 ```r
-data=br.bulk.csv(con, "res/br.tck.csv", use.xts=FALSE) 
+data=br.bulk.csv(con, "tickers.csv", use.xts=FALSE) 
 ```
 
 
@@ -262,18 +240,25 @@ class(data$Financial$`BAC US`)
 By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
 
 
+
+
 ```r
-data=br.bulk.csv(con, "res/br.tck.csv", field = "PX_OPEN") 
+data=br.bulk.csv(con, "tickers.csv", field = "PX_OPEN") 
 ```
+
 
 You can choose to import only some of the CSV groups 
 
 
+
+
 ```r
-data=br.bulk.csv(con, "res/br.tck.csv", cols=c(1,3))
+data=br.bulk.csv(con, "tickers.csv", cols=c(1,3))
 ## or equivalently:
-data=br.bulk.csv(con, "res/br.tck.csv", cols=c(TRUE, FALSE, TRUE))
+data=br.bulk.csv(con, "tickers.csv", cols=c(TRUE, FALSE, TRUE))
 ```
+
+
 
 ```r
 names(data)
@@ -288,29 +273,21 @@ In the CSV file, if your tickers represent all equities, you can omit the type.
 Consider this CSV:
 
 
-```r
-read.csv("res/br.eqt.csv")
-```
 
-```
-##   Financial Technology
-## 1   3988 HK    QCOM US
-## 2      C US    CSCO US
-## 3 601288 CH     700 HK
-## 4    BAC US     IBM US
-## 5   HSBA LN    INTC US
-```
 
 ```r
-# This file is part of BloomR and anyway available here:
-# XXXXXXXX
+read.csv("tickers.eqt.csv")
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv
 ```
 
 Note how the "Equity" type is missing! But you can use this CSV file with `addtype`:
 
 
+
+
 ```r
-data=br.bulk.csv(con, "res/br.eqt.csv", addtype=TRUE)
+data=br.bulk.csv(con, "tickers.eqt.csv", addtype=TRUE)
 ```
 
 Before going home, don't forget to:
@@ -346,13 +323,15 @@ A list of data frames, each representing the description of a security. For the 
 
 
 
-Example {#br.bulk.desc.exem}
+Example{#br.bulk.desc.exem}
 ----------------------------
+
+
 
 
 ```r
 con=br.open()
-data=read.csv("res/br.tck.csv", as.is=TRUE)
+data=read.csv("tickers.csv", as.is=TRUE)
 br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
 br.close(con)
 ```
@@ -438,7 +417,30 @@ Example
 
 ```r
 con=br.open() # Open the connection and get the token and load some data
+```
+
+```
+## Error in br.open(): could not find function "blpConnect"
+```
+
+```r
 br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+```
+
+```
+## Loading MSFT US Equity 
+## Loading AMZN US Equity
+```
+
+```
+##            MSFT US AMZN US
+## 2014-12-06   8.252      NA
+## 2014-12-08      NA   9.239
+## 2014-12-09   9.707      NA
+## 2014-12-10      NA   8.411
+```
+
+```r
 br.close(con) # Use the token to release the connection
 ```
 
@@ -449,7 +451,7 @@ See Also
 
 
 
-br.desc{br.desc}
+br.desc{#br.desc}
 ================
 
 Description
@@ -613,6 +615,13 @@ Example
 
 ```r
 con=br.open() # Open the connection and get the token and load some data
+```
+
+```
+## Error in br.open(): could not find function "blpConnect"
+```
+
+```r
 br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 br.close(con) # Use the token to release the connection
 ```
@@ -621,7 +630,7 @@ br.close(con) # Use the token to release the connection
 
 
 
-Misc functions{misc.functions}
+Misc functions{#misc.functions}
 ==============================
 
 Description
@@ -677,6 +686,7 @@ Details
 If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
 `%+%` and `%-%` add and subtract months to a date.  
 `last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
+
 
 
 
