@@ -52,10 +52,11 @@ Start to get results in BloomR immediately
 4. Log to Bloomberg service on the same PC (if you are not logged already).
 5. To get some data, type in the BloomR console:
 
-    con=br.open()                                            # Connect BloomR to Bloomberg
-    br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE) # Last 5 days for price of these tickers 
-    br.bulk.idx(con, "SX5E Index", field="PX_LAST")          # Last 5 days for price of these indices
-    br.close(con)                                            # Disconnect BloomR from Bloomberg
+        con=br.open()                                            # Connect BloomR to Bloomberg
+        br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE) # Last 5 days for price of these tickers 
+        br.bulk.idx(con, "SX5E Index", field="PX_LAST")          # Last 5 days for price of these indices
+        br.close(con)                                            # Disconnect BloomR from Bloomberg
+
 
 
 Build instructions
