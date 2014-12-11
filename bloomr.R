@@ -153,10 +153,6 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
 }
 
 
-## ----br.bulk.tiks.exem, bbgtrue------------------------------------------
-con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
-br.close(con) # Use the token to release the connection
 
 
 ## ----br.bulk.tiks, include=FALSE-----------------------------------------
@@ -375,11 +371,6 @@ bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br
     }
 
 
-
-## ----connections.exem, bbgtrue, results='hide'---------------------------
-con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
-br.close(con) # Use the token to release the connection
 
 
 

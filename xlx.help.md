@@ -11,8 +11,8 @@ by Antonio Fasano
 There is a new function  in the `read.*` family, `read.xlx`, which can read Excel xlsx workbook sheets into R data frames.  Some features are:
 
 * It can import all, one, or a selection of sheets, where specific sheets are requested by means of their name.
-* It can import not all the sheet's cells, but those comprised in a named range
-* it can distinguish between cells formatted as numbers, percent, text and dates,
+* Instead of importing all the sheets' cells, it can import only those comprised in a named range.
+* It can distinguish between cells formatted as numbers, percent, text and dates,
 * Date cells are recognised  whatever the language locale. 
 * Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.  
 * The filter is not based on any external engine and does not requires Excel to be installed at all. It's pure R code, so you can read xlsx files on Linux systems. 

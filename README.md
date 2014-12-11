@@ -20,7 +20,14 @@ Improvements over debut version 0.1
 - A formal documentation (see bloomr.html, or bloomr.pdf)
 - Demo and examples.
 
-Plus read.xlx joins the family:
+Plus read.xlx joins the family. With this function you can  can read Excel xlsx workbook sheets into R data frames.  Some features are:
+
+* It can import all, one, or a selection of sheets, where specific sheets are requested by means of their name.
+* Instead of importing all the sheets' cells, it can import only those comprised in a named range.
+* It can distinguish between cells formatted as numbers, percent, text and dates,
+* Date cells are recognised  whatever the language locale. 
+* Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.  
+* The filter is not based on any external engine and does not requires Excel to be installed at all. It's pure R code, so you can read xlsx files on Linux systems. 
 
 
 

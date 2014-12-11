@@ -121,28 +121,27 @@ data
 
 ```
 ## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2014-12-06   9.644 12.410        NA  9.790      NA
-## 2014-12-07      NA  9.224     9.827  9.614  11.418
-## 2014-12-08   9.973 11.997        NA 10.369      NA
-## 2014-12-09  10.126     NA        NA  8.941   8.666
-## 2014-12-10   9.233  8.719     9.522  9.793   8.718
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2014-12-06  10.295    NA     8.100     NA      NA
+## 2014-12-07   9.508    NA     9.517 10.096   9.499
+## 2014-12-09  10.549    NA    10.654     NA      NA
+## 2014-12-10   7.800 8.973        NA  9.472   9.077
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2014-12-06  10.794   9.612     NA 10.350      NA
-## 2014-12-07  10.598  10.702     NA  9.966      NA
-## 2014-12-08  10.382      NA     NA  9.577    9.93
-## 2014-12-09      NA  11.908   9.55     NA      NA
-## 2014-12-10  10.984  10.810     NA  8.737      NA
+## 2014-12-06  10.259   9.837 11.144  9.333      NA
+## 2014-12-07   9.913      NA     NA 10.200      NA
+## 2014-12-08   8.732      NA     NA 10.416      NA
+## 2014-12-09      NA      NA 10.061 10.240      NA
+## 2014-12-10      NA      NA     NA  8.636  12.101
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2014-12-06     NA 11.427 10.125
-## 2014-12-07     NA  8.538 10.403
-## 2014-12-08  9.748 10.407 11.819
-## 2014-12-09     NA 10.908  9.645
-## 2014-12-10 10.406 11.452  8.693
+## 2014-12-06  9.450     NA     NA
+## 2014-12-07 10.124 12.361 10.687
+## 2014-12-08     NA  9.827     NA
+## 2014-12-09  8.969 10.352 10.958
+## 2014-12-10  9.298     NA 12.392
 ```
 
 Note:
@@ -416,35 +415,6 @@ Example
 -------
 
 
-```r
-con=br.open() # Open the connection and get the token and load some data
-```
-
-```
-## Error in br.open(): could not find function "blpConnect"
-```
-
-```r
-br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
-```
-
-```
-## Loading MSFT US Equity 
-## Loading AMZN US Equity
-```
-
-```
-##            MSFT US AMZN US
-## 2014-12-06      NA  11.330
-## 2014-12-07   9.530  10.625
-## 2014-12-08   8.582   9.887
-## 2014-12-09   8.009  10.517
-## 2014-12-10      NA   9.146
-```
-
-```r
-br.close(con) # Use the token to release the connection
-```
 
 See Also
 --------
@@ -615,18 +585,6 @@ Example
 -------
 
 
-```r
-con=br.open() # Open the connection and get the token and load some data
-```
-
-```
-## Error in br.open(): could not find function "blpConnect"
-```
-
-```r
-br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
-br.close(con) # Use the token to release the connection
-```
 
 
 
@@ -698,3 +656,8 @@ If `component` is `day`, `month` or `year`: `component(d)` returns the *componen
 
 
 
+
+    
+<!-- Local Variables: -->
+<!-- mode: r -->
+<!-- End: -->

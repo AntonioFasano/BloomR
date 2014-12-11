@@ -124,28 +124,27 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <p>If you want to have detailed ticker descriptions, see <a href="#br.bulk.desc.exem">br.bulk.desc Example</a>. Downloaded data look like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2014-12-06   9.644 12.410        NA  9.790      NA
-## 2014-12-07      NA  9.224     9.827  9.614  11.418
-## 2014-12-08   9.973 11.997        NA 10.369      NA
-## 2014-12-09  10.126     NA        NA  8.941   8.666
-## 2014-12-10   9.233  8.719     9.522  9.793   8.718
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2014-12-06  10.295    NA     8.100     NA      NA
+## 2014-12-07   9.508    NA     9.517 10.096   9.499
+## 2014-12-09  10.549    NA    10.654     NA      NA
+## 2014-12-10   7.800 8.973        NA  9.472   9.077
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2014-12-06  10.794   9.612     NA 10.350      NA
-## 2014-12-07  10.598  10.702     NA  9.966      NA
-## 2014-12-08  10.382      NA     NA  9.577    9.93
-## 2014-12-09      NA  11.908   9.55     NA      NA
-## 2014-12-10  10.984  10.810     NA  8.737      NA
+## 2014-12-06  10.259   9.837 11.144  9.333      NA
+## 2014-12-07   9.913      NA     NA 10.200      NA
+## 2014-12-08   8.732      NA     NA 10.416      NA
+## 2014-12-09      NA      NA 10.061 10.240      NA
+## 2014-12-10      NA      NA     NA  8.636  12.101
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2014-12-06     NA 11.427 10.125
-## 2014-12-07     NA  8.538 10.403
-## 2014-12-08  9.748 10.407 11.819
-## 2014-12-09     NA 10.908  9.645
-## 2014-12-10 10.406 11.452  8.693</code></pre>
+## 2014-12-06  9.450     NA     NA
+## 2014-12-07 10.124 12.361 10.687
+## 2014-12-08     NA  9.827     NA
+## 2014-12-09  8.969 10.352 10.958
+## 2014-12-10  9.298     NA 12.392</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />If this piece of info is significant for you, pass <code>showtype = TRUE</code>.</p></li>
@@ -289,18 +288,6 @@ br.close(con)</code></pre>
 </div>
 <div id="example" class="section level2">
 <h2>Example</h2>
-<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data</code></pre>
-<pre><code>## Error in br.open(): could not find function &quot;blpConnect&quot;</code></pre>
-<pre class="r"><code>br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></pre>
-<pre><code>## Loading MSFT US Equity 
-## Loading AMZN US Equity</code></pre>
-<pre><code>##            MSFT US AMZN US
-## 2014-12-06      NA  11.330
-## 2014-12-07   9.530  10.625
-## 2014-12-08   8.582   9.887
-## 2014-12-09   8.009  10.517
-## 2014-12-10      NA   9.146</code></pre>
-<pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">
 <h2>See Also</h2>
@@ -458,10 +445,6 @@ br.close(con)</code></pre>
 </div>
 <div id="example-2" class="section level2">
 <h2>Example</h2>
-<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data</code></pre>
-<pre><code>## Error in br.open(): could not find function &quot;blpConnect&quot;</code></pre>
-<pre class="r"><code>br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
-br.close(con) # Use the token to release the connection</code></pre>
 </div>
 </div>
 <div id="misc.functions" class="section level1">
@@ -513,6 +496,9 @@ day.us(d1, d2)</code></pre>
 <div id="details-5" class="section level2">
 <h2>Details</h2>
 <p>If <code>component</code> is <code>day</code>, <code>month</code> or <code>year</code>: <code>component(d)</code> returns the <em>component</em> of the date <code>d</code> as an integer; <code>component(d, n)</code> returns the date <code>d</code> with the <em>component</em> set to the integer <code>n</code>; <code>component(d)= n</code> sets to the <em>component</em> of the date <code>d</code> to the integer <code>n</code>.<br /><code>%+%</code> and <code>%-%</code> add and subtract months to a date.<br /><code>last.day</code> returns last day of the month as an integer. <code>day.us</code> calculates date differences with the US convention.</p>
+<!-- Local Variables: -->
+<!-- mode: r -->
+<!-- End: -->
 </div>
 </div>
 

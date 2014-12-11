@@ -444,7 +444,7 @@ If `use.xts=FALSE`, a list, where each element is the historical data of a secur
 Example
 -------
 
-```{r br.bulk.tiks.exem, bbgtrue}
+```{r br.bulk.tiks.exem, purl=FALSE, opts.label='bbgtrue'}
 con=br.open() # Open the connection and get the token and load some data
 br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 br.close(con) # Use the token to release the connection
@@ -825,7 +825,7 @@ Details
 Example
 -------
 
-```{r connections.exem, bbgtrue, results='hide'}
+```{r connections.exem, purl=FALSE, opts.label='bbgtrue', results='hide'}
 con=br.open() # Open the connection and get the token and load some data
 br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 br.close(con) # Use the token to release the connection
@@ -971,7 +971,7 @@ topics=function(){
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}
 require(knitr)
 require(rmarkdown)
-opts.chunk$set(tidy.opts=list(width.cutoff=60))
+opts_chunk$set(tidy.opts=list(width.cutoff=60))
 knit("bloomr.rmd")
 purl("bloomr.rmd")
 topics()
@@ -993,3 +993,8 @@ br.bulk.idx(con, "SX5E Index", field="PX_LAST")
 br.close(con) 
 ```
 
+
+    
+<!-- Local Variables: -->
+<!-- mode: r -->
+<!-- End: -->
