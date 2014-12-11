@@ -60,7 +60,7 @@ github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 github.local=""
 
 ## Packages to download. Include dependencies! Case sensitive
-packlist=" rJava  zoo  xts  "
+packlist=" rJava  zoo  xts knitr "
 
 pzip="peazip"; rport='rportable'
 
@@ -273,6 +273,8 @@ bloomrTree=function(work, overwrite){
     makeDir(makePath(work, "bloomR/help"), overwrite, "BloomR help directory:")    
     download.git(work, "bloomr.html", "bloomR/help/bloomr.html", overwrite)        
     download.git(work, "bloomr.pdf", "bloomR/help/bloomr.pdf", overwrite)
+    download.git(work, "xlx.html", "bloomR/help/xlx.html", overwrite)        
+    download.git(work, "xlx.pdf", "bloomR/help/xlx.pdf", overwrite)
         
 }
 
@@ -294,11 +296,11 @@ initScripts=function(work, overwrite){
     writeLines(text=p, con=con)
     close(con)
     
-    ## Get bloomr.R from Github
+    ## Get bloomr.R and xlx.R from Github
     to=makePath(work, "bloomR/main/share/bloomr")    
     makeDir(to, overwrite, "BloomR share directory:")
     download.git(work, "bloomr.R", "bloomR/main/share/bloomr/bloomr.r", overwrite)
-
+    download.git(work, "xlx.R", "bloomR/main/share/bloomr/xlx.r", overwrite)
 
     
     ## Make personal dir
@@ -358,6 +360,7 @@ PROF=function(){ #Keep this on separate line
     library("rJava")
     library("Rbbg")
     source(paste0(R.home("share"), "/bloomr/bloomr.R"))
+    source(paste0(R.home("share"), "/bloomr/xlx.R"))
     
     ## end BloomR----------
 }
