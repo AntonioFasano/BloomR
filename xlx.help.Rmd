@@ -250,6 +250,42 @@ If you want to reduce the progress messages printed (perhaps because you are usi
 You will only get one line of +'s. I am thinking if it is convenient to totally abolish it. 
 
 
+Dates oddities
+-------------
+
+
+Let us assume that you the locale of you Excel is English UK.
+
+In cell A1 you enter the date `20/10/2000`. Now this is a legitimate date, because in Britain day comes before month and Excel recognise it as such. In fact if you right-click on cell and select Format->Number you will find that the category is "Date" and in the Locale drop down "English (U.K.)" is selected. 
+
+Now let us write in cell A2 the date `10/20/2000`. You think you have written a date, but this is UK locale, so this is just an ordinary string. In fact in Format->Number you read that the category is "General". 
+
+
+You may be tempted to change the category to "Date" and select "English (U.S.)"  in the Locale drop down, maybe you will also select a matching type in the Type list. 
+
+Unfortunately this keeps being an invalid date cell. In fact, if you type `=YEAR(A1)` in cell B1, the formula extracts the year part of the date and gives 2000, while writing `=YEAR(A2)` gives `#VALUE!` to signaling the wrong date in cell A2. 
+
+To understand things better select again Format->Number for cell A1, change Locale drop down set to "English (U.K.)" to "English (U.S.)".  You now see that the value of the displayed in the cell has automatically changed from `20/10/2000` to `10/20/2000`, and the formula `=YEAR(A1)` in B1 still correctly shows 2000. 
+
+So a date should be entered always respecting the locale, after you can change the way it is displayed by changing the locale. 
+
+How does read.xlx behave? 
+
+1. If a cell contains the value "Charles" and you set its format to date, the conversion value in R will be not surprisingly, NA. 
+
+2. If a date is entered not respecting the locale and you *don't try to change its format category to date*, then this is set to the "General" format category. Normally this value will be converted to a character. See ahead for exceptions. 
+
+3. If a date is entered not respecting the locale and you change the format category to date. *You have just created a monster*, since this appears as a date to those sharing your culture, the category and locale you set match the entered date, but for Excel it is not a date and it will be stored in the file as a string. When `read.xlx` finds a string pretending to be a date  it imports it as a NA.  
+
+
+With respect to point 2) if you have set the `general` argument of `read.excel` to "numeric", than again the value will be imported as a NA. The same will happen if the prevailing style is in the column is "numeric" (or the likes). 
+
+If you don't have control on the workbook content, the point 3) can be particularly subtle. You see apparently good looking dates, which are not such for Excel, and you have unpleasant NA surprised after import.  
+Next release of read.xlx will have a guess-date option to address this and get what looks like a date as a date in R too. 
+
+
+
+
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}
 require(knitr)
 require(rmarkdown)

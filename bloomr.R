@@ -34,7 +34,7 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     ## Loop groups in csv
     grps=list()
     for(g in 1:gcnt){
-        cat('Processing', gnams[g],  '...\n')
+        message('Processing ', gnams[g],  ' ...')
         x=list(br.bulk.tiks(con, csv[[g]],
             start, field, addtype, showtype, use.xts,
             price=price, nrow=nrow, same.dates=FALSE, no.na=FALSE, empty.sec=empty.sec))
@@ -90,7 +90,7 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
 br.bulk.desc=function(con, tiks) {
 
     LL = lapply(tiks, function(tik){
-        cat('Reading', tik,  '\n')
+        message('Reading ', tik)
         br.desc(con, tik)             
     })
     names(LL)=tiks
@@ -189,7 +189,7 @@ br.bulk.tiks=function(
     ## Get data as an xts class
     if(use.xts){ 
         LL = lapply(tiks, function(tik){
-            cat('Loading', tik,  '\n')
+            message('Loading ', tik)
             if(!is.null(con)) x=bdh(con, tik, field, start) else {
                 x=br.sample(nrow, 1, price=price, start=start,
                     df=TRUE, same.dates=same.dates, no.na=no.na,
@@ -219,7 +219,7 @@ br.bulk.tiks=function(
     } else {
         ## Get data in list format
         LL=lapply(tiks, function(tik){
-            cat('Loading', tik,  '\n')
+            message('Loading ', tik)
             if(!is.null(con)) bdh(con, tik, field, start) else {
                 br.sample(nrow, 1, price=price, empty.sec=empty.sec, start=start,
                            df=TRUE, sec.names=c('date', field))

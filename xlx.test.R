@@ -9,11 +9,6 @@ NNS=2  # number of non-empty sheets
 
 source('xlx.R')
 
-#ret.args=function(...){
-#     sys.call()  
-#}
-
-
 callme=function(...){
 
     cat("\nEvaluating:", '\n')
@@ -38,10 +33,17 @@ err=function(n){
     stop("Failed on step ", n, " of this test!")
 }
 
-con=function(num, test){
-    if(length(test)>1) stop("Test with multiple logicals! Must be single T/F")
+## Test with single condition 
+tests=function(num, test){
+    if(length(test)>1) stop("Test with multiple logicals! Try vector version")
     if(!test) err(num)
 }
+
+## Test with multiple conditions 
+testm=function(num, test){
+    if(!all(test)) err(num)
+}
+
 
 ## all nums in strings vec
 allnum=function(x) all(!is.na(strtoi(x)))
@@ -82,32 +84,32 @@ main=function(){
 ## Flat call    
 out=callme()
 msg("list of", NNS, "sheets as DF, w/out headers.")
-con(1, (class(out)== 'list'))
-con(2, length(out)== NNS)
-con(3, class(out[[1]])== "data.frame")
-con(4, class(out[[2]])== "data.frame")
-con(5, !is.head.eu(out[[1]]))
+tests(1, (class(out)== 'list'))
+tests(2, length(out)== NNS)
+tests(3, class(out[[1]])== "data.frame")
+tests(4, class(out[[2]])== "data.frame")
+tests(5, !is.head.eu(out[[1]]))
 msgn("Success!")
 
 ## Single sheet 
 out=callme(sheets=tolower("survey2"), header.sheets=TRUE)
 msg("single DF, with headers (called lower case).")
-con(1, class(out)== 'data.frame') 
-con(2, is.head.eu(out))
+tests(1, class(out)== 'data.frame') 
+tests(2, is.head.eu(out))
 msgn("Success!")
 
 ## Single, case, no-heade
 nohead=callme(sheets=toupper("survey2"), header.sheets=FALSE)
 msg("single DF, without headers (called upper case).\n")
-con(1, !is.head.eu(nohead))
+tests(1, !is.head.eu(nohead))
 msg("First row here as names in previous")
-con(2, head.eq.1st(out, nohead)) # first head, sec not
+tests(2, head.eq.1st(out, nohead)) # first head, sec not
 msgn("Success!")
 
 ## Swap order and case
 out=callme(sheets=c(toupper("survey2"), tolower("survey1")))
 msg("order and case of output as in input.")
-con(1, all(names(out) == c(toupper("survey2"), tolower("survey1"))))
+testm(1, names(out) == c(toupper("survey2"), tolower("survey1")))
 msgn("Success!")
 
 ## Test headers 
@@ -118,7 +120,7 @@ msgn("Success!")
 head=  callme(sheets=c("survey1", "survey2"), header.sheets=c(TRUE, TRUE))
 nohead=callme(sheets=c("survey1", "survey2"), header.sheets=c(FALSE, FALSE) )
 msg("sheets with/without: headers names == first rows.")
-con(1, head.eq.1st(head, nohead))
+tests(1, head.eq.1st(head, nohead))
 msgn("Success!")
 
 
@@ -126,7 +128,7 @@ msgn("Success!")
 head=  callme(ranges=c("education", "students"), header.ranges=c(TRUE, TRUE))
 nohead=callme(ranges=c("education", "students"), header.ranges=c(FALSE, FALSE) )
 msg("ranges with/without headers: names == first rows.")
-con(1, head.eq.1st(head, nohead))
+tests(1, head.eq.1st(head, nohead))
 msgn("Success!")
 
 ## Test mix range, sheet headers 
@@ -135,7 +137,7 @@ head=   callme(
 nohead=callme(
     ranges="education", header.ranges=FALSE, sheets="survey2", header.sheets=FALSE)
 msg("sheets & ranges with/without headers: names == first rows.")
-con(1, head.eq.1st(head, nohead))
+tests(1, head.eq.1st(head, nohead))
 msgn("Success!")
 
 }
