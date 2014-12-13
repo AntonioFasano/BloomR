@@ -8,9 +8,7 @@ callme=function(...){
     cat("\nEvaluating:", '\n')
     cmd=sys.call()[[2]]   
     cat(deparse(cmd), '\n')
-    if(exists('con', parent.frame())) con=get('con', parent.frame())
-    if(exists('fpath', parent.frame())) fpath=get('fpath', parent.frame())
-    out=suppressMessages(eval(cmd))
+    out=suppressMessages(eval(cmd, envir=parent.frame()))
     out
 }
 
@@ -36,15 +34,14 @@ testm=function(num, test){
     if(!all(test)) err(num)
 }
 
-
-
 main=function(havebbg=TRUE){
 
-if(havebbg){ 
+if(havebbg){
+    message("Assuming you are logged to  Bloomberg")
     fpath=function(x) paste0("mybloomr/",  x)
-    con=br.open()
-    
+    con=br.open()    
 }else{
+    message("Assuming you are not logged to Bloomberg")
     source('bloomr.R')
     fpath=function(x) paste0("res/",  x)
     con=NULL
