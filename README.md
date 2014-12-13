@@ -29,7 +29,7 @@ Plus read.xlx joins the family. With this function you can read Excel xlsx workb
 * Instead of importing all the sheets' cells, it can import only those comprised in a named range.
 * It can distinguish between cells formatted as numbers, percent, text and dates,
 * Date cells are recognised  whatever the language locale. 
-* Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.  
+* Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.
 * The filter is not based on any external engine and does not requires Excel to be installed at all. It's pure R code, so you can read xlsx files on Linux systems. 
 
 See xlx.help.html, or [xlx.help.pdf](https://github.com/AntonioFasano/BloomR/blob/master/xlx.help.pdf?raw=true) user manual for more.
@@ -48,7 +48,7 @@ Start to get results in BloomR immediately
 
 1. Download [BloomR Turandot](https://www.sugarsync.com/pf/D9604848_697_6715279040").
 2. Extract the zip file on your USB drive (or wherever).
-3. Run “BloomR.exe” in the main folder. 
+3. Run "BloomR.exe" in the main folder. 
 4. Log to Bloomberg service on the same PC (if you are not logged already).
 5. To get some data, type in the BloomR console:
 
@@ -74,7 +74,7 @@ You will find your portable BloomR directory  inside `workDir`.
 
 **Browser oddities**
 
-Downloading a file _as is_  from you browser can be tangled. Anyway, choosing Text or All-Files in the save-as option from the save dialog should do the trick. Then, double quoting the file name should give the proper extension, without extra suffix. Anyway, in as far as the format is text (not HTML), even if you get a distorted name, like "bloomr_build_R.txt", you can always adjust the `source()`-path accordingly.   
+Downloading a file _as is_  from you browser can be tangled. Anyway, choosing Text or All-Files in the save-as option from the browser Save dialog should do the trick. Then, double quoting the file name should give the proper extension, without extra suffix. Anyway, in as far as the format is text (not HTML), even if you get a distorted name, like "bloomr_build_R.txt", you can always adjust the `source()`-path accordingly.   
 Yes, bowsers are strange sometimes. 
 
 
