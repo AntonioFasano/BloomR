@@ -48,7 +48,7 @@ Start to get results in BloomR immediately
 
 1. Download [BloomR Turandot](https://www.sugarsync.com/pf/D9604848_697_6715279040").
 2. Extract the zip file on your USB drive (or wherever).
-3. Run "BloomR.exe" in the main folder. 
+3. Run "BloomR.exe" in the main folder.
 4. Log to Bloomberg service on the same PC (if you are not logged already).
 5. To get some data, type in the BloomR console:
 
