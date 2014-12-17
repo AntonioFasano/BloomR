@@ -74,7 +74,7 @@ You will find your portable BloomR directory  inside `workDir`.
 
 **Browser oddities**
 
-Downloading a file _as is_  from you browser can be tangled. Anyway, choosing Text or All-Files in the save-as option from the browser Save dialog should do the trick. Then, double quoting the file name should give the proper extension, without extra suffix. Anyway, in as far as the format is text (not HTML), even if you get a distorted name, like "bloomr_build_R.txt", you can always adjust the `source()`-path accordingly.   
+Downloading a file _as is_  from you browser can be tangled. Normally you need to a) select  All Files in the Save-as option of the browser Save dialog and b)   double-quote the filename. In as far as the format is text (not HTML), even if you get a distorted name, like "bloomr_build_R.txt", you can always adjust the `source()`-path accordingly.   
 Yes, bowsers are strange sometimes. 
 
 
