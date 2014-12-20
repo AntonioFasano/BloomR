@@ -82,11 +82,20 @@ A sample CSV with Bloomberg tickers will look like follows:
 
 
 
-
 ```r
-read.csv("tickers.csv")
+read.csv("mybloomr/tickers.csv")
 ## This file is part of BloomR and anyway available here:
 ## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.csv
+```
+
+
+```
+##          Financial     Technology      Indices
+## 1   3988 HK Equity QCOM US Equity    DJI Index
+## 2      C US Equity CSCO US Equity DJUSFN Index
+## 3 601288 CH Equity  700 HK Equity  W1TEC Index
+## 4    BAC US Equity  IBM US Equity             
+## 5   HSBA LN Equity INTC US Equity
 ```
 
 
@@ -98,17 +107,42 @@ Note:
 We can now download data:
 
 
-
-
 ```r
-con=NULL
+con=NULL  #Simulated mode: replace with con=br.open() on terminal
 ```
 
 
-
 ```r
-data=br.bulk.csv(con, "tickers.csv") 
+data=br.bulk.csv(con, "mybloomr/tickers.csv") 
 ```
+
+
+```
+## Processing Financial ...
+## 
+## Attaching package: 'zoo'
+## 
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+## 
+## Loading 3988 HK Equity
+## Loading C US Equity
+## Loading 601288 CH Equity
+## Loading BAC US Equity
+## Loading HSBA LN Equity
+## Processing Technology ...
+## Loading QCOM US Equity
+## Loading CSCO US Equity
+## Loading 700 HK Equity
+## Loading IBM US Equity
+## Loading INTC US Equity
+## Processing Indices ...
+## Loading DJI Index
+## Loading DJUSFN Index
+## Loading W1TEC Index
+```
+
 
 Above you see some info about data being processed that we will not show anymore in the following.
 
@@ -121,27 +155,27 @@ data
 
 ```
 ## $Financial
-##            3988 HK  C US 601288 CH BAC US HSBA LN
-## 2014-12-06  10.295    NA     8.100     NA      NA
-## 2014-12-07   9.508    NA     9.517 10.096   9.499
-## 2014-12-09  10.549    NA    10.654     NA      NA
-## 2014-12-10   7.800 8.973        NA  9.472   9.077
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2014-12-15   8.814     NA    10.138     NA      NA
+## 2014-12-16      NA 10.481     8.678     NA      NA
+## 2014-12-17      NA 10.408    10.415     NA      NA
+## 2014-12-18   9.365  8.655        NA     NA      NA
+## 2014-12-19  10.127  8.851     9.556  7.652  10.167
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2014-12-06  10.259   9.837 11.144  9.333      NA
-## 2014-12-07   9.913      NA     NA 10.200      NA
-## 2014-12-08   8.732      NA     NA 10.416      NA
-## 2014-12-09      NA      NA 10.061 10.240      NA
-## 2014-12-10      NA      NA     NA  8.636  12.101
+## 2014-12-15  10.591      NA     NA 10.346   8.580
+## 2014-12-16      NA  10.795     NA     NA  10.759
+## 2014-12-17  10.358   9.158     NA  7.974   9.694
+## 2014-12-18      NA  11.575  8.440  9.301   9.987
+## 2014-12-19      NA      NA  7.443  9.947   9.849
 ## 
 ## $Indices
-##               DJI DJUSFN  W1TEC
-## 2014-12-06  9.450     NA     NA
-## 2014-12-07 10.124 12.361 10.687
-## 2014-12-08     NA  9.827     NA
-## 2014-12-09  8.969 10.352 10.958
-## 2014-12-10  9.298     NA 12.392
+##              DJI DJUSFN W1TEC
+## 2014-12-15    NA     NA 7.566
+## 2014-12-17    NA 10.971    NA
+## 2014-12-18 8.310  9.399    NA
+## 2014-12-19 9.681     NA 9.094
 ```
 
 Note:
@@ -185,7 +219,7 @@ If you prefer you may get time series as data frames, and precisely as a list re
 
 
 ```r
-data=br.bulk.csv(con, "tickers.csv", use.xts=FALSE) 
+data=br.bulk.csv(con, "mybloomr/tickers.csv", use.xts=FALSE) 
 ```
 
 
@@ -240,24 +274,33 @@ class(data$Financial$`BAC US`)
 By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
 
 
-
-
 ```r
-data=br.bulk.csv(con, "tickers.csv", field = "PX_OPEN") 
+data=br.bulk.csv(con, "mybloomr/tickers.csv", field = "PX_OPEN") 
 ```
 
 
 You can choose to import only some of the CSV groups 
 
 
+```
+## Processing Financial ...
+## Loading 3988 HK Equity
+## Loading C US Equity
+## Loading 601288 CH Equity
+## Loading BAC US Equity
+## Loading HSBA LN Equity
+## Processing Indices ...
+## Loading DJI Index
+## Loading DJUSFN Index
+## Loading W1TEC Index
+```
 
 
 ```r
-data=br.bulk.csv(con, "tickers.csv", cols=c(1,3))
+data=br.bulk.csv(con, "mybloomr/tickers.csv", cols=c(1,3))
 ## or equivalently:
-data=br.bulk.csv(con, "tickers.csv", cols=c(TRUE, FALSE, TRUE))
+data=br.bulk.csv(con, "mybloomr/tickers.csv", cols=c(TRUE, FALSE, TRUE))
 ```
-
 
 
 ```r
@@ -273,12 +316,20 @@ In the CSV file, if your tickers represent all equities, you can omit the type.
 Consider this CSV:
 
 
-
-
 ```r
-read.csv("tickers.eqt.csv")
+read.csv("mybloomr/tickers.eqt.csv")
 ## This file is part of BloomR and anyway available here:
 ## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv
+```
+
+
+```
+##   Financial Technology
+## 1   3988 HK    QCOM US
+## 2      C US    CSCO US
+## 3 601288 CH     700 HK
+## 4    BAC US     IBM US
+## 5   HSBA LN    INTC US
 ```
 
 Note how the "Equity" type is missing! But you can use this CSV file with `addtype`:
@@ -287,7 +338,7 @@ Note how the "Equity" type is missing! But you can use this CSV file with `addty
 
 
 ```r
-data=br.bulk.csv(con, "tickers.eqt.csv", addtype=TRUE)
+data=br.bulk.csv(con, "mybloomr/tickers.eqt.csv", addtype=TRUE)
 ```
 
 Before going home, don't forget to:
@@ -327,15 +378,12 @@ Example{#br.bulk.desc.exem}
 ----------------------------
 
 
-
-
 ```r
 con=br.open()
-data=read.csv("tickers.csv", as.is=TRUE)
+data=read.csv("mybloomr/tickers.csv", as.is=TRUE)
 br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
 br.close(con)
 ```
-
 
 
 br.bulk.idx{#br.bulk.idx}
@@ -415,6 +463,28 @@ Example
 -------
 
 
+```r
+con=NULL # Open simulated connection and  load some data
+br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+```
+
+```
+## Loading MSFT US Equity
+## Loading AMZN US Equity
+```
+
+```
+##            MSFT US AMZN US
+## 2014-12-15      NA   9.682
+## 2014-12-16  12.136  10.434
+## 2014-12-17      NA   9.439
+## 2014-12-18      NA  11.391
+## 2014-12-19      NA   9.963
+```
+
+```r
+br.close(con) # Use the token to release the connection
+```
 
 See Also
 --------
@@ -585,6 +655,11 @@ Example
 -------
 
 
+```r
+con=br.open() # Open the connection and get the token and load some data
+br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.close(con) # Use the token to release the connection
+```
 
 
 

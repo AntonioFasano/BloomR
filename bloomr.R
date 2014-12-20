@@ -1,7 +1,4 @@
-
-
-
-## ----br.bulk.csv, include=FALSE------------------------------------------
+## ----br.bulk.csv, opts.label='purlme'------------------------------------
 br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
     price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
@@ -45,48 +42,7 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     grps
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## ----br.bulk.desc, include=FALSE-----------------------------------------
+## ----br.bulk.desc, opts.label='purlme'-----------------------------------
 br.bulk.desc=function(con, tiks) {
 
     LL = lapply(tiks, function(tik){
@@ -98,12 +54,7 @@ br.bulk.desc=function(con, tiks) {
 }
 
 
-
-
-
-
-
-## ----br.bulk.idx, include=FALSE------------------------------------------
+## ----br.bulk.idx, opts.label='purlme'------------------------------------
 br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
     include.idx=TRUE, use.xts=TRUE,
     nsec=10, price=TRUE, nrow=5,
@@ -152,10 +103,7 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
         )
 }
 
-
-
-
-## ----br.bulk.tiks, include=FALSE-----------------------------------------
+## ----br.bulk.tiks, opts.label='purlme'-----------------------------------
 br.bulk.tiks=function(
     con,  
     tiks, 
@@ -237,8 +185,7 @@ br.bulk.tiks=function(
     }
 }
 
-
-## ----br.desc, include=FALSE----------------------------------------------
+## ----br.desc, opts.label='purlme'----------------------------------------
 br.desc=function(con, tik)
 {
 
@@ -266,8 +213,7 @@ br.desc=function(con, tik)
     x
 }
 
-
-## ----br.sample, include=FALSE--------------------------------------------
+## ----br.sample, opts.label='purlme'--------------------------------------
 br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
     jitter=0, same.dates=FALSE, no.na=FALSE, df=FALSE, empty.sec=0,sec.names=NULL)
 {
@@ -333,14 +279,12 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
    
 }
 
-
-## ----deprecated, include=FALSE-------------------------------------------
+## ----deprecated, opts.label='purlme'-------------------------------------
 bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
 bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
 
 
-
-## ----bbg-internal, include=FALSE-----------------------------------------
+## ----bbg-internal, opts.label='purlme'-----------------------------------
 
 ## Check connection token
 .br.is.con=function(con) identical(attr(con, 'jclass'), "org/findata/blpwrapper/Connection")
@@ -371,16 +315,12 @@ bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br
     }
 
 
-
-
-
-## ----connections, include=FALSE------------------------------------------
+## ----connections, opts.label='purlme'------------------------------------
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
 br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
 
 
-
-## ----miscfunc, include=FALSE---------------------------------------------
+## ----miscfunc, opts.label='purlme'---------------------------------------
 
 #Clean up
 ## Remove visible and invisible objects
@@ -392,8 +332,7 @@ rm.var=function()
     rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
 
 
-
-## ----time, include=FALSE-------------------------------------------------
+## ----time, opts.label='purlme'-------------------------------------------
 `%+%` <- function(x,y) UseMethod("%+%")
 `%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
 `%-%` <- function(x,y) UseMethod("%-%")
@@ -434,11 +373,4 @@ day.us=function(d1, d2){
     #substract 1 for each 31d-month
     as.numeric(d2-d1-x)
 }
-
-
-
-
-
-
-
 
