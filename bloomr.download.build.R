@@ -21,7 +21,7 @@ source_github <- function(u) {
 ### Set outdir
 ##cdir=getwd()
 script.path= parent.frame(2)$ofile
-bdir= paste0(script.path, format(Sys.time(), "/%y%m%d-%H%M"))
+bdir= paste0(dirname(script.path), format(Sys.time(), "/%y%m%d-%H%M"))
 
 
 ### Start download and build
