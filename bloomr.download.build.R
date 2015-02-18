@@ -1,24 +1,30 @@
-## Download 'bloomr.build.R' from Gthub and build it inside './bloomr.bin'
+## Download 'bloomr.build.R' from Gthub and build it inside 'scriptdir/data'
 ## Intended for fast internal testing - Readme method is the standard way
-
+## Use it by drag and drop in R GUI
 
 source_github <- function(u) {
-  # load package
-  if(!require(RCurl)) install.packages( "RCurl"  , repos= "http://cran.r-project.org/") 
+    ## load package
+    if(!require(RCurl)) {
+        install.packages( "RCurl"  , repos= "http://cran.r-project.org/") 
+        require(RCurl)
+    }
+    
 
+    ## read script lines from website and evaluate
+    script <- getURL(u, ssl.verifypeer = FALSE)
 
-  # read script lines from website and evaluate
-  script <- getURL(u, ssl.verifypeer = FALSE)
-
-  script =gsub("\\r", "", script) # unix line endings
-  eval(parse(text = script),envir=.GlobalEnv)
+    script =gsub("\\r", "", script) # unix line endings
+    eval(parse(text = script),envir=.GlobalEnv)
 }  
 
-cdir=getwd()
-bdir= paste0(cdir, format(Sys.time(), "/%y%m%d-%H%M"))
+
+### Set outdir
+##cdir=getwd()
+script.path= parent.frame(2)$ofile
+bdir= paste0(script.path, format(Sys.time(), "/%y%m%d-%H%M"))
 
 
-
+### Start download and build
 ans <- readline(sprintf("I will create BloomeR in %s . (Y/n)? ", bdir))
 if(tolower(ans)=="y" || ans==""){
     source_github(
