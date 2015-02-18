@@ -1,3 +1,16 @@
+## ----br.bdh, opts.label='purlme'-----------------------------------------
+br.bdh=function(
+    con, securities, fields="PX_LAST", start.date, end.date = NULL,
+    option.names = NULL, option.values = NULL,
+    always.display.tickers = FALSE, dates.as.row.names = (length(securities) == 1),
+    include.non.trading.days = NULL
+                ) {
+    bdh(con, securities, fields, start.date, end.date, override_fields  = NULL, override_values = NULL,
+        option.names, option.values, always.display.tickers, dates.as.row.names,
+        include.non.trading.days)
+}
+
+
 ## ----br.bulk.csv, opts.label='purlme'------------------------------------
 br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
@@ -138,7 +151,7 @@ br.bulk.tiks=function(
     if(use.xts){ 
         LL = lapply(tiks, function(tik){
             message('Loading ', tik)
-            if(!is.null(con)) x=bdh(con, tik, field, start) else {
+            if(!is.null(con)) x=br.bdh(con, tik, field, start) else {
                 x=br.sample(nrow, 1, price=price, start=start,
                     df=TRUE, same.dates=same.dates, no.na=no.na,
                     sec.names=c('date', field))
@@ -168,7 +181,7 @@ br.bulk.tiks=function(
         ## Get data in list format
         LL=lapply(tiks, function(tik){
             message('Loading ', tik)
-            if(!is.null(con)) bdh(con, tik, field, start) else {
+            if(!is.null(con)) br.bdh(con, tik, field, start) else {
                 br.sample(nrow, 1, price=price, empty.sec=empty.sec, start=start,
                            df=TRUE, sec.names=c('date', field))
             }            

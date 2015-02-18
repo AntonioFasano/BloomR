@@ -17,10 +17,9 @@ read.xlx= function(
     require(pbapply)
    
 
-    ## Globals, parsing, extraction
-    ## ----------------------------
-    
     ## Global variables 
+    ## ----------------
+    
     T=TRUE; F=FALSE
     tdir=NULL         # Temporary dir
     os_origin ="1899-12-30" # Apparently non-MAC only  
@@ -42,8 +41,11 @@ read.xlx= function(
     rangebook=NULL    # Structure like databook, but whose item are ranges only
 
 
+    
+    ## Utility functions
+    ## -----------------
 
-    ## There are one or more non-null items. Empty text is non-null!
+    ## There are one or more non-null items, where empty text is considered non-null
     are=function(...) !is.null(...)
     
     ## If header true and rows>1 exclude first row
@@ -78,7 +80,12 @@ read.xlx= function(
         if(!is.null(tdir))  unlink(tdir, recursiv=T)
         stop(paste("In 'read.xlx'",  ...))
     }
-            
+
+
+        
+    ## Check arguments
+    ## ---------------
+    
     ## Test logical arguments
     x=c(header.sheets=header.sheets, header.ranges=header.ranges, keepblanks=keepblanks)  
     xx=" argument for 'read.xlx' should be logical. Current value, "
@@ -93,9 +100,6 @@ read.xlx= function(
         if(!all(x %in% c("file", "info"))) error("'info' requires only file argument. You passed: ", x)        
     }
 
-
-    
-    
     ## Test headers 
     if(is.header.ranges && is.null(uranges))
         error("'header.ranges' given without 'ranges'")
@@ -208,7 +212,8 @@ read.xlx= function(
         n=0
         cells <- xpathApply(cellstack[[i]], "//x:c", namespaces = "x", function(node) {
                 n<<-n+1
-                message('\rCell:  ', n, appendLF=FALSE)
+                message('\r   Cell:  ', n, appendLF=FALSE)
+                #cat('\r   Cell: ', n)
                 c("v" = xmlValue(node[["v"]]), xmlAttrs(node))})
         
         

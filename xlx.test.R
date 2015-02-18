@@ -140,6 +140,19 @@ msg("sheets & ranges with/without headers: names == first rows.")
 tests(1, head.eq.1st(head, nohead))
 msgn("Success!")
 
+
+## Test empty sheets/ranges 
+
+head=   callme(
+    ranges="education", header.ranges=TRUE, sheets="survey2", header.sheets=TRUE)
+
+callme("Sheet3")
+    ranges="education", header.ranges=TRUE, sheets="survey2", header.sheets=TRUE)
+
+
 }
+
+
+
 
 ##          main()

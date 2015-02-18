@@ -1,6 +1,7 @@
-# BloomR facility functions
+# BloomR main functions
 R topics documented:
 -----------
+[br.bdh](#br.bdh)   
 [br.bulk.csv](#br.bulk.csv)   
 [br.bulk.desc](#br.bulk.desc)   
 [br.bulk.idx](#br.bulk.idx)   
@@ -14,6 +15,142 @@ R topics documented:
 [Time extension functions](#time.functions)   
 
 
+
+
+
+
+
+
+br.bdh{#br.bdh}
+===============
+*Historical data*
+
+Description
+-----------
+Download historical Bloomberg data 
+
+Usage
+-----
+    br.bulk.desc(con, tiks) 
+
+Arguments
+---------
+con
+:   the connection token returned from br.open()
+
+securities
+:   character vector of the tickers queried for data  
+
+field
+:   case insensitive character vector of the Bloomberg field queried. Defaults to "PX_LAST". 
+
+start.date
+:   Time series start date as a Date object or an ISO string without separators (YYYYMMDD). Time series will actually begin at `start.date` if there is data available; otherwise it will start at the first significant date. 
+
+end.date
+:   Time series end  date as a Date object or an ISO string without separators (YYYYMMDD). If NULL or missing, it defaults to the last available date. 
+
+option.names, option.values
+:   See details
+
+always.display.tickers
+:   Displays tickers in first column even if a single one is requested. Defaults to FALSE
+
+dates.as.row.names  
+:   Displays dates _also_ as row names. Defaults to TRUE for single ticker query, FALSE otherwise. 
+
+include.non.trading.days
+:   If TRUE, rows are returned for all requested dates, even when markets no data is available.
+It defaults to FALSE for a single security or and TRUE for multiple securities. In the latter case, use `na.omit`  or `na.exclude` to remove these rows.
+
+
+Details
+-------
+For multi-ticker queries you might consider to use `br.bulk.tiks` which features  also a simulated mode.
+
+`option.names` and `option.values` are options vectors affecting the returned data. Options are set pairwise, for example to set `opt1` and `opt2`  respectively to `val1` and `val2`, you would pass the arguments:
+
+    option.names=c("opt1", "opt2"), option.values=c("val1", "val2")
+
+Here is a list of options:
+
+
+
+periodicityAdjustment
+:   Determine the frequency and calendar type of the output. To be used in conjunction with `periodicitySelection`. If `ACTUAL`, it  reverts to the actual date from today (if the end date is left blank) 
+or from the End Date. If `CALENDAR`, (for pricing fields), it  reverts to the last business day of the specified calendar period. Calendar Quarterly (CQ), Calendar Semi-Annually (CS), or Calendar Yearly (CY). If `FISCAL`, it reverts to the fiscal period end for the company - Fiscal Quarterly (FQ), Fiscal Semi-Annually (FS) and Fiscal Yearly (FY) only.
+
+periodicitySelection
+:   Determine the frequency of the output. To be used in conjunction with periodicityAdjustment.
+if `DAILY`, `WEEKLY`, `MONTHLY`, `QUARTERLY`, `SEMI_ANNUALLY`, `YEARLY`.
+
+currency
+:   Amends the value from local to desired currency. The value is a 3 letter ISO code string, e.g. USD, GBP. View `WCV<GO>` on the Bloomberg terminal for the full list.
+
+overrideOption
+:   Indicates whether to use the average or the closing price in quote calculation. Values can be 
+`OVERRIDE_OPTION_CLOSE` for using the closing price or `OVERRIDE_OPTION_GPA`  for the average price.
+
+pricingOption
+:   Sets quote to Price or Yield for a debt instrument whose default value is quoted in yield (depending on pricing source).
+`PRICING_OPTION_PRICE` sets quote to price; `PRICING_OPTION_YIELD` sets quote to yield.
+
+nonTradingDayFillOption 
+:   Sets to include/exclude non trading days where no data was generated.
+`NON_TRADING_WEEKDAYS` includes all weekdays (Monday to Friday); `ALL_CALENDAR_DAYS`  includes all days of the calendar; `ACTIVE_DAYS_ONLY`  includes only the days where the instrument and field pair 
+were updated.
+
+
+nonTradingDayFillMethod
+:   If data is to be displayed for non trading days what is the data to be returned.
+ `PREVIOUS_VALUE` searches back and retrieve the previous value available for this security field pair. The search back period is up to one month. `NIL_VALUE` returns blank for the "value" value 
+within the data element for this field.
+
+maxDataPoints
+:   the maximum number of data points to return. If the original data set is larger, the response will be a subset, containing only the last `maxDataPoints` data points.
+
+returnEids
+:   returns the entitlement identifiers associated with security. If TRUE, populates data with an extra element containing a name and value for the EID date.
+
+returnRelativeDate
+:   returns data with a relative date. If TRUE, populates data with an extra element containing a name and value for the relative date. For example RELATIVE_DATE = 2002 Q2
+
+adjustmentNormal
+:   Adjust for "change on day". If TRUE, adjusts historical pricing to reflect: Regular Cash, Interim, 1st Interim, 2nd Interim, 3rd Interim, 4th Interim, 5th Interim, Income, Estimated, Partnership Distribution, Final, Interest on Capital, Distribution, Prorated.
+
+adjustmentAbnormal 
+:   Adjusts for Anormal Cash Dividends. If TRUE, adjusts historical pricing to reflect: Special Cash, Liquidation, Capital Gains, Long-Term Capital Gains, Short-Term Capital Gains, Memorial, Return of Capital, Rights Redemption, Miscellaneous, Return Premium, Preferred Rights Redemption, Proceeds/Rights, Proceeds/Shares, Proceeds/Warrants.
+
+
+adjustmentSplit
+:   Capital Changes Defaults. If TRUE, adjusts historical pricing and/or volume to reflect: Spin-Offs, Stock Splits/Consolidations, Stock Dividend/Bonus, Rights Offerings/Entitlement.
+
+adjustmentFollowDPDF
+:   If TRUE (defaults) Follow the Bloomberg function as from `DPDF<GO>`.
+
+CalendarCodeOverride
+:   Returns the data based on the calendar of the specified country, exchange, or 
+religion. Value is  a two character calendar code as from `CDR<GO>`. This will cause the data to be aligned according to the calendar  and including calendar holidays. Only applies only to DAILY requests.
+
+CalendarOverridesInfo
+:   (Experimental, not tested) Returns data based on the calendar code of multiple countries, exchanges, or religious calendars as from `CDR<GO>`. Values can be a character vector of two-character calendar codes as from `CDR<GO>`.
+This will cause the data to be aligned according to the set calendar(s) including their calendar 
+holidays and only applies to DAILY requests.
+calendareOverrides
+Operation
+`CDR_AND`  Returns the intersection of trading days among multiple calendars. `CDR_OR` Returns the union of trading days. That is, a data point is returned if a date is a valid trading day for any of 
+the calendar codes specified in the request.
+
+Overrides
+:   (Experimental, not tested) Append overrides to modify the calculation. `fieldID` specifies  a field mnemonic or alpha-
+numeric, such as `PR092` or `PRICING_SOURCE`. Review FLDS<GO> for list of possible overrides.
+`value` sets the desired override value
+
+
+
+Value
+-----
+A data frame with historical data. If tickers are displayed, the first column shows tickers, the second one the time series dates and the following the values of the queried fields; otherwise the columns starts with dates. Dates will also be shown as rows if `dates.as.row.names=TRUE`. If multiple tickers are queried they are vertically stacked respecting the order in `securities` vector.
 
 
 
@@ -36,26 +173,37 @@ Usage
   
 Arguments
 ----------
+
 con
 :   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+
 file
 :   path to CSV file.  
+
 start
-:   start date. Can be a Date object or an ISO string without separators. Defaults to 5 days before current date.  
+:   start date. Can be a Date object or an ISO string without separators (YYYYMMDD). Defaults to 5 days before current date.  
+
 field
-:   String denoting the Bloomberg field queried. Defaults to "PX_LAST". If the field is wrong or not accessible, data will be empty but no error will be raised.  
+:   case insensitive string denoting the Bloomberg field queried. Defaults to "PX_LAST". If the field is wrong or not accessible, data will be empty but no error will be raised.  
+
 cols
 :   Logical or integer vector for selecting CSV columns (ticker groups). Defaults to all columns.  
+
 addtype
 :   If a string denoting the security type, it will be added to all tickers; if TRUE "Equity", will be added; if FALSE (the default), nothing will be added.  
+
 showtype
 :   if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.  
+
 use.xts
 :   if TRUE (the default) each group will be formatted as an xts object else as a list.  
+
 comma
 :   to be set to FALSE for (non-English) CSV, using semicolon as separator.  
+
 nrow
 :   maximum number of simulated rows (actual is random). Ignored if `con!=NULL`, it defaults to 5.  
+
 empty.sec
 :   ratio of securities returning no data. Ignored if `con!=NULL`, it defaults to 0.
 
@@ -119,13 +267,6 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 
 ```
 ## Processing Financial ...
-## 
-## Attaching package: 'zoo'
-## 
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-## 
 ## Loading 3988 HK Equity
 ## Loading C US Equity
 ## Loading 601288 CH Equity
@@ -156,26 +297,26 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2014-12-15   8.814     NA    10.138     NA      NA
-## 2014-12-16      NA 10.481     8.678     NA      NA
-## 2014-12-17      NA 10.408    10.415     NA      NA
-## 2014-12-18   9.365  8.655        NA     NA      NA
-## 2014-12-19  10.127  8.851     9.556  7.652  10.167
+## 2015-02-12   9.025     NA    10.180 11.467  10.717
+## 2015-02-13      NA  9.958    10.254     NA   9.057
+## 2015-02-14      NA  9.783     9.675 10.734  10.572
+## 2015-02-15      NA 10.729        NA 10.445   9.142
+## 2015-02-16  10.585  9.548        NA  9.878   8.974
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2014-12-15  10.591      NA     NA 10.346   8.580
-## 2014-12-16      NA  10.795     NA     NA  10.759
-## 2014-12-17  10.358   9.158     NA  7.974   9.694
-## 2014-12-18      NA  11.575  8.440  9.301   9.987
-## 2014-12-19      NA      NA  7.443  9.947   9.849
+## 2015-02-12      NA   9.270 10.554  9.268      NA
+## 2015-02-13      NA      NA 10.812     NA      NA
+## 2015-02-14   9.226  11.552     NA     NA      NA
+## 2015-02-15   9.302  10.819     NA     NA      NA
+## 2015-02-16      NA      NA 11.098 10.251  12.118
 ## 
 ## $Indices
-##              DJI DJUSFN W1TEC
-## 2014-12-15    NA     NA 7.566
-## 2014-12-17    NA 10.971    NA
-## 2014-12-18 8.310  9.399    NA
-## 2014-12-19 9.681     NA 9.094
+##               DJI DJUSFN W1TEC
+## 2015-02-12 10.329     NA 9.434
+## 2015-02-13  9.814     NA 8.584
+## 2015-02-14 10.238  9.519 9.386
+## 2015-02-16  9.177 11.057 9.056
 ```
 
 Note:
@@ -364,6 +505,7 @@ Arguments
 ---------
 con
 :    the connection token returned from br.open()  
+
 tiks
 :    character vector of the tickers queried for data  
 
@@ -405,12 +547,16 @@ Arguments
 ---------
 con
 :   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+
 index
 :   string denoting the index ticker with or without the final security type label ('Index')  
+
 include.idx
 :   if TRUE (default) returns also historical data for the index.  
+
 nsec
 :   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
+
 sec.names
 :   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.  
 For other arguments see the function `br.bulk.csv`
@@ -475,11 +621,9 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2014-12-15      NA   9.682
-## 2014-12-16  12.136  10.434
-## 2014-12-17      NA   9.439
-## 2014-12-18      NA  11.391
-## 2014-12-19      NA   9.963
+## 2015-02-14      NA   9.652
+## 2015-02-15      NA   9.773
+## 2015-02-16   11.15      NA
 ```
 
 ```r
@@ -508,6 +652,7 @@ Arguments
 ---------
 con
 :   the connection token returned from br.open()  
+
 tik
 :   string denoting the ticker queried for data  
 
@@ -537,26 +682,37 @@ Arguments
 ---------
 nrow
 :   number of simulated data points for each security; if `same.dates=FALSE`, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities.  
+
 nsec
 :   number of simulated securities (defaults to 1).  
+
 price
 :   if TRUE (default), simulated values are non-negative.  
+
 start
-:   start date. Can be a Date object or an ISO string without separators. Defaults to current date.  
+:   start date. Can be a Date object or an ISO string without separators (YYYYMMDD). Defaults to current date.  
+
 mean
 :   mean of security generated values. If `price=TRUE`, default to 10 else defaults to 0.1.  
+
 sd
 :   sd of security generated values. It defaults to 1.  
+
 jitter
 :   modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.  
+
 same.dates
 :   if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed `nrow`.  
+
 no.na
 :   if `same.dates=FALSE`, when merging sampled security data NAs are likely to be produced. If `no.na=FALSE` (default) they will be left, otherwise they will be removed using R `na.omit`  
+
 df
 :   if FALSE (default), the output will be an xts object, else the output will be a data frame with the first column containing the dates of the sampled data.  
+
 sec.names
 :   character vector for column names. If `df=FALSE` the length of the vector should be equal to `nsec`, else to `nsec + 1` (because of the first column containing dates). By default security names are like 'sample1', 'sample2', etc. and the date column is named 'date'.  
+
 empty.sec
 :   ratio of securities returning no data (defaults to 0). The result is rounded without decimal places.  
 
@@ -613,6 +769,7 @@ Arguments:
 ----------
 con
 :   the connection token returned from br.open()  
+
 type
 :   a string representing the security type  
 
@@ -710,8 +867,10 @@ Arguments
 ---------
 d, d1, d2
 :   objects of class date  
+
 x
 :   an integer representing the day/month/year  
+
 n
 :   an integer representing the months to add/subtract
 
@@ -734,5 +893,8 @@ If `component` is `day`, `month` or `year`: `component(d)` returns the *componen
 
     
 <!-- Local Variables: -->
-<!-- mode: r -->
+<!-- mode: rmd -->
 <!-- End: -->
+
+<!--  LocalWords:  Bloomberg YYYYMMDD CSV
+ -->

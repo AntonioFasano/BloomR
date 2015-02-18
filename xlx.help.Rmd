@@ -14,7 +14,7 @@ There is a new function  in the `read.*` family, `read.xlx`, which can read Exce
 * Instead of importing all the sheets' cells, it can import only those comprised in a named range.
 * It can distinguish between cells formatted as numbers, percent, text and dates,
 * Date cells are recognised  whatever the language locale. 
-* Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.  
+* Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them. 
 * The filter is not based on any external engine and does not requires Excel to be installed at all. It's pure R code, so you can read xlsx files on Linux systems. 
 
 
@@ -49,13 +49,13 @@ allchars
 :   If false do not infer cell style, but use always R character class.  
 
 general
-:   map Excel general format to 'character' or 'numeric'. 
+:   map Excel general format to 'character' or 'numeric'.  
 
 info
-:  list of: sheets' name; vector whose names are ranges and values their sheets; vector whose names are ranges and values their references.
+:   list of: sheets' name; vector whose names are ranges and values their sheets; vector whose names are ranges and values their references.  
 
 simplify
-:  remove enclosing list for a single item.
+:   remove enclosing list for a single item.
 
 
 Details
@@ -66,12 +66,59 @@ If `header.sheets` is a logical vector, its length should match the length of th
 `info` can be used only with `file`. The elements name  of the list returned are:
 wbsheets, rgsheets, rgrefs. 
 
+
+```{r setup, include=FALSE }
+## Like capture.output, except it diverts the messages stream too
+## (not only the output stream)
+## If (non-) quiet, (don't) print pretty output
+## There are no file options as in capture.output
+capture.all=function(..., std=TRUE, mess=TRUE, quiet=FALSE){
+    out.con.std = textConnection("out.char.std", open = "w")
+    out.con.mess = textConnection("out.char.mess", open = "w")
+    sink(out.con.std)
+    ## divert messages too, contrary to standard capture.output
+    sink(out.con.mess, type = "message")
+    ## on fuction exit stop sink-ing and close connection
+    on.exit({
+        sink(type = "message")
+        sink()
+        close(out.con.std)
+        close(out.con.mess)
+    })
+
+    ## Execute args in parent frame
+    args <- substitute(list(...))[-1L]
+    pf <- parent.frame()    
+    evalVis <- function(expr) withVisible(eval(expr, pf))
+    for (i in seq_along(args)) {
+        expr <- args[[i]]
+        tmp <- switch(mode(expr), expression = lapply(expr, evalVis), 
+            call = , name = list(evalVis(expr)), stop("bad argument"))
+        for (item in tmp) if (item$visible) 
+            print(item$value)
+    }
+    on.exit()    
+    sink(type = "message")
+    sink()
+    close(out.con.std)
+    close(out.con.mess)
+
+
+    if(!std) out.char.std=''
+    if(!mess) out.char.mess=''
+    
+    if(!quiet) message(paste(out.char.std, out.char.mess, collapse='\n'))
+    invisible(list(std=out.char.std, mess=out.char.mess))
+}
+
+```
+
 Setup
 -----
 
 Currently the script is not in package form so, after downloading it,  just source the R source with:
 
-    source('path\to\readxlx.r')
+    source('path\to\xlx.r')
 
 ```{r xlx.source, include=FALSE}
     source('xlx.r')
@@ -84,7 +131,7 @@ You are done.
 Use it in the simplest form
 ----------------------------
 
-Assume you have the spreadsheet `survey.xlsx`, with consisting of an empty sheet and  two sheets `Survey1` and `Survey2` with  plain formatted  data  like the  following (anyway a `survey.xlsx` spreadsheet should accompany this manual):
+Let us start from a sample  the spreadsheet `survey.xlsx` (which you should find together with  this manual), with consisting of an empty sheet and  two sheets `Survey1` and `Survey2` with  plain formatted  data  like the  following:
 
     
 ![figure](res/tables.png) 
@@ -97,17 +144,40 @@ To import the file with all sheets simply run:
 
 
 
-```{r xlx.start, message=FALSE, results='hide'}
+```{r xlx.start, eval=FALSE}
 surv=read.xlx('survey.xlsx')
 ```
 
+```{r xlx.start.2, message=FALSE, include=FALSE}
+require(stringr)
+out=capture.all(read.xlx('survey.xlsx'), quiet=TRUE)
+bar=strsplit(out$std[1], split='\r')[[1]]
+bar=str_trim(rev(bar)[1])
+data=paste(out$std[-1], collapse='\n')
 
+mess=lapply(out$mess, function(x) {
+    y=strsplit(x, split='\r')[[1]]
+    l=length(y)
+    str_trim(if(l) y[l] else x)
+})
+mess=paste(mess, collapse="\n")
+surv=read.xlx('survey.xlsx')
+require(pbapply)
+pboptions(type="none")
+
+```
+
+```{r xlx.start.3, echo=FALSE}
+message(mess, bar)
+```
+
+Above you see some info about the workbook  being processed that we will not show anymore in the following.
 
 The result of your import is:
 
-```{r xlx.start2}
-class(surv)
+```{r xlx.start.4}
 surv
+class(surv)
 lapply(surv, class)
 names(surv$Survey1) 
 ```
@@ -136,7 +206,7 @@ Import individual workbook items
 We can customise the default behaviour. For example let us assume we want to import only the sheet "Survey2" 
 
 
-```{r xlx.single, message=FALSE, results='hide'}
+```{r xlx.single, message=FALSE}
 surv= read.xlx('survey.xlsx', sheets=c('survey2'))
 ```
 
@@ -145,7 +215,7 @@ As usual for a single item `sheets=c("survey2")` can be shortened as `sheets='su
 Note that, respecting Excel convention the name is not case sensitive, so `survey2` works even if the actual sheet name is `Survey2`.  The name used in the importing command will be the one stored in R, in case you later  need to address it.
 
 
-Another thing is that, since you asked for a single sheet, there is no  need to wrap it in a now worthless list:
+Another thing is that, since we asked for a single sheet, there is no  need to wrap it in a now worthless list:
 
 ```{r xlx.single2}
 class(surv)
@@ -155,7 +225,7 @@ surv
 
 What about using the first sheet row as the data table names? 
 
-```{r xlx.head, , message=FALSE, results='hide'}
+```{r xlx.head, , message=FALSE}
 surv=read.xlx('survey.xlsx', sheets=c("survey1", "survey2"), header.sheets=c(FALSE, TRUE))
 
 ```
@@ -178,7 +248,7 @@ Note that the letter case is the same as the issued command, therefore now it is
 It is possible to query for named ranges too. The file `survey.xlsx` contains the named ranges `education` and `students`. 
 
 
-```{r xlx.range, message=FALSE, results='hide'}
+```{r xlx.range, message=FALSE}
 surv= read.xlx('survey.xlsx', ranges=c('education', 'students'))
 
 ```
@@ -191,7 +261,7 @@ surv
 
 Again we can use the first line as header:
 
-```{r xlx.range3, message=FALSE, results='hide'}
+```{r xlx.range3, message=FALSE}
 surv= read.xlx('survey.xlsx', ranges='education', header.ranges=TRUE)
 
 ```
@@ -207,22 +277,22 @@ surv
 Details for the non causal user
 -------------------------------
 
-Sheets are converted into data frame following other `read.*` function behaviour, which means that the values of a column share a common type. Anyway in the same  Excel column  different cells can have different formats. Why loosing this information? It would have been possible to use a list object to model a sheet and so retain the differences, but most of the R statistic functions can effectively operate  when at least at column level the formats are the same.
-That being said, when in a column there are different cell formats the prevailing compatible styles,  will be applied to all. This willoften involve a the "character", because it is always compatible with numeric formats too.  
+Sheets are converted into data frame following other R `read.*` functions' behaviour, which means that the values of a column share a common type. Anyway in the same  Excel column  different cells can have different formats. Why loosing this information? It would have been possible to use a list object to model a sheet and so retain the differences, but most of the R statistic functions can effectively operate  when at least at column level the formats are the same.
+That being said, when in a column there are different cell formats the prevailing compatible styles,  will be applied to all. This will often involve the use of the R  "character" type, because it is always compatible with numeric formats too.  
 
-Given this recognised Excel style as R equivalent are:
+Given this, recognised Excel styles and their R equivalent are:
 
 * number, accounting, currency, fraction, scientific: converted to R numeric format
 * percent: converted to R numeric format, with "percent" attribute
 * date: converted to R date or datetime format
 * time: converted to R time format
 * text: converted to R character format 
-* general: converted to R character format 
+* general: converted to R character format (unless otherwise asked)
 
 
 To see how this works in practice:
 
-```{r xlx.adv, message=FALSE, results='hide'}
+```{r xlx.adv, message=FALSE}
 surv=read.xlx('survey.xlsx', "survey2")
 ```
 ```{r xlx.adv2}
@@ -247,7 +317,20 @@ If you want to reduce the progress messages printed (perhaps because you are usi
 
     suppressMessages( x=read.xlx('survey.xlsx') )
 
-You will only get one line of +'s. I am thinking if it is convenient to totally abolish it. 
+You will only get one line of +'s. I am thinking if it is convenient to totally abolish even this. 
+
+###Empty objects
+
+The general principle is: empty objects are not returned unless they are explicitly requested.
+
+```{r xlx.sheet3, message=FALSE}
+surv=read.xlx('survey.xlsx')
+names(surv)
+read.xlx('survey.xlsx', c("survey2", "sheet3"))
+read.xlx('survey.xlsx', "sheet3")
+```
+
+
 
 
 Dates oddities
@@ -278,7 +361,7 @@ How does read.xlx behave?
 3. If a date is entered not respecting the locale and you change the format category to date. *You have just created a monster*, since this appears as a date to those sharing your culture, the category and locale you set match the entered date, but for Excel it is not a date and it will be stored in the file as a string. When `read.xlx` finds a string pretending to be a date  it imports it as a NA.  
 
 
-With respect to point 2) if you have set the `general` argument of `read.excel` to "numeric", than again the value will be imported as a NA. The same will happen if the prevailing style is in the column is "numeric" (or the likes). 
+With respect to point 2) if you have set the `general` argument of `read.xlx` to "numeric", than again the value will be imported as a NA. The same will happen if the prevailing style is in the column is "numeric" (or the likes). 
 
 If you don't have control on the workbook content, the point 3) can be particularly subtle. You see apparently good looking dates, which are not such for Excel, and you have unpleasant NA surprised after import.  
 Next release of read.xlx will have a guess-date option to address this and get what looks like a date as a date in R too. 
@@ -292,13 +375,13 @@ require(rmarkdown)
 opts_chunk$set(tidy.opts=list(width.cutoff=60))
 knit("xlx.help.rmd")
 render("xlx.help.Rmd", html_document())
-render("xlx.help.md", pdf_document())
+render("xlx.help.Rmd", pdf_document())
 
 ```
 
     
 <!-- Local Variables: -->
-<!-- mode: markdown -->
+<!-- mode: rmd -->
 <!-- End: -->
 
 <!--  LocalWords:  xlsx Setup

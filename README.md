@@ -15,7 +15,7 @@ Improvements over Début version:
 - Only 64 bit (it means less space).
 - Updated to R-3.1.2.
 - New functions for bulk download using tickers from CSV files, from index constituents or from ticker vectors.
-- Simulated download allows to prepare script at home and test on Bloomberg terminal later.
+- Simulated download allows to prepare scripts at home and test on Bloomberg terminal later.
 - Bulk and non-bulk download of many description fields.
 - More consistent naming scheme: `bbg.*` suffix is deprecated now, use `br.*`
 - A formal documentation (see bloomr.html or [bloomr.pdf](https://github.com/AntonioFasano/BloomR/blob/master/bloomr.pdf?raw=true))

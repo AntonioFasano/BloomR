@@ -14,7 +14,7 @@ There is a new function  in the `read.*` family, `read.xlx`, which can read Exce
 * Instead of importing all the sheets' cells, it can import only those comprised in a named range.
 * It can distinguish between cells formatted as numbers, percent, text and dates,
 * Date cells are recognised  whatever the language locale. 
-* Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.  
+* Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them. 
 * The filter is not based on any external engine and does not requires Excel to be installed at all. It's pure R code, so you can read xlsx files on Linux systems. 
 
 
@@ -49,13 +49,13 @@ allchars
 :   If false do not infer cell style, but use always R character class.  
 
 general
-:   map Excel general format to 'character' or 'numeric'. 
+:   map Excel general format to 'character' or 'numeric'.  
 
 info
-:  list of: sheets' name; vector whose names are ranges and values their sheets; vector whose names are ranges and values their references.
+:   list of: sheets' name; vector whose names are ranges and values their sheets; vector whose names are ranges and values their references.  
 
 simplify
-:  remove enclosing list for a single item.
+:   remove enclosing list for a single item.
 
 
 Details
@@ -66,12 +66,15 @@ If `header.sheets` is a logical vector, its length should match the length of th
 `info` can be used only with `file`. The elements name  of the list returned are:
 wbsheets, rgsheets, rgrefs. 
 
+
+
+
 Setup
 -----
 
 Currently the script is not in package form so, after downloading it,  just source the R source with:
 
-    source('path\to\readxlx.r')
+    source('path\to\xlx.r')
 
 
 
@@ -82,7 +85,7 @@ You are done.
 Use it in the simplest form
 ----------------------------
 
-Assume you have the spreadsheet `survey.xlsx`, with consisting of an empty sheet and  two sheets `Survey1` and `Survey2` with  plain formatted  data  like the  following (anyway a `survey.xlsx` spreadsheet should accompany this manual):
+Let us start from a sample  the spreadsheet `survey.xlsx` (which you should find together with  this manual), with consisting of an empty sheet and  two sheets `Survey1` and `Survey2` with  plain formatted  data  like the  following:
 
     
 ![figure](res/tables.png) 
@@ -102,16 +105,23 @@ surv=read.xlx('survey.xlsx')
 
 
 
+
+```
+## ... Loading cells in sheet 1
+## Cell:  11   ... Reshaping sheet 1
+## ... Loading cells in sheet 2
+## Cell:  6   ... Reshaping sheet 2
+## ... Loading cells in sheet 3
+## Aggregating sheets
+## Formatting sheet(s) as data frames
+## Identifying and applying prevailing styles
+## $Survey1
+```
+
+Above you see some info about the workbook  being processed that we will not show anymore in the following.
+
 The result of your import is:
 
-
-```r
-class(surv)
-```
-
-```
-## [1] "list"
-```
 
 ```r
 surv
@@ -132,6 +142,14 @@ surv
 ## 1 EU US
 ## 2 10 20
 ## 3 30 40
+```
+
+```r
+class(surv)
+```
+
+```
+## [1] "list"
 ```
 
 ```r
@@ -188,7 +206,7 @@ As usual for a single item `sheets=c("survey2")` can be shortened as `sheets='su
 Note that, respecting Excel convention the name is not case sensitive, so `survey2` works even if the actual sheet name is `Survey2`.  The name used in the importing command will be the one stored in R, in case you later  need to address it.
 
 
-Another thing is that, since you asked for a single sheet, there is no  need to wrap it in a now worthless list:
+Another thing is that, since we asked for a single sheet, there is no  need to wrap it in a now worthless list:
 
 
 ```r
@@ -307,17 +325,17 @@ surv
 Details for the non causal user
 -------------------------------
 
-Sheets are converted into data frame following other `read.*` function behaviour, which means that the values of a column share a common type. Anyway in the same  Excel column  different cells can have different formats. Why loosing this information? It would have been possible to use a list object to model a sheet and so retain the differences, but most of the R statistic functions can effectively operate  when at least at column level the formats are the same.
-That being said, when in a column there are different cell formats the prevailing compatible styles,  will be applied to all. This willoften involve a the "character", because it is always compatible with numeric formats too.  
+Sheets are converted into data frame following other R `read.*` functions' behaviour, which means that the values of a column share a common type. Anyway in the same  Excel column  different cells can have different formats. Why loosing this information? It would have been possible to use a list object to model a sheet and so retain the differences, but most of the R statistic functions can effectively operate  when at least at column level the formats are the same.
+That being said, when in a column there are different cell formats the prevailing compatible styles,  will be applied to all. This will often involve the use of the R  "character" type, because it is always compatible with numeric formats too.  
 
-Given this recognised Excel style as R equivalent are:
+Given this, recognised Excel styles and their R equivalent are:
 
 * number, accounting, currency, fraction, scientific: converted to R numeric format
 * percent: converted to R numeric format, with "percent" attribute
 * date: converted to R date or datetime format
 * time: converted to R time format
 * text: converted to R character format 
-* general: converted to R character format 
+* general: converted to R character format (unless otherwise asked)
 
 
 To see how this works in practice:
@@ -367,14 +385,89 @@ If you want to reduce the progress messages printed (perhaps because you are usi
 
     suppressMessages( x=read.xlx('survey.xlsx') )
 
-You will only get one line of +'s. I am thinking if it is convenient to totally abolish it. 
+You will only get one line of +'s. I am thinking if it is convenient to totally abolish even this. 
+
+###Empty objects
+
+The general principle is: empty objects are not returned unless they are explicitly requested.
+
+
+```r
+surv=read.xlx('survey.xlsx')
+names(surv)
+```
+
+```
+## [1] "Survey1" "Survey2"
+```
+
+```r
+read.xlx('survey.xlsx', c("survey2", "sheet3"))
+```
+
+```
+## $survey2
+##    1  3
+## 1 EU US
+## 2 10 20
+## 3 30 40
+## 
+## $sheet3
+## data frame with 0 columns and 0 rows
+```
+
+```r
+read.xlx('survey.xlsx', "sheet3")
+```
+
+```
+## NULL
+```
+
+
+
+
+Dates oddities
+-------------
+
+
+Let us assume that you the locale of you Excel is English UK.
+
+In cell A1 you enter the date `20/10/2000`. Now this is a legitimate date, because in Britain day comes before month and Excel recognise it as such. In fact if you right-click on cell and select Format->Number you will find that the category is "Date" and in the Locale drop down "English (U.K.)" is selected. 
+
+Now let us write in cell A2 the date `10/20/2000`. You think you have written a date, but this is UK locale, so this is just an ordinary string. In fact in Format->Number you read that the category is "General". 
+
+
+You may be tempted to change the category to "Date" and select "English (U.S.)"  in the Locale drop down, maybe you will also select a matching type in the Type list. 
+
+Unfortunately this keeps being an invalid date cell. In fact, if you type `=YEAR(A1)` in cell B1, the formula extracts the year part of the date and gives 2000, while writing `=YEAR(A2)` gives `#VALUE!` to signaling the wrong date in cell A2. 
+
+To understand things better select again Format->Number for cell A1, change Locale drop down set to "English (U.K.)" to "English (U.S.)".  You now see that the value of the displayed in the cell has automatically changed from `20/10/2000` to `10/20/2000`, and the formula `=YEAR(A1)` in B1 still correctly shows 2000. 
+
+So a date should be entered always respecting the locale, after you can change the way it is displayed by changing the locale. 
+
+How does read.xlx behave? 
+
+1. If a cell contains the value "Charles" and you set its format to date, the conversion value in R will be not surprisingly, NA. 
+
+2. If a date is entered not respecting the locale and you *don't try to change its format category to date*, then this is set to the "General" format category. Normally this value will be converted to a character. See ahead for exceptions. 
+
+3. If a date is entered not respecting the locale and you change the format category to date. *You have just created a monster*, since this appears as a date to those sharing your culture, the category and locale you set match the entered date, but for Excel it is not a date and it will be stored in the file as a string. When `read.xlx` finds a string pretending to be a date  it imports it as a NA.  
+
+
+With respect to point 2) if you have set the `general` argument of `read.xlx` to "numeric", than again the value will be imported as a NA. The same will happen if the prevailing style is in the column is "numeric" (or the likes). 
+
+If you don't have control on the workbook content, the point 3) can be particularly subtle. You see apparently good looking dates, which are not such for Excel, and you have unpleasant NA surprised after import.  
+Next release of read.xlx will have a guess-date option to address this and get what looks like a date as a date in R too. 
+
+
 
 
 
 
     
 <!-- Local Variables: -->
-<!-- mode: markdown -->
+<!-- mode: rmd -->
 <!-- End: -->
 
 <!--  LocalWords:  xlsx Setup

@@ -116,7 +116,7 @@ makeBloomR=function(work, overwrite=TRUE, zip=FALSE, deb=1:6, gitsim=FALSE){
 
 ###== Main steps ==
 
-### Load CRAN packs 
+### Load CRAN packages 
 loadLib= function(lib){
     if (!lib %in% rownames(installed.packages())){
         repo=getOption("repos")[["CRAN"]]
@@ -161,9 +161,10 @@ downloads=function(work, overwrite){
         sfBDown(url, fpath)
     }
 
-    ## Openjdk    
-    download.nice(work, javaurl.ver(), javazip, overwrite,
-                  "Java files")
+    ## Openjdk
+    x=javaurl.ver()
+    download.nice(work, x, javazip, overwrite,
+                  "Java files", cert=TRUE)
 
     ## Bloomberg API
     download.nice(work, apiurl, apizip, overwrite,
@@ -241,7 +242,7 @@ bloomrTree=function(work, overwrite){
     makeDir(to, overwrite, "main BloomR dir:") 
 
     ## Move R and make site direcory
-    from=makePath(work, paste0(rport, '.d/$_OUTDIR/R-Portable'))
+    from=makePath(work, paste0(rport, '.d/App/R-Portable'))
     to=makePath(work, "bloomR/main")
     move.dir(from, to)
     makeDir(makePath(work, 'bloomR/main/site-library'), overwrite, "BloomR library:")
@@ -462,10 +463,10 @@ cran.geturl=function(pack){
 ### Nice user info and overwrite managements for downloads 
 download.nice=function(work, from, to, overwrite, desc="", cert=FALSE){
     to=makePath(work, to)
-    if(nzchar(desc)) desc=from
-    cat("\nDownloading", desc, "\n")    
+    if(desc=="") desc=sub('.+/', '', from)
+    cat("\nDownloading", desc, "\n") 
     if(!chk.write(to, overwrite, desc, stop=FALSE)) return()
-    cat("from\n", from, "\n")
+    cat("from:\n", from, "\n")
     cert= if(cert != FALSE) certfile else  NULL
     if(!download.bin(from, to, cert)$succ) stop('\nDownload error')
 }
