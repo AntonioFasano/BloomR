@@ -1,21 +1,6 @@
 ## Download 'bloomr.build.R' from Gthub and build it inside './bloomr.bin'
 ## Intended for fast internal testing - Readme method is the standard way
 
-## Get  CRAN Windows binaries release for a package 
-cran.geturl=function(pack){
-
-    ## CRAN links
-    cranpage="http://cran.r-project.org/web/packages/"
-    cranbin="http://cran.r-project.org/bin/"
-
-    ## Get package page 
-    url=paste0(cranpage, pack, "/index.html")
-    page=download.html(url)    
-
-    ## Get bin url: the first occurence on page is the dev version, second is release
-    url=regmatches(page, gregexpr("windows/contrib.*?\\.zip", page))[[1]][2]
-    paste0(cranbin, url)   
-}
 
 source_github <- function(u) {
   # load package
