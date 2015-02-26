@@ -371,6 +371,7 @@ PROF=function(){ #Keep this on separate line
     library("rJava")
     library("Rbbg")
     source(paste0(R.home("share"), "/bloomr/bloomr.R"))
+    source(paste0(R.home("share"), "/bloomr/bloomr.sys.R"))
     source(paste0(R.home("share"), "/bloomr/xlx.R"))
     
     ## end BloomR----------
