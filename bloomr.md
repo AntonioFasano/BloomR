@@ -132,25 +132,18 @@ CalendarCodeOverride
 :   Returns the data based on the calendar of the specified country, exchange, or 
 religion. Value is  a two character calendar code as from `CDR<GO>`. This will cause the data to be aligned according to the calendar  and including calendar holidays. Only applies only to DAILY requests.
 
-CalendarOverridesInfo
-:   (Experimental, not tested) Returns data based on the calendar code of multiple countries, exchanges, or religious calendars as from `CDR<GO>`. Values can be a character vector of two-character calendar codes as from `CDR<GO>`.
-This will cause the data to be aligned according to the set calendar(s) including their calendar 
-holidays and only applies to DAILY requests.
-calendareOverrides
-Operation
-`CDR_AND`  Returns the intersection of trading days among multiple calendars. `CDR_OR` Returns the union of trading days. That is, a data point is returned if a date is a valid trading day for any of 
-the calendar codes specified in the request.
+calendarOverridesInfo
+:   (Experimental, not tested) Returns data based on the calendar code of multiple countries, exchanges, or religious calendars as from `CDR<GO>`. This will cause the data to be aligned according to the set calendar(s) including their calendar holidays and only applies to DAILY requests.
+Requires `calendarOverrides`, which is a character vector of  two-character calendar codes as from `CDR<GO>`; `calendareOverridesOperation`, which can be  `CDR_AND`  returning  the intersection of trading days among multiple calendars or  `CDR_OR` returning the union of trading days. That is, a data point is returned if a date is a valid trading day for any of the calendar codes specified in the request.
 
 Overrides
-:   (Experimental, not tested) Append overrides to modify the calculation. `fieldID` specifies  a field mnemonic or alpha-
-numeric, such as `PR092` or `PRICING_SOURCE`. Review FLDS<GO> for list of possible overrides.
-`value` sets the desired override value
+:   (Experimental, not tested) Append overrides to modify the calculation. `fieldID` specifies  a field mnemonic or alpha-numeric, such as `PR092` or `PRICING_SOURCE`. Review FLDS<GO> for list of possible overrides. `value` sets the desired override value
 
 
 
 Value
 -----
-A data frame with historical data. If tickers are displayed, the first column shows tickers, the second one the time series dates and the following the values of the queried fields; otherwise the columns starts with dates. Dates will also be shown as rows if `dates.as.row.names=TRUE`. If multiple tickers are queried they are vertically stacked respecting the order in `securities` vector.
+A data frame with historical data. If tickers are displayed, the first column shows tickers, the second one the time series dates and the following ones the values of the queried fields; otherwise the columns start with dates. Dates will also be shown as rows if `dates.as.row.names=TRUE`. If multiple tickers are queried, they are vertically stacked respecting the order in `securities` vector.
 
 
 
@@ -267,6 +260,13 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 
 ```
 ## Processing Financial ...
+## 
+## Attaching package: 'zoo'
+## 
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+## 
 ## Loading 3988 HK Equity
 ## Loading C US Equity
 ## Loading 601288 CH Equity
@@ -297,26 +297,27 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2015-02-12   9.025     NA    10.180 11.467  10.717
-## 2015-02-13      NA  9.958    10.254     NA   9.057
-## 2015-02-14      NA  9.783     9.675 10.734  10.572
-## 2015-02-15      NA 10.729        NA 10.445   9.142
-## 2015-02-16  10.585  9.548        NA  9.878   8.974
+## 2015-02-21  10.539     NA    10.924     NA      NA
+## 2015-02-22  10.809  9.607    10.922 10.822      NA
+## 2015-02-23  10.346 11.075        NA     NA      NA
+## 2015-02-24   8.771     NA    10.576     NA      NA
+## 2015-02-25  10.640     NA     9.831 10.926   9.973
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2015-02-12      NA   9.270 10.554  9.268      NA
-## 2015-02-13      NA      NA 10.812     NA      NA
-## 2015-02-14   9.226  11.552     NA     NA      NA
-## 2015-02-15   9.302  10.819     NA     NA      NA
-## 2015-02-16      NA      NA 11.098 10.251  12.118
+## 2015-02-21      NA   9.145  7.882     NA      NA
+## 2015-02-22      NA      NA 10.726  8.437      NA
+## 2015-02-23      NA      NA  9.677 10.340      NA
+## 2015-02-24      NA  10.238  9.119     NA      NA
+## 2015-02-25   9.719   9.051  9.975     NA  11.301
 ## 
 ## $Indices
-##               DJI DJUSFN W1TEC
-## 2015-02-12 10.329     NA 9.434
-## 2015-02-13  9.814     NA 8.584
-## 2015-02-14 10.238  9.519 9.386
-## 2015-02-16  9.177 11.057 9.056
+##              DJI DJUSFN  W1TEC
+## 2015-02-21 9.247     NA     NA
+## 2015-02-22 8.197     NA  8.690
+## 2015-02-23 9.663 10.554     NA
+## 2015-02-24 9.321     NA 11.593
+## 2015-02-25    NA  9.239     NA
 ```
 
 Note:
@@ -621,9 +622,8 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2015-02-14      NA   9.652
-## 2015-02-15      NA   9.773
-## 2015-02-16   11.15      NA
+## 2015-02-23      NA   7.803
+## 2015-02-25   7.343   9.457
 ```
 
 ```r
@@ -896,5 +896,5 @@ If `component` is `day`, `month` or `year`: `component(d)` returns the *componen
 <!-- mode: rmd -->
 <!-- End: -->
 
-<!--  LocalWords:  Bloomberg YYYYMMDD CSV
+<!--  LocalWords:  BloomR
  -->

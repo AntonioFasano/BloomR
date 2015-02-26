@@ -60,7 +60,7 @@ github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 github.local=""
 
 ## Packages to download. Include dependencies! Case sensitive
-packlist=" rJava  zoo  xts knitr "
+packlist=" rJava  zoo  xts knitr XML RCurl"
 
 pzip="peazip"; rport='rportable'
 
@@ -302,6 +302,7 @@ initScripts=function(work, overwrite){
     to=makePath(work, "bloomR/main/share/bloomr")    
     makeDir(to, overwrite, "BloomR share directory:")
     download.git(work, "bloomr.R", "bloomR/main/share/bloomr/bloomr.R", overwrite)
+    download.git(work, "bloomr.sys.R", "bloomR/main/share/bloomr/bloomr.sys.R", overwrite)
     download.git(work, "xlx.R", "bloomR/main/share/bloomr/xlx.R", overwrite)
 
     

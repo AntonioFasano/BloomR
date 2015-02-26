@@ -14,6 +14,7 @@ Improvements over Début version:
 - BloomR development is now open source on Github.com.
 - Only 64 bit (it means less space).
 - Updated to R-3.1.2.
+- Generation of automatic HTML reports for web publishing or in PDF (PDF's require a separate large add-on to be downloaded separately)
 - New functions for bulk download using tickers from CSV files, from index constituents or from ticker vectors.
 - Simulated download allows to prepare scripts at home and test on Bloomberg terminal later.
 - Bulk and non-bulk download of many description fields.
@@ -23,7 +24,9 @@ Improvements over Début version:
 - BloomR can be downloaded as a binary or generated from an R script. So you can stay always updated with the latest version of R (and related packages).
 
 
-Plus read.xlx joins the family. With this function you can read Excel xlsx workbook sheets into R data frames.  Some features are:
+__read.xlx__
+
+`read.xlx` joins the family. With this function you can read Excel xlsx workbook sheets into R data frames.  Some features are:
 
 * It can import all, one, or a selection of sheets, where specific sheets are requested by means of their name.
 * Instead of importing all the sheets' cells, it can import only those comprised in a named range.
