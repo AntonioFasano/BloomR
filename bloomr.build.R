@@ -60,7 +60,7 @@ github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 github.local=""
 
 ## Packages to download. Include dependencies! Case sensitive
-packlist=" rJava  zoo  xts knitr XML RCurl"
+packlist=" rJava  zoo  xts knitr XML RCurl bitops"
 
 pzip="peazip"; rport='rportable'
 
@@ -171,7 +171,10 @@ downloads=function(work, overwrite){
                   "Bloomberg API")
         
     ## CRAN packages
-    makeDir(makePath(work, "packs"), TRUE, "packages dir:")
+    fpath=makePath(work, "packs")
+    desc="packages dir:"
+    if(chk.write(fpath, overwrite, desc, stop=FALSE))
+        makeDir(fpath, TRUE, desc)
     packs= strsplit(gsub('(^ +)|( +$)', '', packlist), split=' +')[[1]]    
     for(pack in packs) # Loop over packs and download them 
         download.nice(work, cran.geturl(pack), makePath("packs", pack), overwrite,
@@ -205,7 +208,7 @@ expand=function(work, overwrite){
     zexe=getzip(work)
     cmd=paste(wPath(to), wPath(from))
     cmd=paste0(wPath(zexe), ' x -aoa -r -o', cmd)
-    ret=system( cmd, intern=F, wait =T, show.output.on.console =F, ignore.stdout=T) 
+    ret=system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 
     ## openjdk
@@ -394,7 +397,7 @@ makeZip=function(work, overwrite){
     zexe=getzip(work)
     cmd=paste("cmd.exe /c cd /D", wPath(work) , "&")
     cmd=paste(wPath(zexe), "a", wPath(to), wPath(from))
-    ret=system(cmd, intern=F, wait =T, show.output.on.console =F, ignore.stdout=T) 
+    ret=system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 
 }
@@ -408,9 +411,9 @@ sfFirstbyProject=function (project, filtx, quiet=FALSE){
     url=paste0("http://sourceforge.net/projects/", project, "/files/")
     ref="http://sourceforge.net"    
     page=download.html(url)    
-    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
+    url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
         "//a[@class='name']",  xmlGetAttr, "href")
-    url=grep(filtx, url, value=T)[1] 
+    url=grep(filtx, url, value=TRUE)[1] 
     if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
     return (url)
 }
@@ -421,9 +424,9 @@ sfFirstbyUrl=function (url, versionx, quiet=FALSE){
     ref="http://sourceforge.net"
     if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
     page=download.html(url)    
-    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
+    url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
         "//a[@class='name']",  xmlGetAttr, "href")
-    return (grep(versionx, url, value=T)[1])
+    return (grep(versionx, url, value=TRUE)[1])
 }
 
 ### Follow the direct-download link 
@@ -432,7 +435,7 @@ sfDirLink=function (url, quiet=FALSE){
     if(!quiet) cat('Find best mirror for\n', url, '\n')
     ref="http://sourceforge.net"
     page=download.html(url, refr=ref)    
-    url=xpathSApply(htmlTreeParse(page, useInternalNodes=T),
+    url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
         "//a[@class='direct-download']",  xmlGetAttr, "href")
     return (url)
 }
@@ -547,7 +550,7 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
     ## Start download 
     succ=tryCatch(
         curlPerform(url=url, .opts=opt, curl=curl, writedata=f@ref,
-                    ssl.verifypeer=F, cainfo=cert,
+                    ssl.verifypeer=FALSE, cainfo=cert,
                     progressfunction=function(down,up)
                         dcur<<-dProgress(down, up, dcur, width),
                     noprogress=FALSE, headerfunction = headers$update),
@@ -617,15 +620,15 @@ chk.dir=function(dir){
 
 ### Check if we can overwrite non-empty dir and possibly stop
 chk.write=function(path, over, desc="", stop=TRUE){
-### Empty dir are overwritten without prompt
-    
+    ## Empty dir are overwritten without prompt
+    ## File is considered a non-empty dir
+     
     if(nzchar(desc)) desc=paste(desc, '\n')
 
     ## Ret if non-exisitng path
     if(!is.path(path)) return(TRUE)
     
     ## Stop/warn if dir is non-empty and no right to overwrite
-    ## note: a file is considered a non-empty dir
     if(is.path(path) && !is.empty(path)){   
         if(over){
             warn.p(path, desc, "already exists")}
@@ -640,7 +643,7 @@ chk.write=function(path, over, desc="", stop=TRUE){
        
 ### Delete dir and break on fail 
 del.dir=function(dir){
-    unlink(dir,recursive=TRUE)
+    unlink(dir,recursive=TRUE, force=TRUE)
     if(is.path(dir)) {
         Sys.sleep(1.5)
         if(is.path(dir)) stop("\nUnable to access\n", dir)
@@ -659,7 +662,7 @@ makeDir=function(dir, overwrite, desc=""){
     chk.write(dir, overwrite, desc)
 
     ## Go
-    ###########################if(del) del.dir(dir)    
+    if(overwrite) del.dir(dir)    
     dir.create(dir, showWarnings = FALSE)  
 
     ## Unable to create? 
@@ -747,8 +750,8 @@ javaurl.ver=function(url){
     cat("Parsing page:\n", url, ' ...\n')
     if(!url.exists(url, ssl.verifypeer=FALSE, cainfo=certfile))
         stop("Unable to open java download page:\n", url)       
-    href=getURL(url, ssl.verifypeer=F, cainfo=certfile)   
-    href=xpathSApply(htmlTreeParse(href, useInternalNodes=T),
+    href=getURL(url, ssl.verifypeer=FALSE, cainfo=certfile)   
+    href=xpathSApply(htmlTreeParse(href, useInternalNodes=TRUE),
         "//a[@class='execute']", xmlGetAttr, "href")
     href=grep(paste0(javaurl.bit, "$"), href, value=TRUE)[1]
     paste0(javaurl.dom, href)
@@ -758,10 +761,10 @@ rbbgurl.ver=function(){
     url=rbbgurl
     cat("Parsing page:\n", url, ' ...\n')
     if(!url.exists(url)) stop("Unable to open rbbg page:\n", url)
-    href=xpathSApply(htmlTreeParse(url, useInternalNodes=T), "//a", xmlGetAttr, "href")
+    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
     href=grep("^[[:digit:]]\\.[[:digit:]]", href, value=TRUE)
     url=paste0(url, href[length(href)])
-    href=xpathSApply(htmlTreeParse(url, useInternalNodes=T), "//a", xmlGetAttr, "href")
+    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
     href=grep("\\.zip$", href, value=TRUE)
     paste0(url, href)
 }
