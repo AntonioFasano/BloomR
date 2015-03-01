@@ -65,6 +65,8 @@ G.packlist=" rJava  zoo  xts knitr XML RCurl bitops"
 ## SF items
 G.pzip="peazip"
 G.rport="rportable"
+G.nsisurl='portableapps'
+G.nsiszip='NSIS'
 
 ## Local path
 G.work=""
@@ -122,7 +124,7 @@ makeBloomR=function(work, tight=FALSE, ndown=2, zip=FALSE, ask=TRUE, deb=1:6, gi
     if(5 %in% deb) initScripts(ndown)
 
     ## Step 6
-    if(6 %in% deb && zip) makeZip(ask)
+    if(6 %in% deb) {makeExe(ask); if(zip) makeZip(ask)}
 }
 
 ###== Main steps ==
@@ -154,7 +156,7 @@ downloads=function(tight, ndown){
     cback=function(){
         url=sfFirstbyProject(G.pzip, '[[:digit:]]') #get release dir 
         url=sfFirstbyUrl(url, "portable[^\"]*?WINDOWS")
-        url=sfDirLink(url)
+        sfDirLink(url)
     }
     download.nice(cback, G.pzip, overwrite, ndown,
                   "Peazip files")
@@ -164,13 +166,23 @@ downloads=function(tight, ndown){
         url=sfFirstbyProject(G.rport, 'Portable')
         url=sfFirstbyUrl(url, '[[:digit:]]')        
         url=sfFirstbyUrl(url, 'exe[^.]')        
-        url=sfDirLink(url)
+        sfDirLink(url)
     }
     download.nice(cback, G.rport, overwrite, ndown,
                   "main R files")
-            
+
+    cback=function(){
+        url=sfFirstbyProject(G.nsisurl, G.nsiszip)
+        url=sfFirstbyUrl(url, 'Additional')
+        url=sfFirstbyUrl(url, '[[:digit:]]')
+        sfDirLink(url)
+    }
+    download.nice(cback, G.nsiszip, overwrite, ndown,
+                  "NSIS")
+
+    
 #    desc="main R files"
-#    down.mess(desc)
+#    mess.down(desc)
 #    fpath=makePath(G.work, G.rport)
 #    if(chk.write(fpath, overwrite, desc, stop=FALSE)){
 #        url=sfFirstbyProject(G.rport, 'Portable')
@@ -219,10 +231,25 @@ expand=function(){
     #chk.write(to, overwrite, "R file directory")
     if(is.path(to)) {
         message('\nDeleting exisitng R files.')
-        del.dir(to)
+        del.path(to)
     }
     
     message('\nExtracting main R files: this may take a bit.')
+    zexe=getzip(G.work)
+    cmd=paste(wPath(to), wPath(from))
+    cmd=paste0(wPath(zexe), ' x -aoa -r -o', cmd)
+    ret=system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+
+    
+    ## NSIS files
+    to=makePath(G.work, paste0(G.nsiszip, '.d')) # output dir    
+    from=makePath(G.work, G.nsiszip)             # source
+    if(is.path(to)) {
+        message('\nDeleting exisitng NSIS files.')
+        del.path(to)
+    }
+    message('\nExtracting NSIS files.')
     zexe=getzip(G.work)
     cmd=paste(wPath(to), wPath(from))
     cmd=paste0(wPath(zexe), ' x -aoa -r -o', cmd)
@@ -241,7 +268,7 @@ expand=function(){
     message('\nExpanding packages', '...')
     from=makePath(G.work, "packs")
     #chk.write(makePath(G.work, "lib.d"), overwrite)
-    del.dir(makePath(G.work, "lib.d"))
+    del.path(makePath(G.work, "lib.d"))
     ## Loop and extract packs
     for(pack in  dir(from) )
         uzip(makePath('packs', pack), 'lib.d',
@@ -403,26 +430,34 @@ PROF=function(){ #Keep this on separate line
 
 ###== Utlities ==
 
-### Zip distro 
+### Exe and Zip distro 
+makeExe=function(ask){
+
+    message('\nCreating BloomR.exe installer')
+    to=makePath(G.work, "BloomR.exe")
+    if(is.path(to)) del.ask(to, ask, "already exists")    
+    del.path(to)
+
+    ## Need to get nsi from git to workdir  
+    nsi=makePath(G.work, 'bloomr.nsi')   
+    nexe=makePath(G.work, paste0(G.nsiszip,'.d/App/NSIS/makensis.exe'))
+    cmd=paste(wPath(nexe), "/v2", wPath(nsi))
+    ret=system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+
+}
+
+
 makeZip=function(ask){
 
     message('\nCreating BloomR.zip')
     to=makePath(G.work, "BloomR.zip")
-
-    if(is.path(to)) {
-        path.warn(to, "already exists")
-        if(ask && !del.ask())
-            stop("Stopped by user.")
-        if (!ask)         
-            message("It will be deleted ...")
-    } 
-
+    if(is.path(to)) del.ask(to, ask, "already exists")    
+    del.path(to)
     
-    del.dir(to)       
     from=makePath(G.work, 'bloomR/.././bloomR/*')   # In 7z ./ removes dir prefix from archive     
-    exdir=makePath(G.work, paste0(G.pzip,'.d'))
     zexe=getzip(G.work)
-    cmd=paste("cmd.exe /c cd /D", wPath(G.work) , "&")
+    #cmd=paste("cmd.exe /c cd /D", wPath(G.work) , "&")
     cmd=paste(wPath(zexe), "a", wPath(to), wPath(from))
     ret=system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
@@ -467,12 +502,6 @@ sfDirLink=function (url, quiet=FALSE){
     return (url)
 }
 
-### Download binary file with SF refer
-#sfBDown=function(url, file){
-#    cat(paste('Downloading', url, '\n'))
-#    if(!download.bin(url, file, refr="http://sourceforge.net" )$succ)
-#        stop('\nDownload error')
-#}
 
 ## Get  CRAN Windows binaries release for a package 
 cran.geturl=function(pack){
@@ -490,6 +519,35 @@ cran.geturl=function(pack){
     paste0(cranbin, url)   
 }
 
+
+## Get last versions    
+javaurl.ver=function(url){
+    url=G.javaurl
+    cat("Parsing page:\n", url, ' ...\n')
+    if(!url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile))
+        stop("Unable to open java download page:\n", url)       
+    href=getURL(url, ssl.verifypeer=FALSE, cainfo=G.certfile)   
+    href=xpathSApply(htmlTreeParse(href, useInternalNodes=TRUE),
+        "//a[@class='execute']", xmlGetAttr, "href")
+    href=grep(paste0(G.javaurl.bit, "$"), href, value=TRUE)[1]
+    paste0(G.javaurl.dom, href)
+}
+
+rbbgurl.ver=function(){
+    url=G.rbbgurl
+    cat("Parsing page:\n", url, ' ...\n')
+    if(!url.exists(url)) stop("Unable to open rbbg page:\n", url)
+    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
+    href=grep("^[[:digit:]]\\.[[:digit:]]", href, value=TRUE)
+    url=paste0(url, href[length(href)])
+    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
+    href=grep("\\.zip$", href, value=TRUE)
+    paste0(url, href)
+}
+
+
+
+
 ###== Donwload helpers ==
 
 ### Nice user info and overwrite managements for downloads 
@@ -500,7 +558,7 @@ download.nice=function(from, to, overwrite, ndown, desc="", cert=FALSE){
     message("\nDownloading ", desc) 
 
     if(is.path(to)) {
-        path.warn(to, "already exists.")
+        warn.path(to, "already exists.")
         if(!overwrite){
             message("Skipping action to preserve existing download.")
             return()
@@ -675,51 +733,61 @@ is.empty=function(dir){
     length(dir(dir, all.files=TRUE, no..=TRUE)) ==0
 }
 
-### Break on path not a file
+### Break if path not a file
 chk.file=function(file, desc=""){
-    if(!is.path(file)) exit.p(file, desc, "is not a valid path")
-    if(is.dir(file))   exit.p(file, desc, "is a directory")
+    if(!is.path(file)) stop(file, "\nis not a valid path")
+    if(is.dir(file))   stop(file, "\nis a directory")
 }
 
-### Break on path not a dir
+### Break if path not a dir
 chk.dir=function(dir){
-    if(!is.path(dir)) exit.p(file, desc, "is not a valid path")
-    if(!is.dir(dir))  exit.p(file, desc, "is a file")
+    if(!is.path(dir)) stop(dir, "\nis not a valid path")
+    if(!is.dir(dir))  stop(dir, "is a file")
 }
             
 ### Create a dir with optional desc message and stop on errors
 makeDir=function(dir, desc=""){    
     if(nzchar(desc)) message("Creating ", desc )
-    del.dir(dir)
+    del.path(dir)
     dir.create(dir, showWarnings = FALSE)
     ## Unable to create? 
     if(!is.path(dir))
         stop("\nUnable to create ", desc, "\n", dir)
 }
 
-### Delete dir and break on fail 
-del.dir=function(dir){
-    if(!is.path(dir)) return()
-    unlink(dir,recursive=TRUE, force=TRUE) #  non-existent file is not an unlink failure
-    if(is.path(dir)) {
+### Delete path and break on fail 
+del.path=function(path){
+    if(!is.path(path)) return()
+    unlink(path,recursive=TRUE, force=TRUE) #  non-existent file is not an unlink failure
+    if(is.path(path)) {
         Sys.sleep(1.5)
-        if(is.path(dir)) stop("\nUnable to access\n", dir)
+        if(is.path(path)) stop("\nUnable to access\n", path)
     }
 }
 
-del.ask=function(){
+### Warn on path existence and, if ASK flag set, ask for delete confrimation, else just notify
+del.ask=function(path, ask, desc){
+
+    warn.path(path, desc)
+    
+    ## Confirmation not required
+    if(!ask) {
+        message("It will be deleted ...")
+        return()
+    }
+    ## Require confirmation
     repeat{
         ans =toupper(readline("Delete it? (Y/n) : "))
         if(ans=="Y" || ans=="N" || ans=="") break
     }    
-    if(ans=="Y" || ans=="") return (TRUE) else return (FALSE)
+    if(ans=="N") stop("Stopped by user.")
 }
 
 ## Copy FROM directory in TO parent and rename TO as FROM
 ## If `to' dir exists delete it 
 copy.dir=function(from, to, desc=""){
     if(nzchar(desc)) message("\nAdding ", desc)
-    del.dir(to)
+    del.path(to)
     file.copy(from, dirname(to), recursive=TRUE)
     file.rename(makePath(dirname(to), basename(from)), to)
 }
@@ -735,18 +803,16 @@ existMake=function(dir, overwrite, ask, desc){
     if(nzchar(desc)) message("\nCreating ", desc, '\n',  dir)
 
     dir=makePath(G.work, dir)
+    ## Not a dirty dir
     if(!is.path(dir) || is.empty(dir)){
         makeDir(dir)
         return()
-    } else
-         path.warn(dir, "exists non-empty")
-
-    if(!overwrite) message("Skipping action, to preserve existing downloads!")
+    }
+    ## Dirty, and not overwritable 
+    else if(!overwrite) message("Skipping action, to preserve existing downloads!")
+    ## Dirty, but overwritable 
     else {
-        if(ask && !del.ask()) 
-            stop("Stopped by user.")
-        if (!ask)         
-             message("It will be deleted ...")
+        del.ask(to, ask, "exists non-empty")
         makeDir(dir)
     }             
 }
@@ -759,7 +825,7 @@ uzip=function(from, to, desc, delTarget=TRUE){
     message('\nExpanding ', desc, '...') #cat('\nExpanding', desc, '...\n')
     chk.file(from)
     #chk.write(makePath(to, basename(from)), overwrite, desc)
-    if(delTarget) del.dir(to)
+    if(delTarget) del.path(to)
     if(length(unzip(from, exdir= to))==0)
         stop('\nUnable to extract perform extraction')  
 }
@@ -774,58 +840,9 @@ getzip=function(work){
 
 ### == Messages ==
 
-path.warn=function(path, mess){
+warn.path=function(path, mess){
     message("Warning:\n", path, "\n", mess)
 }
-
-### Exisintg paths
-mess.p=function(path,  mess){
- #   if(nzchar(desc)) desc=paste(desc, '\n')   
-    paste0("\n", path, "\n", mess)
-}
-
-### Exisintg paths stop
-exit.p=function(path,  mess){ 
-    stop(mess.p(path,  mess))
-}
-
-### Exisintg paths warn
-warn.p=function(path, mess){
-    cat("Warning:", mess.p(path, mess), "\n")
-}
-
-### Generic download info for custom download
-down.mess=function(desc){
-    cat("\nDownloading", desc, "\n")
-}
-
-
-
-## Get download versions    
-javaurl.ver=function(url){
-    url=G.javaurl
-    cat("Parsing page:\n", url, ' ...\n')
-    if(!url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile))
-        stop("Unable to open java download page:\n", url)       
-    href=getURL(url, ssl.verifypeer=FALSE, cainfo=G.certfile)   
-    href=xpathSApply(htmlTreeParse(href, useInternalNodes=TRUE),
-        "//a[@class='execute']", xmlGetAttr, "href")
-    href=grep(paste0(G.javaurl.bit, "$"), href, value=TRUE)[1]
-    paste0(G.javaurl.dom, href)
-}
-
-rbbgurl.ver=function(){
-    url=G.rbbgurl
-    cat("Parsing page:\n", url, ' ...\n')
-    if(!url.exists(url)) stop("Unable to open rbbg page:\n", url)
-    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
-    href=grep("^[[:digit:]]\\.[[:digit:]]", href, value=TRUE)
-    url=paste0(url, href[length(href)])
-    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
-    href=grep("\\.zip$", href, value=TRUE)
-    paste0(url, href)
-}
-
 
 
 ### probably not used
@@ -864,7 +881,7 @@ chk.write=function(path, over, desc="", stop=TRUE){
 #    if(!chk.write(dir, overwrite, desc)) return
 # 
 #    ## Go
-#    if(overwrite) del.dir(dir)    
+#    if(overwrite) del.path(dir)    
 #    dir.create(dir, showWarnings = FALSE)  
 # 
 #    ## Unable to create? 
@@ -873,3 +890,33 @@ chk.write=function(path, over, desc="", stop=TRUE){
 #    
 #}
 #    
+
+### Download binary file with SF refer
+#sfBDown=function(url, file){
+#    cat(paste('Downloading', url, '\n'))
+#    if(!download.bin(url, file, refr="http://sourceforge.net" )$succ)
+#        stop('\nDownload error')
+#}
+
+### Exsisting paths warn
+warn.p=function(path, mess){
+    cat("Warning:", mess.p(path, mess), "\n")
+}
+
+### Exisintg paths
+mess.p=function(path,  mess){
+ #   if(nzchar(desc)) desc=paste(desc, '\n')   
+    paste0("\n", path, "\n", mess)
+}
+
+### Exisintg paths stop
+exit.p=function(path,  mess){ 
+    stop(mess.p(path,  mess))
+}
+
+### Generic download info for custom download
+mess.down=function(desc){
+    cat("\nDownloading", desc, "\n")
+}
+
+
