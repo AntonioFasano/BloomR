@@ -21,6 +21,8 @@ R topics documented:
 
 
 
+
+
 br.bdh{#br.bdh}
 ===============
 *Historical data*
@@ -260,13 +262,6 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 
 ```
 ## Processing Financial ...
-## 
-## Attaching package: 'zoo'
-## 
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-## 
 ## Loading 3988 HK Equity
 ## Loading C US Equity
 ## Loading 601288 CH Equity
@@ -297,27 +292,27 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2015-02-21  10.539     NA    10.924     NA      NA
-## 2015-02-22  10.809  9.607    10.922 10.822      NA
-## 2015-02-23  10.346 11.075        NA     NA      NA
-## 2015-02-24   8.771     NA    10.576     NA      NA
-## 2015-02-25  10.640     NA     9.831 10.926   9.973
+## 2015-02-22  10.935     NA     8.705  8.788   9.283
+## 2015-02-23      NA  8.931        NA  9.829  11.237
+## 2015-02-24  10.840 10.342        NA 10.013      NA
+## 2015-02-25   9.812  9.243        NA 11.111  10.260
+## 2015-02-26      NA 11.649        NA 10.564  12.015
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2015-02-21      NA   9.145  7.882     NA      NA
-## 2015-02-22      NA      NA 10.726  8.437      NA
-## 2015-02-23      NA      NA  9.677 10.340      NA
-## 2015-02-24      NA  10.238  9.119     NA      NA
-## 2015-02-25   9.719   9.051  9.975     NA  11.301
+## 2015-02-22   9.883   8.737 10.161     NA  10.260
+## 2015-02-23  11.325   9.960  9.168 11.224      NA
+## 2015-02-24  11.069  10.584 10.878  9.205      NA
+## 2015-02-25   6.479      NA  9.645 10.152   9.574
+## 2015-02-26  11.481      NA  9.084     NA      NA
 ## 
 ## $Indices
-##              DJI DJUSFN  W1TEC
-## 2015-02-21 9.247     NA     NA
-## 2015-02-22 8.197     NA  8.690
-## 2015-02-23 9.663 10.554     NA
-## 2015-02-24 9.321     NA 11.593
-## 2015-02-25    NA  9.239     NA
+##               DJI DJUSFN W1TEC
+## 2015-02-22 10.994 10.274    NA
+## 2015-02-23 10.831 10.440    NA
+## 2015-02-24 10.491     NA 8.275
+## 2015-02-25  9.735 10.058    NA
+## 2015-02-26 11.180 11.525 8.942
 ```
 
 Note:
@@ -622,8 +617,11 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2015-02-23      NA   7.803
-## 2015-02-25   7.343   9.457
+## 2015-02-22   8.555      NA
+## 2015-02-23   9.941  11.397
+## 2015-02-24   9.210  10.932
+## 2015-02-25      NA  10.550
+## 2015-02-26   9.295   8.470
 ```
 
 ```r
@@ -882,6 +880,20 @@ If `component` is `day`, `month` or `year`: `component(d)` returns the *componen
 `last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
 
 
+
+
+
+
+
+
+```r
+### this is just a test 
+br.attach.test()
+```
+
+```
+## [1] "attach.test"
+```
 
 
 

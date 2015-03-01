@@ -1,3 +1,23 @@
+## ----store, opts.label='purlme'------------------------------------------
+## Purl this first
+## Store br.* objects in bloomr env in base namespace
+assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
+
+## func: store(func);  var: store("var")
+store=function(sym){
+    if(is.function(sym)){
+        name=deparse(substitute(sym)) 
+        val=sym
+    } else {
+        name=sym
+        val=get(sym)
+    }
+    
+    assign(name, val, envir=bloomr)
+    rm( list=name, envir=parent.frame())
+}
+
+
 ## ----br.bdh, opts.label='purlme'-----------------------------------------
 br.bdh=function(
     con, securities, fields="PX_LAST", start.date, end.date = NULL,
@@ -386,4 +406,13 @@ day.us=function(d1, d2){
     #substract 1 for each 31d-month
     as.numeric(d2-d1-x)
 }
+
+## ----br.attach.test, opts.label='purlme'---------------------------------
+### this is just a test 
+br.attach.test=function() print("attach.test")
+store(br.attach.test)
+
+## ----attach, opts.label='purlme'-----------------------------------------
+### Make visible br.* in bloomr env and base ns
+attach(bloomr)
 

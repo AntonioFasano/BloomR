@@ -6,15 +6,16 @@
 ```{r setup, purl=FALSE, include=FALSE}
 ##rm(list=ls(all=TRUE))
 
-## Shortcuts
+### Shortcuts
 opts_chunk$set(echo=TRUE)
 OTS=opts_template$set
-OTS(demo=     list(purl=FALSE, eval=step2,    include=TRUE))
-OTS(demoshow= list(purl=FALSE, eval=FALSE,    include=TRUE))
-OTS(demorun=  list(purl=FALSE, eval=step2,    include=TRUE, echo=FALSE))
-OTS(demorunq= list(purl=FALSE, eval=step2,    include=FALSE))
+## Build function first
 OTS(purlme=   list(purl=TRUE,  eval=!step2,   include=FALSE))
-
+## Demos running after function building  
+OTS(demofull= list(purl=FALSE, eval=step2,  include=TRUE))  # run w/ code + out   
+OTS(demorun=  list(purl=FALSE, eval=step2,  include=TRUE, echo=FALSE)) # run w/ out, no code 
+OTS(demodry=  list(purl=FALSE, eval=step2,  include=FALSE)) # run only (no code/out)
+OTS(democode= list(purl=FALSE, eval=FALSE,  include=TRUE))  # show code only, no run  
 
 ## Purl hook
 hook_purl=function (before, options, envir) 
@@ -40,15 +41,30 @@ hook_purl=function (before, options, envir)
 }
 knit_hooks$set(purl = hook_purl)
 
-
-## Set this to FALSE to work at home TO DEL
-HAVEBBG=FALSE
-OTS(bbgtrue=  list(purl=FALSE, eval=HAVEBBG,  include=HAVEBBG))
-OTS(bbgfalse= list(purl=FALSE, eval=!HAVEBBG, include=!HAVEBBG))
-
 ```
 
 
+
+```{r store, opts.label='purlme'}
+## Purl this first
+## Store br.* objects in bloomr env in base namespace
+assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
+
+## func: store(func);  var: store("var")
+store=function(sym){
+    if(is.function(sym)){
+        name=deparse(substitute(sym)) 
+        val=sym
+    } else {
+        name=sym
+        val=get(sym)
+    }
+    
+    assign(name, val, envir=bloomr)
+    rm( list=name, envir=parent.frame())
+}
+
+```
 
 
 
@@ -308,7 +324,7 @@ Demonstration
 A sample CSV with Bloomberg tickers will look like follows:
 
 
-```{r br.bulk.csv.demo1.show, opts.label='demoshow'}
+```{r br.bulk.csv.demo1.show, opts.label='democode'}
 read.csv("mybloomr/tickers.csv")
 ## This file is part of BloomR and anyway available here:
 ## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.csv
@@ -326,11 +342,11 @@ Note:
 
 We can now download data:
 
-```{r br.bulk.csv.demo2, opts.label='demo'}
+```{r br.bulk.csv.demo2, opts.label='demofull'}
 con=NULL  #Simulated mode: replace with con=br.open() on terminal
 ```
 
-```{r br.bulk.csv.demo3.show, opts.label='demoshow'}
+```{r br.bulk.csv.demo3.show, opts.label='democode'}
 data=br.bulk.csv(con, "mybloomr/tickers.csv") 
 ```
 
@@ -343,7 +359,7 @@ Above you see some info about data being processed that we will not show anymore
 
 If you want to have detailed ticker descriptions,  see [br.bulk.desc Example](#br.bulk.desc.exem). Downloaded data look like follows:
 
-```{r br.bulk.csv.demo4, opts.label='demo'}
+```{r br.bulk.csv.demo4, opts.label='demofull'}
 data
 ```
 
@@ -358,7 +374,7 @@ an R Date object (`start=as.Date("2014/9/30")`) or to a  more friendly ISO strin
 Data are stored as a list of xts objects, each representing one group of tickers in the CSV file.
 
 
-```{r br.bulk.csv.demo5, opts.label='demo'}
+```{r br.bulk.csv.demo5, opts.label='demofull'}
 length(data)
 names(data)
 class(data$Financial)
@@ -366,14 +382,14 @@ class(data$Financial)
 
 If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:
 
-```{r br.bulk.csv.demo6.q, opts.label='demorunq'}
+```{r br.bulk.csv.demo6.q, opts.label='demodry'}
 data=br.bulk.csv(con, "res/tickers.csv", use.xts=FALSE) 
 ```
-```{r br.bulk.csv.demo6.show, opts.label='demoshow'}
+```{r br.bulk.csv.demo6.show, opts.label='democode'}
 data=br.bulk.csv(con, "mybloomr/tickers.csv", use.xts=FALSE) 
 ```
 
-```{r br.bulk.csv.demo7, opts.label='demo'}
+```{r br.bulk.csv.demo7, opts.label='demofull'}
 length(data)
 names(data)
 class(data$Financial)
@@ -384,7 +400,7 @@ class(data$Financial$`BAC US`)
 
 By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
 
-```{r br.bulk.csv.demo8.show, opts.label='demoshow'}
+```{r br.bulk.csv.demo8.show, opts.label='democode'}
 data=br.bulk.csv(con, "mybloomr/tickers.csv", field = "PX_OPEN") 
 ```
 
@@ -395,13 +411,13 @@ You can choose to import only some of the CSV groups
 data=br.bulk.csv(con, "res/tickers.csv", cols=c(1,3))
 ```
 
-```{r br.bulk.csv.demo9.show, opts.label='demoshow'}
+```{r br.bulk.csv.demo9.show, opts.label='democode'}
 data=br.bulk.csv(con, "mybloomr/tickers.csv", cols=c(1,3))
 ## or equivalently:
 data=br.bulk.csv(con, "mybloomr/tickers.csv", cols=c(TRUE, FALSE, TRUE))
 ```
 
-```{r br.bulk.csv.demo10, opts.label='demo'}
+```{r br.bulk.csv.demo10, opts.label='demofull'}
 names(data)
 ```
  
@@ -409,7 +425,7 @@ In the CSV file, if your tickers represent all equities, you can omit the type.
 
 Consider this CSV:
 
-```{r br.bulk.csv.demo11.show, opts.label='demoshow'}
+```{r br.bulk.csv.demo11.show, opts.label='democode'}
 read.csv("mybloomr/tickers.eqt.csv")
 ## This file is part of BloomR and anyway available here:
 ## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv
@@ -421,17 +437,17 @@ read.csv("res/tickers.eqt.csv")
 
 Note how the "Equity" type is missing! But you can use this CSV file with `addtype`:
 
-```{r br.bulk.csv.demo12.q, opts.label='demorunq'}
+```{r br.bulk.csv.demo12.q, opts.label='demodry'}
 data=br.bulk.csv(con, "res/tickers.eqt.csv", addtype=TRUE)
 ```
 
-```{r br.bulk.csv.demo12.show, opts.label='demoshow'}
+```{r br.bulk.csv.demo12.show, opts.label='democode'}
 data=br.bulk.csv(con, "mybloomr/tickers.eqt.csv", addtype=TRUE)
 ```
 
 Before going home, don't forget to:
 
-```{r br.bulk.csv.demo13, opts.label='demo'}
+```{r br.bulk.csv.demo13, opts.label='demofull'}
 br.close(con)
 ```
 
@@ -476,7 +492,7 @@ br.bulk.desc=function(con, tiks) {
 Example{#br.bulk.desc.exem}
 ----------------------------
 
-```{r br.bulk.desc.exem.show,  opts.label='demoshow'}
+```{r br.bulk.desc.exem.show,  opts.label='democode'}
 con=br.open()
 data=read.csv("mybloomr/tickers.csv", as.is=TRUE)
 br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
@@ -612,7 +628,7 @@ If `use.xts=FALSE`, a list, where each element is the historical data of a secur
 Example
 -------
 
-```{r br.bulk.tiks.exem, opts.label='demo'}
+```{r br.bulk.tiks.exem, opts.label='demofull'}
 con=NULL # Open simulated connection and  load some data
 br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 br.close(con) # Use the token to release the connection
@@ -1006,7 +1022,7 @@ Details
 Example
 -------
 
-```{r connections.exem, opts.label='demoshow'}
+```{r connections.exem, opts.label='democode'}
 con=br.open() # Open the connection and get the token and load some data
 br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 br.close(con) # Use the token to release the connection
@@ -1149,6 +1165,22 @@ topics=function(){
     writeLines(txt, 'bloomr.md')
 #    c(txt[first], idx,  txt[(first+1):(first+4)])
 }
+```
+
+```{r br.attach.test, opts.label='purlme'}
+### this is just a test 
+br.attach.test=function() print("attach.test")
+store(br.attach.test)
+```
+```{r br.attach.test.2, opts.label='demofull'}
+### this is just a test 
+br.attach.test()
+```
+
+
+```{r attach, opts.label='purlme'}
+### Make visible br.* in bloomr env and base ns
+attach(bloomr)
 ```
 
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}

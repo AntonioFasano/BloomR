@@ -75,6 +75,10 @@ Download [bloomr.build.R](https://raw.githubusercontent.com/AntonioFasano/BloomR
 
 You will find your portable BloomR directory  inside `workDir`.
 
+
+__Note__: the build script will download from the Internet the required files (c. 150 MB). Think of this if you have a metered connection 
+
+
 **Browser oddities**
 
 Downloading a file _as is_  from you browser can be tangled. Normally you need to a) select  All Files in the Save-as option of the browser Save dialog and b)   double-quote the filename. In as far as the format is text (not HTML), even if you get a distorted name, like "bloomr_build_R.txt", you can always adjust the `source()`-path accordingly.   
@@ -90,6 +94,26 @@ R should be able to connect to the Internet.
 If you want to find  `BloomR.zip` too in your work directory use:
 
 	makeBloomR("path\to\workDir", zip = TRUE)
+
+
+### Internet connection 
+
+Since `bloomr.build.R` downloads resources  from the net, therefore one problem you might face is a download error.
+
+Based on my experiences, the script does a good job in detecting download errors, despite it is always  possible that a corrupted download is not identified.
+
+When a donwnload error is  detected,  `bloomr.build.R` make a second attempt. You can control this with:
+
+	makeBloomR("path\to\workDir", ndown = n)
+
+where _n_ are the download attempts.
+
+When the maximum number of attempt is reached, the script exits deleting any incompleted file and emitting a message detailing the download error.  
+When you start over (hoping in a better connection), you might not want to download again every and each file, but only those affected by the errors. This is done with the option: 
+
+
+	makeBloomR("path\to\workDir", tight = TRUE)
+
 
 
     
