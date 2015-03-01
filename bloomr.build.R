@@ -124,7 +124,7 @@ makeBloomR=function(work, tight=FALSE, ndown=2, zip=FALSE, ask=TRUE, deb=1:6, gi
     if(5 %in% deb) initScripts(ndown)
 
     ## Step 6
-    if(6 %in% deb) {makeExe(ask); if(zip) makeZip(ask)}
+    if(6 %in% deb) {makeExe(ask,ndown); if(zip) makeZip(ask)}
 }
 
 ###== Main steps ==
@@ -431,14 +431,14 @@ PROF=function(){ #Keep this on separate line
 ###== Utlities ==
 
 ### Exe and Zip distro 
-makeExe=function(ask){
+makeExe=function(ask,ndown){
 
     message('\nCreating BloomR.exe installer')
     to=makePath(G.work, "BloomR.exe")
     if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)
 
-    ## Need to get nsi from git to workdir  
+    download.git("bloomr.nsi", "bloomr.nsi", ,ndown)
     nsi=makePath(G.work, 'bloomr.nsi')   
     nexe=makePath(G.work, paste0(G.nsiszip,'.d/App/NSIS/makensis.exe'))
     cmd=paste(wPath(nexe), "/v2", wPath(nsi))
@@ -812,7 +812,7 @@ existMake=function(dir, overwrite, ask, desc){
     else if(!overwrite) message("Skipping action, to preserve existing downloads!")
     ## Dirty, but overwritable 
     else {
-        del.ask(to, ask, "exists non-empty")
+        del.ask(dir, ask, "exists non-empty")
         makeDir(dir)
     }             
 }
