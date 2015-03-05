@@ -254,6 +254,13 @@ img {
 <pre class="r"><code>con=NULL  #Simulated mode: replace with con=br.open() on terminal</code></pre>
 <pre class="r"><code>data=br.bulk.csv(con, &quot;mybloomr/tickers.csv&quot;) </code></pre>
 <pre><code>## Processing Financial ...
+## 
+## Attaching package: 'zoo'
+## 
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+## 
 ## Loading 3988 HK Equity
 ## Loading C US Equity
 ## Loading 601288 CH Equity
@@ -274,27 +281,25 @@ img {
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2015-02-22  10.935     NA     8.705  8.788   9.283
-## 2015-02-23      NA  8.931        NA  9.829  11.237
-## 2015-02-24  10.840 10.342        NA 10.013      NA
-## 2015-02-25   9.812  9.243        NA 11.111  10.260
-## 2015-02-26      NA 11.649        NA 10.564  12.015
+## 2015-02-28  11.131 10.382        NA     NA   9.215
+## 2015-03-01  10.062 11.429     8.803     NA  10.519
+## 2015-03-02      NA 10.844        NA 12.315      NA
+## 2015-03-03  11.384 10.776        NA  9.768  12.118
+## 2015-03-04   9.511 10.816        NA     NA      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2015-02-22   9.883   8.737 10.161     NA  10.260
-## 2015-02-23  11.325   9.960  9.168 11.224      NA
-## 2015-02-24  11.069  10.584 10.878  9.205      NA
-## 2015-02-25   6.479      NA  9.645 10.152   9.574
-## 2015-02-26  11.481      NA  9.084     NA      NA
+## 2015-02-28   9.280      NA  8.206     NA  10.942
+## 2015-03-01  10.626   8.225     NA     NA      NA
+## 2015-03-03   9.739  10.505     NA  9.865      NA
+## 2015-03-04   9.624  10.990     NA  8.791   9.938
 ## 
 ## $Indices
-##               DJI DJUSFN W1TEC
-## 2015-02-22 10.994 10.274    NA
-## 2015-02-23 10.831 10.440    NA
-## 2015-02-24 10.491     NA 8.275
-## 2015-02-25  9.735 10.058    NA
-## 2015-02-26 11.180 11.525 8.942</code></pre>
+##               DJI DJUSFN  W1TEC
+## 2015-02-28  8.040     NA     NA
+## 2015-03-02     NA  9.892 10.378
+## 2015-03-03  9.487     NA 10.880
+## 2015-03-04 12.071     NA 10.639</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />If this piece of info is significant for you, pass <code>showtype = TRUE</code>.</p></li>
@@ -464,11 +469,9 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity
 ## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2015-02-22   8.555      NA
-## 2015-02-23   9.941  11.397
-## 2015-02-24   9.210  10.932
-## 2015-02-25      NA  10.550
-## 2015-02-26   9.295   8.470</code></pre>
+## 2015-02-28  10.279      NA
+## 2015-03-03      NA   9.191
+## 2015-03-04      NA  10.705</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

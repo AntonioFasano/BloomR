@@ -122,6 +122,7 @@ br.close(con)                                            # Disconnect BloomR fro
 <pre><code>source(&quot;path\to\bloomr.build.R&quot;)
 makeBloomR(&quot;path\to\workDir&quot;)</code></pre>
 <p>You will find your portable BloomR directory inside <code>workDir</code>.</p>
+<p><strong>Note</strong>: the build script will download from the Internet the required files (c. 150 MB). Think of this if you have a metered connection</p>
 <p><strong>Browser oddities</strong></p>
 <p>Downloading a file <em>as is</em> from you browser can be tangled. Normally you need to a) select All Files in the Save-as option of the browser Save dialog and b) double-quote the filename. In as far as the format is text (not HTML), even if you get a distorted name, like “bloomr_build_R.txt”, you can always adjust the <code>source()</code>-path accordingly.<br />Yes, bowsers are strange sometimes.</p>
 </div>
@@ -130,6 +131,16 @@ makeBloomR(&quot;path\to\workDir&quot;)</code></pre>
 <p>A decent R version is needed 3+ (perhaps older version will do).<br /><code>.Platform$OS.type == &quot;windows&quot;</code>. <code>XML</code> and <code>Rcurl</code> packages are needed, but if missing, the build script will try to download and install them.<br />R should be able to connect to the Internet.</p>
 <p>If you want to find <code>BloomR.zip</code> too in your work directory use:</p>
 <pre><code>makeBloomR(&quot;path\to\workDir&quot;, zip = TRUE)</code></pre>
+</div>
+<div id="internet-connection" class="section level3">
+<h3>Internet connection</h3>
+<p>Since <code>bloomr.build.R</code> downloads resources from the net, therefore one problem you might face is a download error.</p>
+<p>Based on my experiences, the script does a good job in detecting download errors, despite it is always possible that a corrupted download is not identified.</p>
+<p>When a donwnload error is detected, <code>bloomr.build.R</code> make a second attempt. You can control this with:</p>
+<pre><code>makeBloomR(&quot;path\to\workDir&quot;, ndown = n)</code></pre>
+<p>where <em>n</em> are the download attempts.</p>
+<p>When the maximum number of attempt is reached, the script exits deleting any incompleted file and emitting a message detailing the download error.<br />When you start over (hoping in a better connection), you might not want to download again every and each file, but only those affected by the errors. This is done with the option:</p>
+<pre><code>makeBloomR(&quot;path\to\workDir&quot;, tight = TRUE)</code></pre>
 <!-- Local Variables: -->
 <!-- mode: markdown -->
 <!-- End: -->

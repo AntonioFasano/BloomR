@@ -29,7 +29,7 @@ br.bdh=function(
         option.names, option.values, always.display.tickers, dates.as.row.names,
         include.non.trading.days)
 }
-
+store(br.bdh)
 
 ## ----br.bulk.csv, opts.label='purlme'------------------------------------
 br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
@@ -74,6 +74,7 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     if(length(grps)==1) grps=grps[[1]]
     grps
 }
+store(br.bulk.csv)
 
 ## ----br.bulk.desc, opts.label='purlme'-----------------------------------
 br.bulk.desc=function(con, tiks) {
@@ -85,7 +86,7 @@ br.bulk.desc=function(con, tiks) {
     names(LL)=tiks
     LL
 }
-
+store(br.bulk.desc)
 
 ## ----br.bulk.idx, opts.label='purlme'------------------------------------
 br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
@@ -135,6 +136,7 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
         empty.sec=empty.sec
         )
 }
+store(br.bulk.idx)
 
 ## ----br.bulk.tiks, opts.label='purlme'-----------------------------------
 br.bulk.tiks=function(
@@ -217,6 +219,7 @@ br.bulk.tiks=function(
         setNames(LL, tiks.show)
     }
 }
+store(br.bulk.tiks)
 
 ## ----br.desc, opts.label='purlme'----------------------------------------
 br.desc=function(con, tik)
@@ -245,6 +248,7 @@ br.desc=function(con, tik)
     rownames(x)=rnams
     x
 }
+store(br.desc)
 
 ## ----br.sample, opts.label='purlme'--------------------------------------
 br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
@@ -311,11 +315,13 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
        setNames(tss, sec.names)
    
 }
+store(br.sample)
 
 ## ----deprecated, opts.label='purlme'-------------------------------------
 bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
 bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
-
+store(bbg.open)
+store(bbg.close)
 
 ## ----bbg-internal, opts.label='purlme'-----------------------------------
 
@@ -348,10 +354,18 @@ bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br
     }
 
 
+store(.br.is.con)
+store(".br.types")
+store(.br.check.type) 
+store(.br.cuttype)
+store(.br.jar)
+
 ## ----connections, opts.label='purlme'------------------------------------
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
 br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
 
+store(br.open)
+store(br.close)
 
 ## ----miscfunc, opts.label='purlme'---------------------------------------
 
@@ -364,6 +378,8 @@ rm.all=function()
 rm.var=function() 
     rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
 
+store(rm.all)
+store(rm.var)
 
 ## ----time, opts.label='purlme'-------------------------------------------
 `%+%` <- function(x,y) UseMethod("%+%")
@@ -397,7 +413,7 @@ last.day=function(d){
 
 day.us=function(d1, d2){
     #set to first of month
-    x1=day.mod(d1,1);x2=day.mod(d2,1);
+    x1=day(d1,1);x2=day(d2,1);
     x=seq(x1, x2, by="1 month")
     #last day of each month in seq
     x=sapply(x, last.day)
@@ -406,6 +422,18 @@ day.us=function(d1, d2){
     #substract 1 for each 31d-month
     as.numeric(d2-d1-x)
 }
+
+store(day)
+store(month)
+store(year)
+store(`day<-`)
+store(`month<-`)
+store(`year<-`)
+store(`%+%`)
+store(`%-%`)
+store(last.day)
+store(day.us)
+
 
 ## ----br.attach.test, opts.label='purlme'---------------------------------
 ### this is just a test 

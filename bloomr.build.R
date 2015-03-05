@@ -21,6 +21,7 @@
 ##  Rbbg_*.zip from http://r.findata.org/bin/windows/contrib/
 ##  peazip  from http://sourceforge.net/projects/peazip
 ##  ahkscript http://ahkscript.org
+##  nsis.sourceforge.net
 ##  Icon set Simplicio CC 3.0 by Neurovit: http://neurovit.deviantart.com
 ##   retrieved at https://www.iconfinder.com/icons/48750/direction_right_icon
 ##
@@ -66,7 +67,7 @@ G.packlist=" rJava  zoo  xts knitr XML RCurl bitops"
 G.pzip="peazip"
 G.rport="rportable"
 G.nsisurl='portableapps'
-G.nsiszip='NSIS'
+G.nsiszip='nsis'
 
 ## Local path
 G.work=""
@@ -155,7 +156,7 @@ downloads=function(tight, ndown){
     ## peazip
     cback=function(){
         url=sfFirstbyProject(G.pzip, '[[:digit:]]') #get release dir 
-        url=sfFirstbyUrl(url, "portable[^\"]*?WINDOWS")
+        url=sfFirstbyUrl(url, "portable[^\"]*?windows")
         sfDirLink(url)
     }
     download.nice(cback, G.pzip, overwrite, ndown,
@@ -163,7 +164,7 @@ downloads=function(tight, ndown){
     
     ## R
     cback=function(){
-        url=sfFirstbyProject(G.rport, 'Portable')
+        url=sfFirstbyProject(G.rport, 'portable')
         url=sfFirstbyUrl(url, '[[:digit:]]')        
         url=sfFirstbyUrl(url, 'exe[^.]')        
         sfDirLink(url)
@@ -171,9 +172,10 @@ downloads=function(tight, ndown){
     download.nice(cback, G.rport, overwrite, ndown,
                   "main R files")
 
+    ## NSIS
     cback=function(){
         url=sfFirstbyProject(G.nsisurl, G.nsiszip)
-        url=sfFirstbyUrl(url, 'Additional')
+        url=sfFirstbyUrl(url, 'additional')
         url=sfFirstbyUrl(url, '[[:digit:]]')
         sfDirLink(url)
     }
@@ -475,7 +477,7 @@ sfFirstbyProject=function (project, filtx, quiet=FALSE){
     page=download.html(url)    
     url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
         "//a[@class='name']",  xmlGetAttr, "href")
-    url=grep(filtx, url, value=TRUE)[1] 
+    url=grep(filtx, url, value=TRUE, ignore.case=TRUE)[1] 
     if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
     return (url)
 }
@@ -488,7 +490,7 @@ sfFirstbyUrl=function (url, versionx, quiet=FALSE){
     page=download.html(url)    
     url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
         "//a[@class='name']",  xmlGetAttr, "href")
-    return (grep(versionx, url, value=TRUE)[1])
+    return (grep(versionx, url, value=TRUE, ignore.case=TRUE)[1])
 }
 
 ### Follow the direct-download link 

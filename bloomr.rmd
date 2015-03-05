@@ -205,7 +205,7 @@ br.bdh=function(
         option.names, option.values, always.display.tickers, dates.as.row.names,
         include.non.trading.days)
 }
-
+store(br.bdh)
 ```
 
 
@@ -315,6 +315,7 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     if(length(grps)==1) grps=grps[[1]]
     grps
 }
+store(br.bulk.csv)
 ```
 
 Demonstration
@@ -486,7 +487,7 @@ br.bulk.desc=function(con, tiks) {
     names(LL)=tiks
     LL
 }
-
+store(br.bulk.desc)
 ```
 
 Example{#br.bulk.desc.exem}
@@ -592,6 +593,7 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
         empty.sec=empty.sec
         )
 }
+store(br.bulk.idx)
 ```
 
 
@@ -720,6 +722,7 @@ br.bulk.tiks=function(
         setNames(LL, tiks.show)
     }
 }
+store(br.bulk.tiks)
 ```
 
 br.desc{#br.desc}
@@ -772,6 +775,7 @@ br.desc=function(con, tik)
     rownames(x)=rnams
     x
 }
+store(br.desc)
 ```
 
 
@@ -897,6 +901,7 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
        setNames(tss, sec.names)
    
 }
+store(br.sample)
 ```
 
 
@@ -926,7 +931,8 @@ Example
 ```{r deprecated, opts.label='purlme'}
 bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
 bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
-
+store(bbg.open)
+store(bbg.close)
 ```
 
 
@@ -993,6 +999,12 @@ Details
         Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 
+
+store(.br.is.con)
+store(".br.types")
+store(.br.check.type) 
+store(.br.cuttype)
+store(.br.jar)
 ```
 
 Manage connections{#connections}
@@ -1034,6 +1046,8 @@ br.close(con) # Use the token to release the connection
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
 br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
 
+store(br.open)
+store(br.close)
 ```
 
 
@@ -1063,6 +1077,8 @@ rm.all=function()
 rm.var=function() 
     rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
 
+store(rm.all)
+store(rm.var)
 ```
 
 
@@ -1140,7 +1156,7 @@ last.day=function(d){
 
 day.us=function(d1, d2){
     #set to first of month
-    x1=day.mod(d1,1);x2=day.mod(d2,1);
+    x1=day(d1,1);x2=day(d2,1);
     x=seq(x1, x2, by="1 month")
     #last day of each month in seq
     x=sapply(x, last.day)
@@ -1149,6 +1165,18 @@ day.us=function(d1, d2){
     #substract 1 for each 31d-month
     as.numeric(d2-d1-x)
 }
+
+store(day)
+store(month)
+store(year)
+store(`day<-`)
+store(`month<-`)
+store(`year<-`)
+store(`%+%`)
+store(`%-%`)
+store(last.day)
+store(day.us)
+
 ```
 
 ```{r topics, purl=FALSE, eval=TRUE, include=FALSE}
