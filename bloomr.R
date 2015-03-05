@@ -24,7 +24,8 @@ br.bdh=function(
     option.names = NULL, option.values = NULL,
     always.display.tickers = FALSE, dates.as.row.names = (length(securities) == 1),
     include.non.trading.days = NULL
-                ) {
+    ) {
+    if(is.null(con)) stop("'con' is NULL, but br.bdh() does not support simulated mode.")
     bdh(con, securities, fields, start.date, end.date, override_fields  = NULL, override_values = NULL,
         option.names, option.values, always.display.tickers, dates.as.row.names,
         include.non.trading.days)
@@ -431,6 +432,8 @@ store(`month<-`)
 store(`year<-`)
 store(`%+%`)
 store(`%-%`)
+store(`%+%.Date`)
+store(`%-%.Date`)
 store(last.day)
 store(day.us)
 
@@ -443,4 +446,5 @@ store(br.attach.test)
 ## ----attach, opts.label='purlme'-----------------------------------------
 ### Make visible br.* in bloomr env and base ns
 attach(bloomr)
+rm(store)
 
