@@ -22,7 +22,6 @@ R topics documented:
 
 
 
-
 br.bdh{#br.bdh}
 ===============
 *Historical data*
@@ -262,13 +261,6 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 
 ```
 ## Processing Financial ...
-## 
-## Attaching package: 'zoo'
-## 
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-## 
 ## Loading 3988 HK Equity
 ## Loading C US Equity
 ## Loading 601288 CH Equity
@@ -299,24 +291,27 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2015-02-28      NA     NA    11.666     NA  10.116
-## 2015-03-01      NA 10.327        NA     NA      NA
-## 2015-03-02  10.723     NA     8.144  9.223  10.526
-## 2015-03-04  10.437 10.246        NA     NA   9.512
+## 2015-02-28      NA 11.070    10.444  9.635  10.136
+## 2015-03-01      NA 11.749     9.367     NA   9.760
+## 2015-03-02      NA     NA        NA     NA  12.508
+## 2015-03-03   8.851     NA    10.298     NA      NA
+## 2015-03-04   9.510     NA        NA 10.657      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2015-02-28   9.264  11.006     NA 10.337  11.405
-## 2015-03-01  11.009  10.134     NA  8.566      NA
-## 2015-03-02   9.703  10.786     NA     NA      NA
-## 2015-03-03      NA  10.023  6.854  8.297   9.772
-## 2015-03-04      NA   8.852     NA 11.110      NA
+## 2015-02-28      NA   8.147     NA 10.543      NA
+## 2015-03-01      NA   8.834  8.866     NA      NA
+## 2015-03-02      NA  10.034  8.984 10.006      NA
+## 2015-03-03      NA   9.750     NA  9.566      NA
+## 2015-03-04  10.397      NA 10.828     NA   9.817
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2015-03-02 13.374  9.328 10.989
-## 2015-03-03 10.374     NA     NA
-## 2015-03-04 10.180     NA  9.466
+## 2015-02-28  9.461  9.118  9.661
+## 2015-03-01 10.255     NA 11.603
+## 2015-03-02  9.847 10.425     NA
+## 2015-03-03  9.993     NA  9.687
+## 2015-03-04  8.082  9.797  8.453
 ```
 
 Note:
@@ -621,10 +616,9 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2015-02-28   9.980      NA
-## 2015-03-02   9.632   9.796
-## 2015-03-03   6.868   9.605
-## 2015-03-04  11.289      NA
+## 2015-03-01      NA   8.664
+## 2015-03-02   9.701      NA
+## 2015-03-04  11.072      NA
 ```
 
 ```r
@@ -886,17 +880,6 @@ If `component` is `day`, `month` or `year`: `component(d)` returns the *componen
 
 
 
-
-
-
-```r
-### this is just a test 
-br.attach.test()
-```
-
-```
-## [1] "attach.test"
-```
 
 
 

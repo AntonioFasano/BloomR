@@ -438,11 +438,6 @@ store(last.day)
 store(day.us)
 
 
-## ----br.attach.test, opts.label='purlme'---------------------------------
-### this is just a test 
-br.attach.test=function() print("attach.test")
-store(br.attach.test)
-
 ## ----attach, opts.label='purlme'-----------------------------------------
 ### Make visible br.* in bloomr env and base ns
 attach(bloomr)

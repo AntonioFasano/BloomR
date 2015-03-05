@@ -98,17 +98,17 @@ If you want to find  `BloomR.zip` too in your work directory use:
 
 ### Internet connection 
 
-Since `bloomr.build.R` downloads resources  from the net, therefore one problem you might face is a download error.
+Since `bloomr.build.R` downloads resources  from the net,  one problem you might face is a download error.
 
 Based on my experiences, the script does a good job in detecting download errors, despite it is always  possible that a corrupted download is not identified.
 
-When a donwnload error is  detected,  `bloomr.build.R` make a second attempt. You can control this with:
+When a donwnload error is  detected,  `bloomr.build.R` makes a second attempt. You can control this with:
 
 	makeBloomR("path\to\workDir", ndown = n)
 
-where _n_ are the download attempts.
+where _n_ are the download attempts.  
+When the maximum number of attempt is reached, the script exits deleting any incompleted file and emitting a message detailing the download error.
 
-When the maximum number of attempt is reached, the script exits deleting any incompleted file and emitting a message detailing the download error.  
 When you start over (hoping in a better connection), you might not want to download again every and each file, but only those affected by the errors. This is done with the option: 
 
 

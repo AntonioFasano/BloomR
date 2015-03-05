@@ -285,7 +285,7 @@ expand=function(){
 ### Make BloomR directory tree
 bloomrTree=function(ndown){
 
-    message("Creating BloomR tree")
+    message("\nCreating BloomR tree")
     existMake('bloomR', TRUE, FALSE, "main BloomR dir:")
 
     ## Copy R and make site direcory
@@ -364,11 +364,7 @@ initScripts=function(ndown){
     download.git("res/tickers.csv", "bloomR/mybloomr/tickers.csv", ,ndown)
     download.git("res/tickers.eqt.csv", "bloomR/mybloomr/tickers.eqt.csv", ,ndown)
     download.git("tryme.R", "bloomR/mybloomr/tryme.R", ,ndown)
-
-
-               
-
-    
+                  
     ## Make R bootstrapper
     makeBoot(ndown)
 
@@ -394,7 +390,7 @@ Run, main\\bin\\x64\\Rgui.exe --internet2 LANGUAGE=en
     download.git("bloomr.ico", to, ,ndown)
     
     ## Make exe
-    cat("Making BloomR executable\n")
+    cat("\nMaking BloomR executable\n")
     cd=normalizePath(ahkdir)
     cd= paste0('cd "', cd, '" &')
     run="Ahk2Exe.exe /in bloomr.run /icon bloomr.ico /bin \"Unicode 32-bit.bin\""
@@ -423,8 +419,12 @@ PROF=function(){ #Keep this on separate line
     library("rJava")
     library("Rbbg")
     source(paste0(R.home("share"), "/bloomr/bloomr.R"))
-    source(paste0(R.home("share"), "/bloomr/bloomr.sys.R"))
-    source(paste0(R.home("share"), "/bloomr/xlx.R"))
+    
+    assign('bloomr.addons',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
+    source(paste0(R.home("share"), "/bloomr/bloomr.sys.R"), local=bloomr.addons)
+    source(paste0(R.home("share"), "/bloomr/xlx.R"), local=bloomr.addons)
+    attach(bloomr.addons)
+
     
     ## end BloomR----------
 }
@@ -436,11 +436,12 @@ PROF=function(){ #Keep this on separate line
 makeExe=function(ask,ndown){
 
     message('\nCreating BloomR.exe installer')
-    to=makePath(G.work, "BloomR.exe")
+    to=makePath(G.work, "Extract_BloomR.exe")
     if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)
 
     download.git("bloomr.nsi", "bloomr.nsi", ,ndown)
+    message('Creating self-extracting executable Extract_BloomR.exe.   \nThis may take a bit...')
     nsi=makePath(G.work, 'bloomr.nsi')   
     nexe=makePath(G.work, paste0(G.nsiszip,'.d/App/NSIS/makensis.exe'))
     cmd=paste(wPath(nexe), "/v2", wPath(nsi))

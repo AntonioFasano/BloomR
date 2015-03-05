@@ -134,12 +134,12 @@ makeBloomR(&quot;path\to\workDir&quot;)</code></pre>
 </div>
 <div id="internet-connection" class="section level3">
 <h3>Internet connection</h3>
-<p>Since <code>bloomr.build.R</code> downloads resources from the net, therefore one problem you might face is a download error.</p>
+<p>Since <code>bloomr.build.R</code> downloads resources from the net, one problem you might face is a download error.</p>
 <p>Based on my experiences, the script does a good job in detecting download errors, despite it is always possible that a corrupted download is not identified.</p>
-<p>When a donwnload error is detected, <code>bloomr.build.R</code> make a second attempt. You can control this with:</p>
+<p>When a donwnload error is detected, <code>bloomr.build.R</code> makes a second attempt. You can control this with:</p>
 <pre><code>makeBloomR(&quot;path\to\workDir&quot;, ndown = n)</code></pre>
-<p>where <em>n</em> are the download attempts.</p>
-<p>When the maximum number of attempt is reached, the script exits deleting any incompleted file and emitting a message detailing the download error.<br />When you start over (hoping in a better connection), you might not want to download again every and each file, but only those affected by the errors. This is done with the option:</p>
+<p>where <em>n</em> are the download attempts.<br />When the maximum number of attempt is reached, the script exits deleting any incompleted file and emitting a message detailing the download error.</p>
+<p>When you start over (hoping in a better connection), you might not want to download again every and each file, but only those affected by the errors. This is done with the option:</p>
 <pre><code>makeBloomR(&quot;path\to\workDir&quot;, tight = TRUE)</code></pre>
 <!-- Local Variables: -->
 <!-- mode: markdown -->

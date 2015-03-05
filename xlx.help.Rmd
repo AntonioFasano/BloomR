@@ -121,7 +121,7 @@ Currently the script is not in package form so, after downloading it,  just sour
     source('path\to\xlx.r')
 
 ```{r xlx.source, include=FALSE}
-    source('xlx.r')
+    source('xlx.R')
 ```
 
 

@@ -44,7 +44,6 @@ knit_hooks$set(purl = hook_purl)
 ```
 
 
-
 ```{r store, opts.label='purlme'}
 ## Purl this first
 ## Store br.* objects in bloomr env in base namespace
@@ -1198,16 +1197,6 @@ topics=function(){
 }
 ```
 
-```{r br.attach.test, opts.label='purlme'}
-### this is just a test 
-br.attach.test=function() print("attach.test")
-store(br.attach.test)
-```
-```{r br.attach.test.2, opts.label='demofull'}
-### this is just a test 
-br.attach.test()
-```
-
 
 ```{r attach, opts.label='purlme'}
 ### Make visible br.* in bloomr env and base ns
@@ -1216,16 +1205,7 @@ rm(store)
 ```
 
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}
-require(knitr)
-require(rmarkdown)
 opts_chunk$set(tidy.opts=list(width.cutoff=60))
-#knit("bloomr.rmd")
-#purl("bloomr.rmd")
-#topics()
-#render("bloomr.md", html_document())
-#render("bloomr.md", pdf_document())
-#render("README.md", html_document())
-
 knit2=function(file){
     require(knitr); require(rmarkdown)
     fse=tools:::file_path_sans_ext(file)
@@ -1240,7 +1220,6 @@ knit2=function(file){
 }
 knit2("bloomr.rmd")
  
-
 
 ## if with markdown lib, but topics needs rewrite
 ## shell("pandoc bloomr.md -o bloomr.pdf", shell=Sys.getenv("COMSPEC"))
