@@ -274,26 +274,27 @@ img {
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2015-03-11   7.704 10.256        NA     NA      NA
-## 2015-03-12  10.280 11.241        NA  7.785  11.642
-## 2015-03-13   9.877 11.593        NA     NA   9.232
-## 2015-03-14   9.345 10.545      7.76     NA      NA
-## 2015-03-15      NA  8.574        NA  7.400      NA
+## 2015-03-11  11.112 10.044        NA     NA      NA
+## 2015-03-12   9.619  9.997    10.478  8.293      NA
+## 2015-03-13      NA     NA        NA 11.235      NA
+## 2015-03-14      NA 10.087        NA     NA      NA
+## 2015-03-15   9.540     NA    10.324     NA   8.817
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2015-03-11      NA   8.405 11.883     NA      NA
-## 2015-03-12  11.929      NA  9.695     NA      NA
-## 2015-03-13      NA      NA  9.521  9.537   8.715
-## 2015-03-14   9.778      NA 11.095     NA      NA
-## 2015-03-15      NA  12.045     NA 10.976      NA
+## 2015-03-11   9.136      NA  9.706  9.944   9.054
+## 2015-03-12  11.741      NA 11.567     NA  10.172
+## 2015-03-13      NA  11.714     NA     NA  10.502
+## 2015-03-14  11.184      NA     NA 11.782  10.071
+## 2015-03-15   8.551      NA 10.799     NA   9.579
 ## 
 ## $Indices
-##               DJI DJUSFN W1TEC
-## 2015-03-11  9.085     NA    NA
-## 2015-03-12  9.051  8.426    NA
-## 2015-03-13     NA  9.567 8.538
-## 2015-03-15 10.421  9.445 8.833</code></pre>
+##               DJI DJUSFN  W1TEC
+## 2015-03-11     NA     NA  9.528
+## 2015-03-12     NA     NA 10.331
+## 2015-03-13     NA     NA 11.277
+## 2015-03-14  8.332  9.018 10.225
+## 2015-03-15 11.061     NA 10.081</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />If this piece of info is significant for you, pass <code>showtype = TRUE</code>.</p></li>
@@ -463,10 +464,9 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity
 ## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2015-03-11      NA   8.841
-## 2015-03-13      NA   9.829
-## 2015-03-14  10.430      NA
-## 2015-03-15   8.726      NA</code></pre>
+## 2015-03-11  10.796  10.423
+## 2015-03-13      NA   9.757
+## 2015-03-14  11.285      NA</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

@@ -22,7 +22,7 @@ Improvements over Début version:
 - A formal documentation (see bloomr.html or [bloomr.pdf](https://github.com/AntonioFasano/BloomR/blob/master/bloomr.pdf?raw=true))
 - Demo and examples.
 - BloomR can be downloaded as a binary or generated from an R script. So you can stay always updated with the latest version of R (and related packages).
-
+- Green installer, to simplify extraction of BloomR files.
 
 __read.xlx__
 
