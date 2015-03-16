@@ -7,7 +7,7 @@ BloomR
 What's new
 ----------
 
-### BloomR Turandot (1.0-dev)
+### BloomR Turandot (1.2-dev)
 
 Improvements over Début version:
 
