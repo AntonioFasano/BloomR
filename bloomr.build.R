@@ -49,7 +49,7 @@ G.rbbgurl="http://r.findata.org/bin/windows64/contrib/"
 G.rbbgzip="rbbg"
 
 ## Ahkscript
-G.ahkurl="http://ahkscript.org/download/1.1/Ahk2Exe111500.zip"
+G.ahkurl="http://ahkscript.org/download/ahk2exe.zip" 
 G.ahkzip="ahk"
 
 ## Web certificates
