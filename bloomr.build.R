@@ -61,7 +61,7 @@ G.github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 G.github.local=""
 
 ## Packages to download. Include dependencies! Case sensitive
-G.packlist=" rJava  zoo  xts knitr XML RCurl bitops"
+G.packlist=" rJava  zoo  xts knitr XML RCurl bitops XML plyr pbapply"
 
 ## SF items
 G.pzip="peazip"
@@ -360,10 +360,11 @@ initScripts=function(ndown){
     
     ## Make personal dir with some sample files
     makeDir(makePath(G.work, 'bloomR/mybloomr'), "personal directory:")
-    download.git("res/semic.csv", "bloomR/mybloomr/semic.csv", ,ndown)
-    download.git("res/tickers.csv", "bloomR/mybloomr/tickers.csv", ,ndown)
-    download.git("res/tickers.eqt.csv", "bloomR/mybloomr/tickers.eqt.csv", ,ndown)
-    download.git("tryme.R", "bloomR/mybloomr/tryme.R", ,ndown)
+    makeDir(makePath(G.work, 'bloomR/mybloomr/examples'), "personal directory:")
+    download.git("res/semic.csv", "bloomR/mybloomr/examples/semic.csv", ,ndown)
+    download.git("res/tickers.csv", "bloomR/mybloomr/examples/tickers.csv", ,ndown)
+    download.git("res/tickers.eqt.csv", "bloomR/mybloomr/examples/tickers.eqt.csv", ,ndown)
+    download.git("tryme.R", "bloomR/mybloomr/examples/tryme.R", ,ndown)
                   
     ## Make R bootstrapper
     makeBoot(ndown)
