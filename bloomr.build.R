@@ -61,7 +61,7 @@ G.github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 G.github.local=""
 
 ## Packages to download. Include dependencies! Case sensitive
-G.packlist=" rJava  zoo  xts knitr XML RCurl bitops XML plyr pbapply"
+G.packlist=" rJava  zoo  xts knitr XML RCurl bitops XML plyr pbapply Rcpp"
 
 ## SF items
 G.pzip="peazip"
