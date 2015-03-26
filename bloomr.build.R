@@ -61,7 +61,9 @@ G.github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 G.github.local=""
 
 ## Packages to download. Include dependencies! Case sensitive
-G.packlist=" rJava  zoo  xts knitr XML RCurl bitops XML plyr pbapply Rcpp"
+G.packlist=" rJava  zoo  xts  XML RCurl bitops XML plyr pbapply Rcpp"
+G.packlist=paste(G.packlist, "knitr evaluate digest formatR highr stringr ")
+G.packlist=paste(G.packlist, " markdown mime")
 
 ## SF items
 G.pzip="peazip"
