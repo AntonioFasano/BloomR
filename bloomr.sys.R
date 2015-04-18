@@ -1,9 +1,36 @@
 
 ### BloomR admin functions
 
+br.md2pdf=function(md.file, pdf.file){
+### Make a markdown file into a PDF
+## It assumes that you have installed the BloomeR LaTeX addons
 
-### Download LaTeX distro 
-br.getLaTeX=function(){
+    ## Set pandoc and LaTeX exe and dir 
+    panexe=R.home("pandoc/bin/pandoc.exe")
+    if(!file.exists(panexe))
+        stop(paste("Unable to find:", panexe, '\nDid you install BloomeR LaTeX addons?'))
+    latbin=R.home("latex/miktex/bin")
+    if(!file.exists(latbin))
+        stop(paste("Unable to find:", latbin, '\nDid you install BloomeR LaTeX addons?'))
+
+    ## Shell escape
+    panexe=.br.wpath(panexe)
+
+    ## Set system Path to LaTeX bin
+    old.path=Sys.getenv('Path')
+    x=paste0(Sys.getenv("Path"), ';', gsub('/', '\\\\',  latbin))
+    Sys.setenv(Path=x)
+
+    cmd=paste(panexe, .br.wpath(md.file), '-o', .br.wpath(pdf.file))
+    out  <-  system(cmd, intern = TRUE, invisible = FALSE)
+
+    ## Restore origina system Path
+    Sys.setenv(Path=old.path)
+
+}
+
+br.getLatexAddons=function(){
+### Download LaTeX distro, Pandoc and knitr required packages
 
     require(XML)
     require(RCurl)
@@ -12,8 +39,8 @@ br.getLaTeX=function(){
     laturl="http://miktex.org/portable"
     latsize=600   # min space in mega
     latdir=R.home("latex")
-    latexe=paste0(latdir, "/mikport.exe")
-    latbin="C:/binp/R-Portable/App/R-Portable/latex/miktex/bin/latex.exe"
+    latinst=paste0(latdir, "/mikport.exe")
+    latbin=paste0(latdir, "/miktex/bin/latex.exe")
 
     ## Check connection
     if(!is.character(getURL("www.google.com")))
@@ -39,20 +66,140 @@ br.getLaTeX=function(){
     dir.create(latdir)
 
     ## Start download
-    if(!download.bin(latlnk, latexe)$succ){
+    message("Downloading ", latlnk)
+    if(!download.bin(latlnk, latinst)$succ){
         stop("An error occured while downloading LaTeX")
     } else {
-        out  <-  system(paste(latexe, "-y"), intern = TRUE, invisible = FALSE)   
+        out  <-  system(paste(.br.wpath(latinst), "-y"), intern = TRUE, invisible = FALSE)   
     }
 
     if(!file.exists(latbin))
-        stop(paste("An error occurred while extracting\n", latexe,
+        stop(paste("An error occurred while extracting\n", latinst,
+                   "\nPlease, exit BloomR and try again."))
+        
+    ## Add extra packages
+    lpacks=c(
+        'fancyvrb',
+        'microtype',
+        'mptopdf',
+        'upquote',
+        'url'
+        )
+    x=sapply(lpacks, br.getLatex.pack, br.getLatex.packList(inst=TRUE))
+
+        
+    ## Download Pandoc  
+    br.getPandoc()
+
+}
+
+br.getPandoc=function(){
+### Download Pandoc  
+
+    require(XML)
+    require(RCurl)
+
+    ## Pandoc variables 
+    panurl="https://github.com/jgm/pandoc/releases/latest"
+    pansize=100   # min space in mega
+    pandir=R.home("pandoc")
+    paninst=paste0(pandir, "/pandocSetup.exe")
+    panbin=paste0(pandir, "/bin/pandoc.exe")
+
+    ## Check connection
+    if(!is.character(getURL("www.google.com")))
+        stop("It seems you have no internet connection")
+
+    ## Check space
+    xx=paste("cmd /c dir", shQuote(R.home()), "/-c")
+    x=rev(strsplit(rev(system(xx, intern=TRUE))[1], " ")[[1]])[3]
+    x=as.numeric(x)    
+    if(x/1000^2 < pansize)  stop("Not enough space on your drive")
+    
+    ## Get redirect last release link 
+    x=getURL(panurl, ssl.verifypeer = FALSE)    
+    panlnk=xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE), "//a",  xmlGetAttr, "href")
+    lrel=rev(strsplit(panlnk, '/')[[1]])[1] # Version name inside link 
+
+    ## Get download link
+    x=getURL(panlnk, ssl.verifypeer = FALSE)
+    lnks = xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE), "//a",  xmlGetAttr, "href")
+    panlnk=grep(paste0(lrel, '-windows'), lnks, value=TRUE)
+    panlnk=paste0("https://github.com", panlnk)    
+    if(!nzchar(panlnk))  stop("I can't find a parsable Pandoc download")
+
+    ## Create Pandoc dir
+    if(file.exists(pandir))
+        unlink(pandir, recursive = TRUE, force = TRUE)
+    if(file.exists(pandir))
+        stop(paste("Unable to unlink\n", pandir, "\nPlease, exit BloomR and try again."))
+    dir.create(pandir)
+
+    ## Start download
+    message("Downloading ", panlnk)
+    if(!download.bin(panlnk, paninst)$succ){
+        stop("An error occured while downloading Pandoc")
+    } else {
+        cmd=.br.wpath(paste0(pandir, '/temp'))   
+        cmd=paste0("TARGETDIR=", cmd)
+        cmd=paste("msiexec /qb /a", .br.wpath(paninst), cmd)
+        out  <-  system(cmd, intern = TRUE, invisible = FALSE)
+        file.rename(paste0(pandir, '/temp/pandoc'), paste0(pandir, '/bin'))
+        unlink(paste0(pandir, '/temp'), recursive = TRUE, force = TRUE)
+    }
+    
+    if(!file.exists(panbin))
+        stop(paste("An error occurred while extracting\n", paninst,
                    "\nPlease, exit BloomR and try again."))
 }
 
+
+br.getLatex.pack=function(pname, ipacks=NULL){
+### Install a LaTeX Package, via  MiKTeX mpm --install
+## ipacks (optional) is the list of installed packages.
+## Used to speed-up if calling the function many times 
     
-### Download binary file returning list(succ, headers) 
+    mpm=R.home("latex/miktex/bin/mpm.exe")
+    if(!file.exists(mpm)) stop(paste('Unable to find:\n', mpm))
+
+    if(is.null(ipacks)) ipacks=br.getLatex.packList(inst=TRUE)
+    if(pname %in% ipacks) {
+        message(shQuote(pname), ' already installed. Skipping.')
+        return()
+    }
+
+    message('Installing package ', shQuote(pname))
+    pack=paste0("--install=", pname)
+    out=system(paste(.br.wpath(mpm), pack), intern = TRUE, invisible = FALSE)
+    if(!br.getLatex.packCheck(pname)) stop("Unable to install LaTeX package ", shQuote(pname))
+
+}
+
+
+br.getLatex.packList=function(inst=FALSE){
+### Get list of all packages from MiKTeX mpm --list
+## If inst=TRUE, give vector of names of installed ones
+    
+    mpm=R.home("latex/miktex/bin/mpm.exe")
+    if(!file.exists(mpm)) stop(paste('Unable to find:\n', mpm))
+    out=system(paste(.br.wpath(mpm), '--list'), intern = TRUE, invisible = FALSE)
+    if(inst) {
+        x=grep('^i', out, value=TRUE)
+        sapply(strsplit(x, ' +'), `[`, 4)
+    } else out
+}
+
+
+br.getLatex.packCheck=function(pname) # Check if a package is installed via MiKTeX mpm --list
+    pname %in% br.getLatex.packList(inst=TRUE)    
+
+.br.wpath=function(s) # Convert path Unix->Win and quote
+    shQuote(gsub('/', '\\\\',  s)) 
+
+
 download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
+### Download binary file returning list(succ, headers) 
+
     redirect=!is.null(curl)
     if(is.null(curl)) curl = getCurlHandle()
     f = CFILE(file, mode="wb")
@@ -100,7 +247,7 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
         error = function(x) cat("Curl Error:", x$message, '\n'))
     cat('\n')
     if(redirect) cat (paste('Redirect to', url), '\n'); 
-    close(f)
+    RCurl:::close(f)
     if(is.null(succ)) headers=NULL else headers=headers$value()
     if(!is.null(succ) && !(headers["status"] %in% c('200', '301', '302'))){
         cat('Server Error\n')
