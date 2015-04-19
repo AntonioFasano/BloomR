@@ -61,7 +61,7 @@ G.github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 G.github.local=""
 
 ## Packages to download. Include dependencies! Case sensitive
-G.packlist=" rJava  zoo  xts  XML RCurl bitops XML plyr pbapply Rcpp"
+G.packlist=" rJava  zoo  xts  XML RCurl bitops plyr pbapply Rcpp"
 G.packlist=paste(G.packlist, "knitr evaluate digest formatR highr stringr ")
 G.packlist=paste(G.packlist, " markdown mime")
 
@@ -166,7 +166,7 @@ downloads=function(tight, ndown){
     
     ## R
     cback=function(){
-        url=sfFirstbyProject(G.rport, 'portable')
+        url=sfFirstbyProject(G.rport, 'r-portable')
         url=sfFirstbyUrl(url, '[[:digit:]]')        
         url=sfFirstbyUrl(url, 'exe[^.]')        
         sfDirLink(url)
