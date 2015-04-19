@@ -57,13 +57,13 @@ BloomR itself is open source and it is based on the public API released by  Bloo
 What's new
 ----------
 
-### BloomR Turandot (1.3.1)
+### BloomR Turandot (1.3.3)
 
 Improvements over Début version:
 
 - BloomR development is now open source on Github.com.
 - Only 64 bit (it means less space).
-- Updated to R-3.1.3.
+- Updated to R-3.2.0 .
 - Green installer, to simplify extraction of BloomR files.
 - Generation of automatic HTML reports for web publishing or in PDF (PDF's require a separate large add-on to be downloaded separately)
 - New functions for bulk download using tickers from CSV files, from index constituents or from ticker vectors.
