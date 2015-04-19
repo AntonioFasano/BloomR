@@ -1,0 +1,35 @@
+My First Report
+===============
+
+Good morning, first of all I will set the default figure dimensions:
+
+```{r setup}
+# set global chunk options: images will be 7x5 inches
+opts_chunk$set(fig.width=7, fig.height=5)
+```
+
+I will implement some calculations. See the code and results below:
+
+```{r myFirstChunk}
+x <- 1+1 # a simple calculator
+set.seed(123)
+rnorm(5)  # boring random numbers
+```
+
+I will now generate six random numbers.
+Well, you already know the code behind, so I don't show it:
+
+```{r myChunkNoecho, echo=FALSE}
+set.seed(321)
+rnorm(6)  # boring random numbers
+```
+
+And now let me plot my ideas:
+
+```{r myNicePlot, fig.cap="In this plot we compare Miles per Gallon with HP."}
+par(mar = c(4, 4, 2, .1))
+with(mtcars, {
+  plot(mpg~hp, pch=20, col='darkgray', main="My First Plot")
+  lines(lowess(hp, mpg))
+})
+```

@@ -327,6 +327,8 @@ bloomrTree=function(ndown){
     download.git("bloomr.pdf", "bloomR/help/bloomr.pdf", ,ndown)
     download.git("xlx.help.html", "bloomR/help/xlx.help.html", ,ndown)     
     download.git("xlx.help.pdf", "bloomR/help/xlx.help.pdf", ,ndown)
+    download.git("reports/reporting.pdf", "bloomR/help/reporting.pdf", ,ndown) 
+    
     
 }
 
@@ -366,6 +368,7 @@ initScripts=function(ndown){
     download.git("res/semic.csv", "bloomR/mybloomr/examples/semic.csv", ,ndown)
     download.git("res/tickers.csv", "bloomR/mybloomr/examples/tickers.csv", ,ndown)
     download.git("res/tickers.eqt.csv", "bloomR/mybloomr/examples/tickers.eqt.csv", ,ndown)
+    download.git("res/my-first-report.Rmd", "bloomR/mybloomr/examples/my-first-report.Rmd", ,ndown)
     download.git("tryme.R", "bloomR/mybloomr/examples/tryme.R", ,ndown)
                   
     ## Make R bootstrapper
