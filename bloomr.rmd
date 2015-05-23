@@ -617,7 +617,7 @@ For other arguments see the function `br.bulk.csv`
 
 Details
 --------
-If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.  
+If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the character vector are read from a CSV file with empty cells.  
 If `con=NULL`, values are simulated by means of `br.sample()`. Sampled values are based on default values of `br.sample()`, but it is possible to set explicitly  `start, same.dates, no.na, empty.sec`; `sec.names` depends on `tiks` argument. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
 
 Value
@@ -691,11 +691,12 @@ br.bulk.tiks=function(
             empty=sample(length(tiks.show), x)
             LL[empty] = NA 
         }
-        
-        ## If there are only NAs cells output an empty xts else merge and fill empty cells with NAs 
+
+        ##print(LL ) ###################
+        ## If there are only NAs, output an empty xts else merge ts and in simul. mode use no.na val  
         if(all(is.na(LL))) LL=na.omit(xts(t(unlist(LL)), Sys.Date())) else {
-            if(length(LL)>1) LL=do.call("merge.xts", LL) else
-            LL=LL[[1]]
+          #  if(!is.null(con)) no.na=FALSE # in merge c(LL, all=!no.na)
+            if(length(LL)>1) LL=do.call("merge.xts", LL) else LL=LL[[1]]
         }
     
         ## Set labels
@@ -838,7 +839,7 @@ If `df=TRUE`, a data frame object, where the first column is the vector with all
 
 ```{r br.sample, opts.label='purlme'}
 br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
-    jitter=0, same.dates=FALSE, no.na=FALSE, df=FALSE, empty.sec=0,sec.names=NULL)
+    jitter=0, same.dates=FALSE, no.na=FALSE, df=FALSE, empty.sec=0, sec.names=NULL)
 {
  
     if(!require("xts", quietly=TRUE, character.only=TRUE))  stop("Can't find library xts")

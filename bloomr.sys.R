@@ -27,6 +27,9 @@ br.md2pdf=function(md.file, pdf.file){
     ## Restore origina system Path
     Sys.setenv(Path=old.path)
 
+    ## Return errors if any
+    if(!is.null(attr(out, 'status')))  message(paste(out, collapse="\n")) 
+
 }
 
 br.getLatexAddons=function(){
