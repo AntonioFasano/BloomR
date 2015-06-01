@@ -102,7 +102,7 @@ Start to get results in BloomR immediately
 ----------------------------------------
 
 1. Download the latest [BloomR release](https://github.com/AntonioFasano/BloomR/releases/latest).
-2. Extract the zip file on your USB drive (or wherever).
+2. Run the _green_ installer: it will only extract the BloomR files on your chosen directory (perhaps on your USB drive), without further touching your system. 
 3. Run "BloomR.exe" in the main folder.
 4. Log to Bloomberg service on the same PC (if you are not logged already).
 5. To get some data, type in the BloomR console:
@@ -128,10 +128,10 @@ Download [bloomr.build.R](https://raw.githubusercontent.com/AntonioFasano/BloomR
 	makeBloomR("path\to\workDir")
 
 
-You will find your portable BloomR directory  inside `workDir`.
+You will find your BloomR green installer _.exe_ inside `workDir`.
 
 
-__Note__: the build script will download from the Internet the required files (c. 150 MB). Think of this if you have a metered connection 
+__Note__: the build script will download from the Internet the required files (c. 200 MB). Think of this if you have a metered connection. 
 
 
 **Browser oddities**

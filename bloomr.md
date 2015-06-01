@@ -7,6 +7,7 @@ R topics documented:
 [br.bulk.idx](#br.bulk.idx)   
 [br.bulk.tiks](#br.bulk.tiks)   
 [br.desc](#br.desc)   
+[br.md2pdf](#br.md2pdf)    
 [br.sample](#br.sample)   
 [Deprecated functions](#deprecated.functions)   
 [Internal BloomR functions](#Internal)   
@@ -261,13 +262,6 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 
 ```
 ## Processing Financial ...
-## 
-## Attaching package: 'zoo'
-## 
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-## 
 ## Loading 3988 HK Equity
 ## Loading C US Equity
 ## Loading 601288 CH Equity
@@ -297,28 +291,28 @@ data
 
 ```
 ## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2015-04-15  11.068 10.062     9.638     NA      NA
-## 2015-04-16   9.815  9.369    11.361  9.889      NA
-## 2015-04-17  11.385     NA    11.271     NA   8.275
-## 2015-04-18  10.086 10.037    10.552     NA      NA
-## 2015-04-19   8.417     NA    10.886 10.745  11.000
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2015-05-27   9.963 9.754     8.757     NA      NA
+## 2015-05-28      NA    NA     8.878  9.818  11.006
+## 2015-05-29      NA    NA    11.443     NA      NA
+## 2015-05-30  10.800 9.798        NA     NA   9.690
+## 2015-05-31  10.119    NA     8.546     NA      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2015-04-15  10.676      NA  9.136 12.318   8.583
-## 2015-04-16  10.031  10.533     NA 10.222   9.165
-## 2015-04-17   9.683      NA     NA     NA      NA
-## 2015-04-18   8.134      NA     NA     NA      NA
-## 2015-04-19  10.993      NA     NA 10.822      NA
+## 2015-05-27      NA  10.627     NA  9.943      NA
+## 2015-05-28   9.009      NA     NA  8.344      NA
+## 2015-05-29  11.855  10.921 10.431  9.367      NA
+## 2015-05-30   9.825  10.634     NA 11.037   9.899
+## 2015-05-31      NA  11.756     NA     NA      NA
 ## 
 ## $Indices
-##              DJI DJUSFN  W1TEC
-## 2015-04-15    NA  9.078  8.800
-## 2015-04-16 9.722 10.043     NA
-## 2015-04-17    NA  7.659 11.401
-## 2015-04-18    NA 10.334 11.411
-## 2015-04-19    NA 10.077 10.745
+##               DJI DJUSFN  W1TEC
+## 2015-05-27  8.895 10.820 10.045
+## 2015-05-28 10.081  8.973     NA
+## 2015-05-29     NA 10.119     NA
+## 2015-05-30 10.214 11.840     NA
+## 2015-05-31 10.099  9.438     NA
 ```
 
 Note:
@@ -560,7 +554,8 @@ nsec
 :   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
 
 sec.names
-:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.  
+:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.
+
 For other arguments see the function `br.bulk.csv`
 
 Details
@@ -597,7 +592,7 @@ For other arguments see the function `br.bulk.csv`
 
 Details
 --------
-If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the cahracter vector are read from a CSV file with empty cells.  
+If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the character vector are read from a CSV file with empty cells.  
 If `con=NULL`, values are simulated by means of `br.sample()`. Sampled values are based on default values of `br.sample()`, but it is possible to set explicitly  `start, same.dates, no.na, empty.sec`; `sec.names` depends on `tiks` argument. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
 
 Value
@@ -623,11 +618,9 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2015-04-15  10.760   9.852
-## 2015-04-16   8.784  10.550
-## 2015-04-17   8.034   9.560
-## 2015-04-18  10.099      NA
-## 2015-04-19   9.854      NA
+## 2015-05-27      NA   9.218
+## 2015-05-29  11.226      NA
+## 2015-05-30  10.000      NA
 ```
 
 ```r
@@ -664,6 +657,36 @@ Value
 -----
 A data frame containing the value of the Bloomberg fields form `ds001` to `ds009` and the long field `CIE_DES_BULK`.
 
+
+
+
+br.md2pdf{#br.md2pdf} 
+=====================
+
+Description
+-----------
+Make a markdown file into a PDF
+It assumes that you have installed the BloomR LaTeX addons
+
+Usage
+-----
+    br.md2pdf(md.file, pdf.file)
+
+Arguments
+---------
+md.file
+:   path to the markdown file to be converted.  
+
+pdf.file
+:   path to the PDF file to be generated.  
+
+Details
+-------
+The function will stop with an error if you have not installed BloomR LaTeX addons. To install them use `br.getLatexAddons()`.
+
+Value
+-----
+If there are no errors, it returns zero invisibly, otherwise it prints an error message and returns the related error code.
 
 
 

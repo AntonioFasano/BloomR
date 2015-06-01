@@ -124,7 +124,7 @@ img {
 <h2>Start to get results in BloomR immediately</h2>
 <ol style="list-style-type: decimal">
 <li>Download the latest <a href="https://github.com/AntonioFasano/BloomR/releases/latest">BloomR release</a>.</li>
-<li>Extract the zip file on your USB drive (or wherever).</li>
+<li>Run the <em>green</em> installer: it will only extract the BloomR files on your chosen directory (perhaps on your USB drive), without further touching your system.</li>
 <li>Run “BloomR.exe” in the main folder.</li>
 <li>Log to Bloomberg service on the same PC (if you are not logged already).</li>
 <li><p>To get some data, type in the BloomR console:</p>
@@ -142,8 +142,8 @@ br.close(con)                                            # Disconnect BloomR fro
 <p>Download <a href="https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.R">bloomr.build.R</a> (as a text file, <em>not as a HTML file</em>, and make sure your browser does not change “.R” extension to “.html” or “.txt”). In the console of R for Windows issue:</p>
 <pre><code>source(&quot;path\to\bloomr.build.R&quot;)
 makeBloomR(&quot;path\to\workDir&quot;)</code></pre>
-<p>You will find your portable BloomR directory inside <code>workDir</code>.</p>
-<p><strong>Note</strong>: the build script will download from the Internet the required files (c. 150 MB). Think of this if you have a metered connection</p>
+<p>You will find your BloomR green installer <em>.exe</em> inside <code>workDir</code>.</p>
+<p><strong>Note</strong>: the build script will download from the Internet the required files (c. 200 MB). Think of this if you have a metered connection.</p>
 <p><strong>Browser oddities</strong></p>
 <p>Downloading a file <em>as is</em> from you browser can be tangled. Normally you need to a) select All Files in the Save-as option of the browser Save dialog and b) double-quote the filename. In as far as the format is text (not HTML), even if you get a distorted name, like “bloomr_build_R.txt”, you can always adjust the <code>source()</code>-path accordingly.<br />Yes, browsers are strange sometimes.</p>
 </div>

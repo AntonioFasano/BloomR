@@ -189,11 +189,12 @@ br.bulk.tiks=function(
             empty=sample(length(tiks.show), x)
             LL[empty] = NA 
         }
-        
-        ## If there are only NAs cells output an empty xts else merge and fill empty cells with NAs 
+
+        ##print(LL ) ###################
+        ## If there are only NAs, output an empty xts else merge ts and in simul. mode use no.na val  
         if(all(is.na(LL))) LL=na.omit(xts(t(unlist(LL)), Sys.Date())) else {
-            if(length(LL)>1) LL=do.call("merge.xts", LL) else
-            LL=LL[[1]]
+          #  if(!is.null(con)) no.na=FALSE # in merge c(LL, all=!no.na)
+            if(length(LL)>1) LL=do.call("merge.xts", LL) else LL=LL[[1]]
         }
     
         ## Set labels
@@ -251,9 +252,45 @@ br.desc=function(con, tik)
 }
 store(br.desc)
 
+## ----br.md2pdf, opts.label='purlme'--------------------------------------
+
+br.md2pdf=function(md.file, pdf.file){
+### Make a markdown file into a PDF
+## It assumes that you have installed the BloomR LaTeX addons
+
+    ## Set pandoc and LaTeX exe and dir 
+    panexe=R.home("pandoc/bin/pandoc.exe")
+    if(!file.exists(panexe))
+        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
+    latbin=R.home("latex/miktex/bin")
+    if(!file.exists(latbin))
+        stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
+
+    ## Shell escape
+    panexe=.br.wpath(panexe)
+
+    ## Set system Path to LaTeX bin
+    old.path=Sys.getenv('Path')
+    x=paste0(Sys.getenv("Path"), ';', gsub('/', '\\\\',  latbin))
+    Sys.setenv(Path=x)
+
+    cmd=paste(panexe, .br.wpath(md.file), '-o', .br.wpath(pdf.file))
+    out  <-  system(cmd, intern = TRUE, invisible = FALSE)
+
+    ## Restore origina system Path
+    Sys.setenv(Path=old.path)
+
+    ## Return errors if any
+    if(!is.null(attr(out, 'status')))  message(paste(out, collapse="\n"))
+
+    invisible(out)
+
+}
+store(br.md2pdf)
+
 ## ----br.sample, opts.label='purlme'--------------------------------------
 br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
-    jitter=0, same.dates=FALSE, no.na=FALSE, df=FALSE, empty.sec=0,sec.names=NULL)
+    jitter=0, same.dates=FALSE, no.na=FALSE, df=FALSE, empty.sec=0, sec.names=NULL)
 {
  
     if(!require("xts", quietly=TRUE, character.only=TRUE))  stop("Can't find library xts")

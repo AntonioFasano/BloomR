@@ -60,11 +60,28 @@ G.certfile=""
 G.github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 G.github.local=""
 
-## Packages to download. Include dependencies! Case sensitive
-G.packlist=" rJava  zoo  xts  XML RCurl bitops plyr pbapply Rcpp"
-G.packlist=paste(G.packlist, "knitr evaluate digest formatR highr stringr ")
-G.packlist=paste(G.packlist, " markdown mime")
+## Packages to download. Case sensitive
+x="rJava zoo xts RCurl XML knitr"
 
+## RCurl deps
+x=paste(x, "bitops")
+
+## knitr deps
+x=paste(x, "evaluate digest markdown yaml highr formatR stringr")
+
+## stringr deps
+x=paste(x, "stringi magrittr")
+
+## markdown deps
+x=paste(x, " mime")
+
+## read.xlx deps
+x=paste(x, "plyr pbapply Rcpp")
+
+G.packlist=x
+rm(x)
+    
+    
 ## SF items
 G.pzip="peazip"
 G.rport="rportable"
@@ -357,6 +374,8 @@ initScripts=function(ndown){
     ## Get bloomr.R and xlx.R from Github
     to=makePath(G.work, "bloomR/main/share/bloomr")    
     makeDir(to,"BloomR share directory:")
+    download.git("bloomr.init.R", "bloomR/main/share/bloomr/bloomr.init.R", ,ndown)
+    download.git("bloomr.api.R", "bloomR/main/share/bloomr/bloomr.api.R", ,ndown)
     download.git("bloomr.R", "bloomR/main/share/bloomr/bloomr.R", ,ndown)
     download.git("bloomr.sys.R", "bloomR/main/share/bloomr/bloomr.sys.R", ,ndown)
     download.git("xlx.R", "bloomR/main/share/bloomr/xlx.R", ,ndown)
@@ -415,22 +434,11 @@ PROF=function(){ #Keep this on separate line
     ## BloomR bootstrap
     ## ================
     
-    cat("Current working directory is\n", getwd(), "\n")
+    source(paste0(R.home("share"), "/bloomr/bloomr.init.R"))
     
-    ## Set default repository
-    local({r <- getOption("repos")
-           r["CRAN"] <- "http://cran.r-project.org"
-           options(repos=r)
-       })    
     library("rJava")
     library("Rbbg")
-    source(paste0(R.home("share"), "/bloomr/bloomr.R"))
     
-    assign('bloomr.addons',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
-    source(paste0(R.home("share"), "/bloomr/bloomr.sys.R"), local=bloomr.addons)
-    source(paste0(R.home("share"), "/bloomr/xlx.R"), local=bloomr.addons)
-    attach(bloomr.addons)
-
     
     ## end BloomR----------
 }

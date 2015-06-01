@@ -1,39 +1,32 @@
 
 ### BloomR admin functions
 
-br.md2pdf=function(md.file, pdf.file){
-### Make a markdown file into a PDF
-## It assumes that you have installed the BloomeR LaTeX addons
+.br.testBR=function(logfile=NULL){ # Several tests (at boot)
 
-    ## Set pandoc and LaTeX exe and dir 
-    panexe=R.home("pandoc/bin/pandoc.exe")
-    if(!file.exists(panexe))
-        stop(paste("Unable to find:", panexe, '\nDid you install BloomeR LaTeX addons?'))
-    latbin=R.home("latex/miktex/bin")
-    if(!file.exists(latbin))
-        stop(paste("Unable to find:", latbin, '\nDid you install BloomeR LaTeX addons?'))
+    ## Create log object 
+    log=dbr.log(logfile)
 
-    ## Shell escape
-    panexe=.br.wpath(panexe)
+    ## Test JVM path
+    if(Sys.getenv('JAVA_HOME') == '') log$err("JAVA_HOME enviroment variable is empty.")
+    if(!dir.exists(Sys.getenv('JAVA_HOME')))
+       log$err("Can't JAVA_HOME directory\n", Sys.getenv('JAVA_HOME'))
+    else
+        log$add("JAVA_HOME directory is:\n\t", Sys.getenv('JAVA_HOME'))
 
-    ## Set system Path to LaTeX bin
-    old.path=Sys.getenv('Path')
-    x=paste0(Sys.getenv("Path"), ';', gsub('/', '\\\\',  latbin))
-    Sys.setenv(Path=x)
+    ## Test required packages
+    x=sapply(c('rJava', 'xts'),
+        function(pkg)
+            if(length(find.package(pkg, quiet=TRUE))==0)  log$err(pkg, "package not found"))
 
-    cmd=paste(panexe, .br.wpath(md.file), '-o', .br.wpath(pdf.file))
-    out  <-  system(cmd, intern = TRUE, invisible = FALSE)
-
-    ## Restore origina system Path
-    Sys.setenv(Path=old.path)
-
-    ## Return errors if any
-    if(!is.null(attr(out, 'status')))  message(paste(out, collapse="\n")) 
+    ## Test bbg jar
+    ret=dbr.jar()
+    if(!file.exists(ret)) log$err("Bloomberg jar", ret, "not found.")
 
 }
 
+
 br.getLatexAddons=function(){
-### Download LaTeX distro, Pandoc and knitr required packages
+### Download LaTeX distro, Pandoc and knitr required LaTeX packages
 
     require(XML)
     require(RCurl)
@@ -88,7 +81,7 @@ br.getLatexAddons=function(){
         'upquote',
         'url'
         )
-    x=sapply(lpacks, br.getLatex.pack, br.getLatex.packList(inst=TRUE))
+    x=sapply(lpacks, .br.getLatex.pack, .br.getLatex.packList(inst=TRUE))
 
         
     ## Download Pandoc  
@@ -157,7 +150,7 @@ br.getPandoc=function(){
 }
 
 
-br.getLatex.pack=function(pname, ipacks=NULL){
+.br.getLatex.pack=function(pname, ipacks=NULL){
 ### Install a LaTeX Package, via  MiKTeX mpm --install
 ## ipacks (optional) is the list of installed packages.
 ## Used to speed-up if calling the function many times 
@@ -165,7 +158,7 @@ br.getLatex.pack=function(pname, ipacks=NULL){
     mpm=R.home("latex/miktex/bin/mpm.exe")
     if(!file.exists(mpm)) stop(paste('Unable to find:\n', mpm))
 
-    if(is.null(ipacks)) ipacks=br.getLatex.packList(inst=TRUE)
+    if(is.null(ipacks)) ipacks=.br.getLatex.packList(inst=TRUE)
     if(pname %in% ipacks) {
         message(shQuote(pname), ' already installed. Skipping.')
         return()
@@ -174,12 +167,12 @@ br.getLatex.pack=function(pname, ipacks=NULL){
     message('Installing package ', shQuote(pname))
     pack=paste0("--install=", pname)
     out=system(paste(.br.wpath(mpm), pack), intern = TRUE, invisible = FALSE)
-    if(!br.getLatex.packCheck(pname)) stop("Unable to install LaTeX package ", shQuote(pname))
+    if(!.br.getLatex.packCheck(pname)) stop("Unable to install LaTeX package ", shQuote(pname))
 
 }
 
 
-br.getLatex.packList=function(inst=FALSE){
+.br.getLatex.packList=function(inst=FALSE){
 ### Get list of all packages from MiKTeX mpm --list
 ## If inst=TRUE, give vector of names of installed ones
     
@@ -193,8 +186,8 @@ br.getLatex.packList=function(inst=FALSE){
 }
 
 
-br.getLatex.packCheck=function(pname) # Check if a package is installed via MiKTeX mpm --list
-    pname %in% br.getLatex.packList(inst=TRUE)    
+.br.getLatex.packCheck=function(pname) # Check if a package is installed via MiKTeX mpm --list
+    pname %in% .br.getLatex.packList(inst=TRUE)    
 
 .br.wpath=function(s) # Convert path Unix->Win and quote
     shQuote(gsub('/', '\\\\',  s)) 
