@@ -25,7 +25,9 @@ Synopsis
     
     read.xlx(
         file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL,
-        keepblanks=FALSE, allchars=FALSE, general='character', info) 
+	    skip=0, skipafter=FALSE, keepblanks=FALSE, allchars=FALSE, general='character',
+	    simplify=TRUE, info=FALSE) 
+
 
 file
 :   path to xlsx file.  
@@ -42,20 +44,26 @@ header.ranges
 ranges
 :   character vector with sheet names to read or NULL to not read use them.  
 
+skip
+:   skips the first given rows of every sheets (and currently ranges). If header are set TRUE, skipped rows depend on the value of `skipafter`  
+
+skipafter
+:   if TRUE skipped rows are counted after the (first used as) header row, else the rows are skipped above the headers, which will be the `skip+1`. Ignored without headers.  
+
 keepblanks
-:   if true do not import rows or columns having only empty cells.  
+:   if TRUE do not import rows or columns having only empty cells.  
 
 allchars
-:   If false do not infer cell style, but use always R character class.  
+:   If FALSE do not infer cell style, but use always R character class.  
 
 general
 :   map Excel general format to 'character' or 'numeric'.  
 
-info
-:   list of: sheets' name; vector whose names are ranges and values their sheets; vector whose names are ranges and values their references.  
-
 simplify
 :   remove enclosing list for a single item.
+
+info
+:   list of: sheets' name; vector whose names are ranges and values their sheets; vector whose names are ranges and values their references.  
 
 
 Details
@@ -188,7 +196,6 @@ Following the general convention for the `read.*` family of functions, the sheet
 In case cells are not plain formatted and formatting inside columns is inconsistent R will coerce incoherent cell to the column prevailing format and issue a warning. 
 
 
-
 Import individual workbook items
 -------------------------------
 
@@ -315,10 +322,64 @@ surv
 
 ```
 ##   Young Old
+## 7    NA  20
+## 8    30  40
+```
+
+
+
+
+Skip an arbitrary number of initial rows 
+----------------------------------------
+
+It is possible to skip the first _n_ rows. If headers are present the skipped rows are counted after the initial header row if `skipafter=TRUE`. If `skipafter=FALSE`, the row are skipped above and the header will be the first row follwing those skipped.
+
+
+
+```r
+read.xlx('survey.xlsx', skip=3)
+```
+
+```
+##       1   2
+## 6 Young Old
 ## 7  <NA>  20
 ## 8    30  40
 ```
 
+Note: the first three lines are skipped. As a consequence of the skipping `Survey2` sheet results in an empty output, so only `Survey1` sheet is returned as a single data.frame.
+
+
+```r
+(surv=read.xlx('survey.xlsx', header.sheets=TRUE, skip=3, skipafter=FALSE))
+```
+
+```
+##   Young Old
+## 7    NA  20
+## 8    30  40
+```
+
+Here we see the effect of `skipafter=FALSE` when `header.sheets=TRUE`. That is the first three lines are cut out, like before, and the 3+1 row is taken as header.
+
+Separating the  headers,  the data.frame content can all be interpreted in terms of numbers. And also the NA is properly mapped as missing value. 
+
+
+```r
+class(surv[,1])
+```
+
+```
+## [1] "numeric"
+```
+
+```r
+class(surv[,2])
+```
+
+```
+## [1] "numeric"
+```
 
 
 

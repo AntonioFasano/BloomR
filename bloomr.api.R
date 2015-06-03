@@ -5,22 +5,24 @@ dbr.log=function(logfile){
 
     ## Check log
     islog=!is.null(logfile)
-    if(islog) if(!dir.exists(dirname(logfile))) stop("Invalid path:\n", logfile) else
-    if(file.exists(dirname(logfile))) {
-        ans <- readline(sprintf("%s \nalready exists, overwrite?. (Y/n) ", logfile))
-        if(tolower(ans)!="y" && ans!="") {message('Cancelled'); return()}
-    } else
-    file.create(logfile) 
-
+    if(islog) {
+        if(!dir.exists(dirname(logfile))) stop("Invalid path:\n", logfile) else {
+            if(file.exists(logfile)) {
+                ans <- readline(sprintf("%s \nalready exists, overwrite?. (Y/n) ", logfile))
+                if(tolower(ans)!="y" && ans!="") {message('Cancelled'); return()}
+            } else file.create(logfile) 
+        }
+    }
+        
     add=function(...){ # Log ... to logfile if not null
         if(is.null(logfile)) return()
-        msg=paste('br: ', ...)
+        msg=paste('BR:', ...)
         cat(msg, sep='\n', append=TRUE, file=logfile)
         message(msg)
     }
 
     err=function(...){ # Stop and log ... to logfile if not null
-        msg=paste('br error: ', ...)
+        msg=paste('BR error:', ...)
         if(!is.null(logfile)) cat(msg, sep='\n', append=TRUE, file=logfile)
         stop(msg)
     }
@@ -41,17 +43,18 @@ dbr.getToken=function(logfile=NULL, host=NULL,  port=NULL){
         
     ## Init JVM
     ret=.jinit()
+    log=dbr.log(logfile)
     if (ret == 0) log$add("BloomR JVM initialized successfully.") else 
         log$err("Error in initialising BloomR JVM. Error code:", ret)    
 
     ## blpapi.jar to classpath
-    ret=dbr.jar(logfile)
-    log$add(ret, "added to Java classpath") 
+    ret=dbr.jar()
     .jaddClassPath(ret)
+    log$add(ret, "added to Java classpath") 
 
     ## Set log level 
     java.logging.levels = J("java/util/logging/Level")
-    log.level = finest  # to be set by user  in the future
+    log.level = 'finest'  # to be set by user  in the future
     
     java.log.level = switch(log.level,
         finest = java.logging.levels$FINEST, 

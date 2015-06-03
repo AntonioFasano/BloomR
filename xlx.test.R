@@ -3,12 +3,20 @@
 
 ## ToDO: tests for blanks and for formats 
 
+
 ## Customise test spread
+## ---------------------
 SPREAD='res/xlx.test.xlsx'
-NNS=2  # number of non-empty sheets
+NNS=2  # number of non-empty sheets in SPREAD
+
+
+
+
+
+## Test and audit functions
+## ------------------------
 
 source('xlx.R')
-
 callme=function(...){
 
     cat("\nEvaluating:", '\n')
@@ -37,13 +45,19 @@ err=function(n){
 tests=function(num, test){
     if(length(test)>1) stop("Test with multiple logicals! Try vector version")
     if(!test) err(num)
+    cat("OK!", '\n')
 }
 
 ## Test with multiple conditions 
 testm=function(num, test){
     if(!all(test)) err(num)
+    cat("OK!", '\n')
 }
 
+
+
+## Test helpers
+## ------------
 
 ## all nums in strings vec
 allnum=function(x) all(!is.na(strtoi(x)))
@@ -58,7 +72,7 @@ is.head.eu=function(out){
     return(FALSE) # because not DF or a list
 }
 
-## Names of items with headers equal first rows of items withut 
+## Names of the item with header equal first rows of items without 
 head.eq.1st=function(out.h, out.nh){
 
     if(class(out.h)!=class(out.nh)) {
@@ -79,6 +93,11 @@ head.eq.1st=function(out.h, out.nh){
 }
 
 
+
+
+## Actual tests
+## -----------
+
 main=function(){
 
 ## Flat call    
@@ -89,39 +108,34 @@ tests(2, length(out)== NNS)
 tests(3, class(out[[1]])== "data.frame")
 tests(4, class(out[[2]])== "data.frame")
 tests(5, !is.head.eu(out[[1]]))
-msgn("Success!")
 
 ## Single sheet 
 out=callme(sheets=tolower("survey2"), header.sheets=TRUE)
 msg("single DF, with headers (called lower case).")
 tests(1, class(out)== 'data.frame') 
 tests(2, is.head.eu(out))
-msgn("Success!")
 
-## Single, case, no-heade
+## Single sheet, Case, No-Header
 nohead=callme(sheets=toupper("survey2"), header.sheets=FALSE)
 msg("single DF, without headers (called upper case).\n")
 tests(1, !is.head.eu(nohead))
 msg("First row here as names in previous")
 tests(2, head.eq.1st(out, nohead)) # first head, sec not
-msgn("Success!")
 
 ## Swap order and case
 out=callme(sheets=c(toupper("survey2"), tolower("survey1")))
 msg("order and case of output as in input.")
 testm(1, names(out) == c(toupper("survey2"), tolower("survey1")))
-msgn("Success!")
+
 
 ## Test headers 
 #  ------------
-
 
 ## Test sheets headers 
 head=  callme(sheets=c("survey1", "survey2"), header.sheets=c(TRUE, TRUE))
 nohead=callme(sheets=c("survey1", "survey2"), header.sheets=c(FALSE, FALSE) )
 msg("sheets with/without: headers names == first rows.")
 tests(1, head.eq.1st(head, nohead))
-msgn("Success!")
 
 
 ## Test range headers 
@@ -129,7 +143,6 @@ head=  callme(ranges=c("education", "students"), header.ranges=c(TRUE, TRUE))
 nohead=callme(ranges=c("education", "students"), header.ranges=c(FALSE, FALSE) )
 msg("ranges with/without headers: names == first rows.")
 tests(1, head.eq.1st(head, nohead))
-msgn("Success!")
 
 ## Test mix range, sheet headers 
 head=   callme(
@@ -138,21 +151,33 @@ nohead=callme(
     ranges="education", header.ranges=FALSE, sheets="survey2", header.sheets=FALSE)
 msg("sheets & ranges with/without headers: names == first rows.")
 tests(1, head.eq.1st(head, nohead))
-msgn("Success!")
 
 
 ## Test empty sheets/ranges 
+#  -----------------------
+noempty=callme(ranges="education", header.ranges=TRUE, sheets="survey2", header.sheets=TRUE)
+empty= callme(ranges="education", header.ranges=TRUE,  sheets="sheet3", header.sheets=TRUE)
+msg("same range if asking same range and with/without empty sheet.")
+tests(1, identical(noempty$education, empty$education))
 
-head=   callme(
-    ranges="education", header.ranges=TRUE, sheets="survey2", header.sheets=TRUE)
-
-callme("Sheet3")
-    ranges="education", header.ranges=TRUE, sheets="survey2", header.sheets=TRUE)
+msg("Zero length DF with explicit empty sheet queried.")
+tests(1, length(empty$sheet3)==0)
 
 
+## Test skips
+#  ----------
+noskip=callme(sheets="survey2", header.sheets=TRUE)
+
+skip=  callme(sheets="survey2", header.sheets=TRUE, skip=1, skipafter=TRUE)
+msg("DF skip=noskip minus 1st row, but headers differs, if !skipafter.")
+testm(1, noskip[-1,] == skip)
+
+skip=  callme(sheets="survey2", header.sheets=TRUE, skip=1, skipafter=TRUE)
+msg("DF skip identical to noskip minus 1st row if skipafter.")
+testm(1, identical(noskip[-1,] , skip))
+       
+       
 }
-
-
 
 
 ##          main()

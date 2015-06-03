@@ -1,26 +1,27 @@
 ### ToDo
-##  Manage name conflicts between sheets and ranges and perhaps among ranges 
+##  Manage name conflicts between sheets and ranges and perhaps among ranges
 
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
 
 ## Credit where credit's due:
-## Schaun Wheeler xlsxToR, while less feature rich is contains the relevant ideas
+## Schaun Wheeler xlsxToR, while less feature rich contains the relevant ideas
 
 
 read.xlx= function(
-    file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL,
+    file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL, skip=0, skipafter=FALSE,
     keepblanks=FALSE, allchars=FALSE, general='character', simplify=TRUE, info=FALSE) {
 
-    require(XML)
-    require(plyr)
-    require(pbapply)
-   
+    
+    ## Needed libs and stop on errors
+    packs=c("XML", "parse xlsx files.",
+            "plyr", "manipulate sheet data.",
+            "pbapply", "show progress bars.")
 
+    
     ## Global variables 
     ## ----------------
     
-    T=TRUE; F=FALSE
     tdir=NULL         # Temporary dir
     os_origin ="1899-12-30" # Apparently non-MAC only  
     wbsheets=NULL      # Sheets names (preserved after sheet selection)
@@ -50,7 +51,7 @@ read.xlx= function(
     
     ## If header true and rows>1 exclude first row
     headcut=function(df, header) {
-        sel=ifelse((header && nrow(df)>1), -1, T)
+        sel=ifelse((header && nrow(df)>1), -1, TRUE)
         df[sel,,drop=FALSE]
     }
 
@@ -65,7 +66,8 @@ read.xlx= function(
     ## Subsetting keeping attributes
     subattr=function (df,i,j){
         a=attributes(df)
-        df=df[i,j, drop=F]
+        df=df[i,j, drop=FALSE]
+        a$names=names(df)         # restore backupped (row) names
         a$row.names=row.names(df)
         mostattributes(df)=a
         df
@@ -77,19 +79,42 @@ read.xlx= function(
 
     ## Safe error
     error=function(...){
-        if(!is.null(tdir))  unlink(tdir, recursiv=T)
+        if(!is.null(tdir))  unlink(tdir, recursiv=TRUE)
         stop(paste("In 'read.xlx'",  ...))
     }
 
+    ## Return deleting temp folder Safe error
+    d=function(ret){
+        unlink(tdir, recursiv=TRUE)
+        ret  
+    }
+
+
+
+    ## Check libs
+    ## -----------
+    x=sapply(seq(1,length(packs), 2), function(i)
+        if(length(find.package(packs[i], quiet=TRUE))==0){
+            error(packs[i], "package is missing! It is required to", packs[i+1])
+        } else require(packs[i], character.only=TRUE))
 
         
     ## Check arguments
     ## ---------------
     
     ## Test logical arguments
-    x=c(header.sheets=header.sheets, header.ranges=header.ranges, keepblanks=keepblanks)  
-    xx=" argument for 'read.xlx' should be logical. Current value, "
-    for(i in 1:3) if(!is.logical(x[i])) error(paste0(names(x)[i], xx, x[i], ", is not."))
+    x="header.sheets header.ranges skipafter keepblanks allchars simplify info"
+    x=strsplit(x, " ")[[1]]
+    x=x[nzchar(x)]
+    lapply(x, function(var){
+        val=get(var)
+        x=sprintf("%s argument should be logical. Current value, %s, is not such.", var, toString(val))
+        if(!is.logical(val)) error(x)
+    })
+    
+    ## Test skip is an integer
+    if(!is.numeric(skip) || !skip%%1==0 || skip<0) error(paste0(
+        "skip argument should be an integer. Current value, ", toString(skip), ", is not such."))
 
     ## Test info is alone
     if(info){
@@ -97,7 +122,7 @@ read.xlx= function(
         if(length(x)!=2) error("'info' requires only file argument.")
         x=names(x)
         x=x[nzchar(x)]
-        if(!all(x %in% c("file", "info"))) error("'info' requires only file argument. You passed: ", x)        
+        if(!all(x %in% c("file", "info"))) error("'info' requires only file argument. You passed: ", x)
     }
 
     ## Test headers 
@@ -116,7 +141,7 @@ read.xlx= function(
     
     ## Extract xlsx in a tmp dir
     tdir= file.path(tempdir(), "uzipx")
-    dir.create(tdir, recursiv=T)
+    dir.create(tdir, recursiv=TRUE)
     file.copy(file, tdir)
     xlsx=file.path(tdir, basename(file))
     unzip(xlsx, exdir = tdir)
@@ -175,11 +200,8 @@ read.xlx= function(
     }
 
     ## Return info if required 
-    if(info) {
-        unlink(tdir, recursiv=T)
-        return(list(wbsheets=wbsheets, rgsheets=rgsheets, rgrefs=rgrefs))
-    }
- 
+    if(info) return(d(list(wbsheets=wbsheets, rgsheets=rgsheets, rgrefs=rgrefs)))
+    
     ## Select sheet names to process     
     ## Take the union user ranges & sheets or everything
     x=union(usheets, rgsheets)
@@ -245,11 +267,8 @@ read.xlx= function(
     if(length(cellstack)>1) message('Aggregating sheets')
     cellstack= rbind.fill(cellstack)
     
-    ## Return if whole spread is empry  
-    if(is.null(cellstack)) {
-        unlink(tdir, recursiv=T)
-        return(NULL)  
-    }
+    ## Return if whole spread is empty  
+    if(is.null(cellstack)) return(d(NULL))
     
     ##Exclude empty/blank from act-sheets
     x=unique(cellstack$sheet)
@@ -260,12 +279,14 @@ read.xlx= function(
     ## ------------------------------
 
     ## Replace cell string IDs with their actual values
-    strings= xmlParse(file.path(tdir, "xl/sharedStrings.xml"))
-    strings= xpathSApply(strings, "//x:si", namespaces = "x", xmlValue)
-    names(strings)=seq_along(strings) - 1 #xls IDs zero based
-    spos=cellstack$t == "s" & !is.na(cellstack$t)
-    cellstack$v[spos] =strings[match(cellstack$v[spos], names(strings))]
-    rm(strings, spos)
+    if(file.exists(file.path(tdir, "xl/sharedStrings.xml"))){
+        strings= xmlParse(file.path(tdir, "xl/sharedStrings.xml"))
+        strings= xpathSApply(strings, "//x:si", namespaces = "x", xmlValue)
+        names(strings)=seq_along(strings) - 1 #xls IDs zero based
+        spos=cellstack$t == "s" & !is.na(cellstack$t)
+        cellstack$v[spos] =strings[match(cellstack$v[spos], names(strings))]
+        rm(strings, spos)
+    }
     ## Set 's' attribute as NA if col is  missing
     if (all("s"!=colnames(cellstack))) cellstack$s <- NA
 
@@ -357,11 +378,11 @@ read.xlx= function(
         RC=list(
             r=lapply(refs, function(x) as.numeric(gsub("\\D", "", x))),    #rows
             c=lapply(refs, sapply, function(x)
-                {colasnum(gsub("\\$([A-Z]+).*", "\\1", x))}, USE.NAMES=F)) #cols
+                {colasnum(gsub("\\$([A-Z]+).*", "\\1", x))}, USE.NAMES=FALSE)) #cols
         ## Map:  R1C2:R10C20->1:20,2:20; R1:R10->1:10,T ; C1:C10->T,1:10
         RC=lapply(RC, function(i){
             x=lapply(names(i), function(n)
-                if(any(is.na(i[[n]])))  T else  do.call(seq, as.list( i[[n]] )))
+                if(any(is.na(i[[n]])))  TRUE else  do.call(seq, as.list( i[[n]] )))
             names(x)=uranges.dirty
             x
         })
@@ -372,8 +393,8 @@ read.xlx= function(
             c=RC$c[[name]]
             if(!is.logical(r)) r=as.character(r[r %in% rownames(databook[[rgsheets[name]]]$vals)])
             if(!is.logical(c)) c=as.character(c[c %in%  colnames(databook[[rgsheets[name]]]$vals)])    
-            list(vals=databook[[rgsheets[name]]]$vals[r,c, drop=F],
-                 styles=databook[[rgsheets[name]]]$styles[r,c, drop=F])
+            list(vals=databook[[rgsheets[name]]]$vals[r,c, drop=FALSE],
+                 styles=databook[[rgsheets[name]]]$styles[r,c, drop=FALSE])
         })
 
     names(rangebook)=uranges.dirty    
@@ -417,21 +438,44 @@ read.xlx= function(
         databook =  if(are(usheets)) c(databook, rangebook) else rangebook
     rm(rangebook) #cleanup
 
+    ## Skip lines and get headers 
+    ## ------------------------------------------------------
+    s=names(databook)
+    databook=lapply(seq_along(databook), function(i) {
+        
+        item=databook[[i]]
+        if(skip>0){
+            x=ifelse((item$header && skipafter), 1, 0)
+            item$vals  =  item$vals[-(1:skip + x),, drop=FALSE]
+            item$styles=item$styles[-(1:skip + x),, drop=FALSE]
+        }
+        
+        ## Store header values as an attr of value DF s       
+        if(item$header && nrow(item$vals)>1) {
+            attr(item$vals, 'header')= item$vals[1,]
+            item$vals=    item$vals[-1,, drop=FALSE]
+            item$styles=item$styles[-1,, drop=FALSE]
+        }
+        
+        ## Return NULL if no rows are available 
+        if(nrow(item$vals)==0) NULL else item 
+    })
+    names(databook)=s
 
-    
+    ## Delete empty books and possibly return
+    databook=databook[!sapply(databook, is.null)]
+    if(length(databook)==0) return(d(NULL))
+        
     ## Apply prevalent column style to each item (sheet/range)
     ## ------------------------------------------------------
     message("Identifying and applying prevailing styles\n")
     s=names(databook)
     databook=lapply(seq_along(databook), function(i) {
 
-        item=databook[[i]]
-
-        ## Store header values as an attr of value DF s       
-        if(item$header && nrow(item$vals)>1) attr(item$vals, 'header')= item$vals[1,]
-
-        ## Get prevailing styles in each item column excluding headers
-        item$styles <- sapply(headcut(item$styles, item$header), function(x) {
+        item=databook[[i]]        
+        
+        ## Get prevailing styles in each item column  
+        item$styles = sapply(item$styles, function(x) {
             out <- names(which.max(table(x)))
             out[is.null(out)] <- NA
             out
@@ -459,7 +503,8 @@ read.xlx= function(
 
 
         ## Apply styles, but not to possible headers
-        x=headcut(item$vals, item$header)
+###   x=headcut(item$vals, item$header)
+        x=item$vals
         x[] <- lapply(seq_along(x), function(i) {
             switch(item$styles[i],
                    character = x[,i],
@@ -488,7 +533,11 @@ read.xlx= function(
         na=is.na(item)
         r=apply(na, 1, all)
         c=apply(na, 2, all)
-        subattr(item,!r, !c)  
+        attr(item, "header")  = attr(item, "header" )[!c] 
+        item=subattr(item,!r, !c)
+        
+        ## Return NULL if no cols are available
+        if(ncol(item)==0) NULL else item
     }) else { #Restore blank lines dropped by Excel
         addlines=function(l, col,item){
             first=ifelse(is.null(uranges), 1, l[1])
@@ -507,13 +556,17 @@ read.xlx= function(
         }
         
       databook=lapply(databook, function(item){
-          item=addlines(l=rownames(item), col=F, item)
-          item=addlines(l=colnames(item), col=T, item)
-          subattr(item,T,T)
+          item=addlines(l=rownames(item), col=FALSE, item)
+          item=addlines(l=colnames(item), col=TRUE, item)
+          subattr(item,TRUE,TRUE)
       })
     }
-    
-    
+
+    ## Delete empty books and possibly return
+    databook=databook[!sapply(databook, is.null)]
+    if(length(databook)==0) return(d(NULL))
+
+
     ## If header, make DF colnames equal to 'header' attribute 
     databook=lapply(databook, function(item){
         if(are(attr(item, 'header'))) colnames(item)=attr(item, 'header')
@@ -529,7 +582,7 @@ read.xlx= function(
               setNames(lapply(1:x, function(x) data.frame()), nam))
     
 
-    ## In case of range names like sheet names this will not work
+    ## In case of range names like sheet names this will not work !!!!!!!!!
     nam=uranges[! uranges %in% names(databook)] # r-sheets not in databook
     x=length(nam)
     if(x) databook=c(databook,
@@ -549,7 +602,7 @@ read.xlx= function(
            
     ## Unembed from list if single
     if(length(databook) == 1 && simplify)  databook <- databook[[1]]
-    unlink(tdir, recursiv=T)
+    unlink(tdir, recursiv=TRUE)
     databook
     
 }
