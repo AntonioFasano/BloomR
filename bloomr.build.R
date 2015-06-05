@@ -339,6 +339,7 @@ bloomrTree=function(ndown){
     ## Download manuals
     message("\nDownloading BloomR help resources")
     download.git("README.html", "bloomR/README.html", ,ndown)
+    download.git("LICENSE", "bloomR/LICENSE.txt", ,ndown)
     makeDir(makePath(G.work, "bloomR/help"), "BloomR help directory:")    
     download.git("bloomr.html", "bloomR/help/bloomr.html", ,ndown) 
     download.git("bloomr.pdf", "bloomR/help/bloomr.pdf", ,ndown)
