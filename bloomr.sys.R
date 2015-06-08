@@ -96,22 +96,80 @@ br.getPandoc=function(){
     require(RCurl)
 
     ## Pandoc variables 
-    panurl="https://github.com/jgm/pandoc/releases/latest"
-    pansize=100   # min space in mega
-    pandir=R.home("pandoc")
-    paninst=paste0(pandir, "/pandocSetup.exe")
-    panbin=paste0(pandir, "/bin/pandoc.exe")
+    panurl = "https://github.com/jgm/pandoc/releases"
+    pansize = 100
+    pandir = R.home("pandoc")
+    paninst = paste0(pandir, "/pandocSetup.exe")
+    panbin = paste0(pandir, "/bin/pandoc.exe")
 
     ## Check connection
-    if(!is.character(getURL("www.google.com")))
+    if (!is.character(getURL("www.google.com"))) 
         stop("It seems you have no internet connection")
 
     ## Check space
-    xx=paste("cmd /c dir", shQuote(R.home()), "/-c")
-    x=rev(strsplit(rev(system(xx, intern=TRUE))[1], " ")[[1]])[3]
-    x=as.numeric(x)    
-    if(x/1000^2 < pansize)  stop("Not enough space on your drive")
-    
+    xx = paste("cmd /c dir", shQuote(R.home()), "/-c")
+    x = rev(strsplit(rev(system(xx, intern = TRUE))[1], " ")[[1]])[3]
+    x = as.numeric(x)
+    if (x/1000^2 < pansize) 
+        stop("Not enough space on your drive")
+
+
+    ## Get download link
+    x = getURL(panurl, ssl.verifypeer = FALSE)
+    lnks = xpathSApply(htmlTreeParse(x, useInternalNodes = TRUE), 
+        "//a", xmlGetAttr, "href")
+    lrel =grep("pandoc-[.0-9]+-windows.msi$", lnks, ignore.case=TRUE, value=TRUE)[1] 
+    if (!nzchar(lrel)) 
+        stop("I can't find a parsable Pandoc download.") 
+
+    panlnk = paste0("https://github.com", lrel)
+
+    ## "Forbidden" status message is expected for binaries from url.exists().
+    ## A bad value would be " "Not Found"  
+    if(url.exists(panlnk, ssl.verifypeer = FALSE, .header=TRUE)['statusMessage'] !=  "Forbidden")
+        stop("Unable to download\n", panlnk) 
+
+    ## Create Pandoc dir
+    if (file.exists(pandir)) 
+        unlink(pandir, recursive = TRUE, force = TRUE)
+    if (file.exists(pandir)) 
+        stop(paste("Unable to unlink\n", pandir, "\nPlease, exit BloomR and try again."))
+    dir.create(pandir)
+
+    ## Start download
+    message("Downloading ", panlnk)
+    if (!download.bin(panlnk, paninst)$succ) {
+        stop("An error occured while downloading Pandoc")
+    }
+    else {
+        cmd = .br.wpath(paste0(pandir, "/temp"))
+        cmd = paste0("TARGETDIR=", cmd)
+        cmd = paste("msiexec /qb /a", .br.wpath(paninst), cmd)
+        out <- system(cmd, intern = TRUE, invisible = FALSE)
+        file.rename(paste0(pandir, "/temp/pandoc"), paste0(pandir, 
+            "/bin"))
+        unlink(paste0(pandir, "/temp"), recursive = TRUE, force = TRUE)
+    }
+    if (!file.exists(panbin)) 
+        stop(paste("An error occurred while extracting\n", paninst, 
+            "\nPlease, exit BloomR and try again."))
+}
+
+
+.br.getPandoc.release=function(){
+## Returns a vector with:
+## the latest Pandoc release as a character and
+## TRUE if there is a Windows executable for that release.
+
+    require(XML)
+    require(RCurl)
+    panurl = "https://github.com/jgm/pandoc/releases/latest"
+
+    ## Check connection
+    if (!is.character(getURL("www.google.com"))) 
+        stop("It seems you have no internet connection")
+
+
     ## Get redirect last release link 
     x=getURL(panurl, ssl.verifypeer = FALSE)    
     panlnk=xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE), "//a",  xmlGetAttr, "href")
@@ -121,34 +179,12 @@ br.getPandoc=function(){
     x=getURL(panlnk, ssl.verifypeer = FALSE)
     lnks = xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE), "//a",  xmlGetAttr, "href")
     panlnk=grep(paste0(lrel, '-windows'), lnks, value=TRUE)
-    panlnk=paste0("https://github.com", panlnk)    
-    if(!nzchar(panlnk))  stop("I can't find a parsable Pandoc download")
 
-    ## Create Pandoc dir
-    if(file.exists(pandir))
-        unlink(pandir, recursive = TRUE, force = TRUE)
-    if(file.exists(pandir))
-        stop(paste("Unable to unlink\n", pandir, "\nPlease, exit BloomR and try again."))
-    dir.create(pandir)
+    ## Return version and if win exe 
+    winexe=ifelse(length(panlnk)==0, FALSE, TRUE)
+    c(lrel, winexe)
 
-    ## Start download
-    message("Downloading ", panlnk)
-    if(!download.bin(panlnk, paninst)$succ){
-        stop("An error occured while downloading Pandoc")
-    } else {
-        cmd=.br.wpath(paste0(pandir, '/temp'))   
-        cmd=paste0("TARGETDIR=", cmd)
-        cmd=paste("msiexec /qb /a", .br.wpath(paninst), cmd)
-        out  <-  system(cmd, intern = TRUE, invisible = FALSE)
-        file.rename(paste0(pandir, '/temp/pandoc'), paste0(pandir, '/bin'))
-        unlink(paste0(pandir, '/temp'), recursive = TRUE, force = TRUE)
-    }
-    
-    if(!file.exists(panbin))
-        stop(paste("An error occurred while extracting\n", paninst,
-                   "\nPlease, exit BloomR and try again."))
-}
-
+ }
 
 .br.getLatex.pack=function(pname, ipacks=NULL){
 ### Install a LaTeX Package, via  MiKTeX mpm --install
