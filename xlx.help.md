@@ -25,7 +25,8 @@ Synopsis
     
     read.xlx(
         file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL,
-	    skip=0, skipafter=FALSE, keepblanks=FALSE, allchars=FALSE, general='character',
+	    skip=0, skipafter=FALSE, keepblanks=FALSE,
+		general='numeric', morechar=FALSE, na.string="N.A.",
 	    simplify=TRUE, info=FALSE) 
 
 
@@ -53,11 +54,14 @@ skipafter
 keepblanks
 :   if TRUE do not import rows or columns having only empty cells.  
 
-allchars
-:   If FALSE do not infer cell style, but use always R character class.  
-
 general
-:   map Excel general format to 'character' or 'numeric'.  
+:   map Excel General format and other not directly managed formats to `character` or `numeric`.  
+
+morechar
+:   If FALSE do not use directly managed cell number formats, but use always R character class.  
+
+na.string
+:   character vector of strings to be interpreted as NA values during numeric conversions.  
 
 simplify
 :   remove enclosing list for a single item.
@@ -123,7 +127,7 @@ surv=read.xlx('survey.xlsx')
 ## Aggregating sheets
 ## Formatting sheet(s) as data frames
 ## Identifying and applying prevailing styles
-## $Survey1
+## |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
 ```
 
 Above you see some info about the workbook  being processed that we will not show anymore in the following.
@@ -322,7 +326,7 @@ surv
 
 ```
 ##   Young Old
-## 7    NA  20
+## 7  <NA>  20
 ## 8    30  40
 ```
 
@@ -356,7 +360,7 @@ Note: the first three lines are skipped. As a consequence of the skipping `Surve
 
 ```
 ##   Young Old
-## 7    NA  20
+## 7  <NA>  20
 ## 8    30  40
 ```
 
@@ -370,7 +374,7 @@ class(surv[,1])
 ```
 
 ```
-## [1] "numeric"
+## [1] "character"
 ```
 
 ```r
@@ -383,23 +387,44 @@ class(surv[,2])
 
 
 
-Details for the non causal user
+Details for the non-causal user
 -------------------------------
 
 Sheets are converted into data frame following other R `read.*` functions' behaviour, which means that the values of a column share a common type. Anyway in the same  Excel column  different cells can have different formats. Why loosing this information? It would have been possible to use a list object to model a sheet and so retain the differences, but most of the R statistic functions can effectively operate  when at least at column level the formats are the same.
 That being said, when in a column there are different cell formats the prevailing compatible styles,  will be applied to all. This will often involve the use of the R  "character" type, because it is always compatible with numeric formats too.  
 
-Given this, recognised Excel styles and their R equivalent are:
+Given this, recognised Excel styles and their R default equivalent are:
 
 * number, accounting, currency, fraction, scientific: converted to R numeric format
-* percent: converted to R numeric format, with "percent" attribute
+* percent: converted to R numeric format, with a column "percent" attribute
 * date: converted to R date or datetime format
 * time: converted to R time format
 * text: converted to R character format 
-* general: converted to R character format (unless otherwise asked)
+* general: converted to R number format if possible (unless otherwise asked)
 
 
-To see how this works in practice:
+To get more details about number format conversion read the following section.
+
+__Rules for conversion of Excel number format__
+
+In Excel the format categories are listed in the "Format Cells" menu under "Number" tab and they will be converted as follows.
+
+1 If the prevailing format in a column is Date/Time, in whatever (local) format, cells will be converted as an appropriate R date/time format; unless `morechar==TRUE`.
+
+2 If the prevailing format is text, cells will be stored as R character.
+
+3 If neither 1) nor 2) apply (e.g. prevails the Excel General format) the conversion depends on the argument `general`. If `general==character` they are stored as characters. If `general==number` (default) columns are converted to numeric format using the `na.string` character string argument, if this does not succeed, they are stored in character format.
+
+4 If the prevailing format is percentage, 3) applies, but the attribute "percent" will be added to resulting data frames in the form of a logical vector identifying columns originally displayed in percentage format.
+
+If `morechar==TRUE` and `general==character` everything will stored in character format.
+Note that for dates/times this means that the  Excel internal equivalent number will be stored as a string.
+
+If prevailing values are incompatible with some cells,  NA will applied and warnings will be displayed. 
+
+Note that a single cell which is not a number and is not a string `na.string` will prevent its column to be converted as a numeric column. This may change in the future.
+
+__See how this works in practice__
 
 
 ```r

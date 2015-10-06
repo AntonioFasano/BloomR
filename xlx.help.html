@@ -80,7 +80,8 @@ img {
 <h1>Synopsis</h1>
 <pre><code>read.xlx(
     file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL,
-    skip=0, skipafter=FALSE, keepblanks=FALSE, allchars=FALSE, general='character',
+    skip=0, skipafter=FALSE, keepblanks=FALSE,
+    general='numeric', morechar=FALSE, na.string=&quot;N.A.&quot;,
     simplify=TRUE, info=FALSE) </code></pre>
 <dl>
 <dt>file</dt>
@@ -107,11 +108,14 @@ img {
 <dt>keepblanks</dt>
 <dd>if TRUE do not import rows or columns having only empty cells.
 </dd>
-<dt>allchars</dt>
-<dd>If FALSE do not infer cell style, but use always R character class.
-</dd>
 <dt>general</dt>
-<dd>map Excel general format to ‘character’ or ‘numeric’.
+<dd>map Excel General format and other not directly managed formats to <code>character</code> or <code>numeric</code>.
+</dd>
+<dt>morechar</dt>
+<dd>If FALSE do not use directly managed cell number formats, but use always R character class.
+</dd>
+<dt>na.string</dt>
+<dd>character vector of strings to be interpreted as NA values during numeric conversions.
 </dd>
 <dt>simplify</dt>
 <dd>remove enclosing list for a single item.
@@ -237,7 +241,7 @@ img {
 <pre class="r"><code>surv= read.xlx('survey.xlsx', ranges='education', header.ranges=TRUE)</code></pre>
 <pre class="r"><code>surv</code></pre>
 <pre><code>##   Young Old
-## 7    NA  20
+## 7  &lt;NA&gt;  20
 ## 8    30  40</code></pre>
 </div>
 <div id="skip-an-arbitrary-number-of-initial-rows" class="section level2">
@@ -251,28 +255,38 @@ img {
 <p>Note: the first three lines are skipped. As a consequence of the skipping <code>Survey2</code> sheet results in an empty output, so only <code>Survey1</code> sheet is returned as a single data.frame.</p>
 <pre class="r"><code>(surv=read.xlx('survey.xlsx', header.sheets=TRUE, skip=3, skipafter=FALSE))</code></pre>
 <pre><code>##   Young Old
-## 7    NA  20
+## 7  &lt;NA&gt;  20
 ## 8    30  40</code></pre>
 <p>Here we see the effect of <code>skipafter=FALSE</code> when <code>header.sheets=TRUE</code>. That is the first three lines are cut out, like before, and the 3+1 row is taken as header.</p>
 <p>Separating the headers, the data.frame content can all be interpreted in terms of numbers. And also the NA is properly mapped as missing value.</p>
 <pre class="r"><code>class(surv[,1])</code></pre>
-<pre><code>## [1] &quot;numeric&quot;</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
 <pre class="r"><code>class(surv[,2])</code></pre>
 <pre><code>## [1] &quot;numeric&quot;</code></pre>
 </div>
 <div id="details-for-the-non-causal-user" class="section level2">
-<h2>Details for the non causal user</h2>
+<h2>Details for the non-causal user</h2>
 <p>Sheets are converted into data frame following other R <code>read.*</code> functions’ behaviour, which means that the values of a column share a common type. Anyway in the same Excel column different cells can have different formats. Why loosing this information? It would have been possible to use a list object to model a sheet and so retain the differences, but most of the R statistic functions can effectively operate when at least at column level the formats are the same. That being said, when in a column there are different cell formats the prevailing compatible styles, will be applied to all. This will often involve the use of the R “character” type, because it is always compatible with numeric formats too.</p>
-<p>Given this, recognised Excel styles and their R equivalent are:</p>
+<p>Given this, recognised Excel styles and their R default equivalent are:</p>
 <ul>
 <li>number, accounting, currency, fraction, scientific: converted to R numeric format</li>
-<li>percent: converted to R numeric format, with “percent” attribute</li>
+<li>percent: converted to R numeric format, with a column “percent” attribute</li>
 <li>date: converted to R date or datetime format</li>
 <li>time: converted to R time format</li>
 <li>text: converted to R character format</li>
-<li>general: converted to R character format (unless otherwise asked)</li>
+<li>general: converted to R number format if possible (unless otherwise asked)</li>
 </ul>
-<p>To see how this works in practice:</p>
+<p>To get more details about number format conversion read the following section.</p>
+<p><strong>Rules for conversion of Excel number format</strong></p>
+<p>In Excel the format categories are listed in the “Format Cells” menu under “Number” tab and they will be converted as follows.</p>
+<p>1 If the prevailing format in a column is Date/Time, in whatever (local) format, cells will be converted as an appropriate R date/time format; unless <code>morechar==TRUE</code>.</p>
+<p>2 If the prevailing format is text, cells will be stored as R character.</p>
+<p>3 If neither 1) nor 2) apply (e.g. prevails the Excel General format) the conversion depends on the argument <code>general</code>. If <code>general==character</code> they are stored as characters. If <code>general==number</code> (default) columns are converted to numeric format using the <code>na.string</code> character string argument, if this does not succeed, they are stored in character format.</p>
+<p>4 If the prevailing format is percentage, 3) applies, but the attribute “percent” will be added to resulting data frames in the form of a logical vector identifying columns originally displayed in percentage format.</p>
+<p>If <code>morechar==TRUE</code> and <code>general==character</code> everything will stored in character format. Note that for dates/times this means that the Excel internal equivalent number will be stored as a string.</p>
+<p>If prevailing values are incompatible with some cells, NA will applied and warnings will be displayed.</p>
+<p>Note that a single cell which is not a number and is not a string <code>na.string</code> will prevent its column to be converted as a numeric column. This may change in the future.</p>
+<p><strong>See how this works in practice</strong></p>
 <pre class="r"><code>surv=read.xlx('survey.xlsx', &quot;survey2&quot;)</code></pre>
 <pre class="r"><code>surv</code></pre>
 <pre><code>##    1  3

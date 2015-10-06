@@ -1,16 +1,17 @@
 ### ToDo
 ##  Manage name conflicts between sheets and ranges and perhaps among ranges
+##  Set customs warning when prevailing style cannot be applied, advertising column position
 
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
 
 ## Credit where credit's due:
-## Schaun Wheeler xlsxToR, while less feature rich contains the relevant ideas
+## Schaun Wheeler xlsxToR, while less feature rich, contains the relevant ideas
 
 
 read.xlx= function(
     file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL, skip=0, skipafter=FALSE,
-    keepblanks=FALSE, allchars=FALSE, general='character', simplify=TRUE, info=FALSE) {
+    keepblanks=FALSE, general='numeric', morechar=FALSE, na.string="N.A.", simplify=TRUE, info=FALSE) {
 
     
     ## Needed libs and stop on errors
@@ -103,7 +104,7 @@ read.xlx= function(
     ## ---------------
     
     ## Test logical arguments
-    x="header.sheets header.ranges skipafter keepblanks allchars simplify info"
+    x="header.sheets header.ranges skipafter keepblanks morechar simplify info"
     x=strsplit(x, " ")[[1]]
     x=x[nzchar(x)]
     lapply(x, function(var){
@@ -141,7 +142,8 @@ read.xlx= function(
     
     ## Extract xlsx in a tmp dir
     tdir= file.path(tempdir(), "uzipx")
-    dir.create(tdir, recursiv=TRUE)
+    unlink(tdir, recursive=TRUE)
+    dir.create(tdir, recursive=TRUE)
     file.copy(file, tdir)
     xlsx=file.path(tdir, basename(file))
     unzip(xlsx, exdir = tdir)
@@ -488,16 +490,24 @@ read.xlx= function(
 
         ## Styles relevant to us:
         x=item$styles
-        x[x %in% 9] <- "percent"
+        percent = x %in% 9
+        x[x %in% 49] <- "text"
         x[x %in% 14:17] <- "date"
         x[x %in% c(18:21, 45:47)] <- "time"
         x[x %in% 22] <- "datetime"
-        x[is.na(x) & !sapply(item$vals, function(x)any(grepl("\\D", x)))] <- "numeric"
-        x[is.na(x)] <- general
-        x[!(x %in% c("percent", "date", "time", "datetime", "numeric"))] <- "character"
 
+        ## If item$styles is not text or date/time, follow conversion rule set by arg "general"
+        x[!(x %in% c("date", "time", "datetime", "text"))]  <- "character"
+        if(general=="numeric") # Try number based on na.string
+            x[!(x %in% c("date", "time", "datetime", "text")) & sapply(item$vals, function(col)
+                !anyNA(suppressWarnings(as.numeric(
+                    Reduce(function(x, na.string) x[x!=na.string], na.string, col)))))] <- "numeric"
+
+        x[ x == "text"]  <- "character"
+
+        
         ## Allchars exluding possible different general cells
-        if(allchars)  x[!(x %in% general)] <- "character"        
+        if(morechar)  x[!(x %in% general)] <- "character"        
 
         item$styles=x
 
@@ -508,8 +518,7 @@ read.xlx= function(
         x[] <- lapply(seq_along(x), function(i) {
             switch(item$styles[i],
                    character = x[,i],
-                   numeric = as.numeric(x[,i]),
-                   percent= x[,i], 
+                   numeric = suppressWarnings(as.numeric(x[,i])),
                    date = as.Date(as.numeric(x[,i]), origin = os_origin),
                    time = strftime(as.POSIXct(as.numeric(x[,i]),
                        origin = os_origin), format = "%H:%M:%S"),
@@ -517,7 +526,7 @@ read.xlx= function(
         })
 
         ## Store percent attributes as an attribute
-        attr(x, "percent")= item$styles %in% "percent"
+        attr(x, "percent")= percent
         x
 
     })   #end of style apply----
@@ -602,7 +611,7 @@ read.xlx= function(
            
     ## Unembed from list if single
     if(length(databook) == 1 && simplify)  databook <- databook[[1]]
-    unlink(tdir, recursiv=TRUE)
+    unlink(tdir, recursive=TRUE)
     databook
     
 }

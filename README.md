@@ -57,7 +57,7 @@ BloomR itself is open source and it is based on the public API released by  Bloo
 What's new
 ----------
 
-### BloomR Turandot (1.3.3)
+### BloomR Turandot (1.3.*)
 
 Improvements over Début version:
 
