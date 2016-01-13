@@ -55,7 +55,7 @@ keepblanks
 :   if TRUE do not import rows or columns having only empty cells.  
 
 general
-:   map Excel General format and other not directly managed formats to `character` or `numeric`.  
+:   maps Excel General format and other not directly managed formats to `character` or `numeric`.  
 
 morechar
 :   If FALSE do not use directly managed cell number formats, but use always R character class.  

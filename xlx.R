@@ -10,7 +10,7 @@
 
 
 read.xlx= function(
-    file, sheets=NULL, header.sheets=FALSE, header.ranges=FALSE, ranges=NULL, skip=0, skipafter=FALSE,
+    file, sheets=NULL, header.sheets=TRUE, header.ranges=FALSE, ranges=NULL, skip=0, skipafter=FALSE,
     keepblanks=FALSE, general='numeric', morechar=FALSE, na.string="N.A.", simplify=TRUE, info=FALSE) {
 
     
@@ -500,8 +500,7 @@ read.xlx= function(
         x[!(x %in% c("date", "time", "datetime", "text"))]  <- "character"
         if(general=="numeric") # Try number based on na.string
             x[!(x %in% c("date", "time", "datetime", "text")) & sapply(item$vals, function(col)
-                !anyNA(suppressWarnings(as.numeric(
-                    Reduce(function(x, na.string) x[x!=na.string], na.string, col)))))] <- "numeric"
+                !anyNA(suppressWarnings(as.numeric(col[!is.na(col) & col!=na.string]))))] <- "numeric"
 
         x[ x == "text"]  <- "character"
 
