@@ -11,7 +11,7 @@
 
 read.xlx= function(
     file, sheets=NULL, header.sheets=TRUE, header.ranges=FALSE, ranges=NULL, skip=0, skipafter=FALSE,
-    keepblanks=FALSE, general='numeric', morechar=FALSE, na.string="N.A.", simplify=TRUE, info=FALSE) {
+    keepblanks=FALSE, general="numeric", morechar=FALSE, na.string="N.A.", simplify=TRUE, info=FALSE) {
 
     
     ## Needed libs and stop on errors
@@ -278,17 +278,21 @@ read.xlx= function(
     actsheets= actsheets[actsheets$name %in% x,]  
      
     ## Process shared strings & refs
-    ## ------------------------------
-
+    ## ------------------------------    
     ## Replace cell string IDs with their actual values
+    strings= NULL; spos= NULL 
     if(file.exists(file.path(tdir, "xl/sharedStrings.xml"))){
         strings= xmlParse(file.path(tdir, "xl/sharedStrings.xml"))
         strings= xpathSApply(strings, "//x:si", namespaces = "x", xmlValue)
+    }
+    ## Note: /sharedStrings.xml is absent for books who never had strings,
+    ## but is not removed when a book with strings is edited to a number-only book, but    
+    if(length(strings)!=0){
         names(strings)=seq_along(strings) - 1 #xls IDs zero based
         spos=cellstack$t == "s" & !is.na(cellstack$t)
-        cellstack$v[spos] =strings[match(cellstack$v[spos], names(strings))]
-        rm(strings, spos)
+        cellstack$v[spos] =strings[match(cellstack$v[spos], names(strings))]       
     }
+    rm(strings, spos)
     ## Set 's' attribute as NA if col is  missing
     if (all("s"!=colnames(cellstack))) cellstack$s <- NA
 
