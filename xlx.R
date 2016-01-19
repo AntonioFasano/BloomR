@@ -11,7 +11,8 @@
 
 read.xlx= function(
     file, sheets=NULL, header.sheets=TRUE, header.ranges=FALSE, ranges=NULL, skip=0, skipafter=FALSE,
-    keepblanks=FALSE, general="numeric", morechar=FALSE, na.string="N.A.", simplify=TRUE, info=FALSE) {
+    keepblanks=FALSE, general="numeric", morechar=FALSE, na.string="N.A.", time2str=FALSE,
+    simplify=TRUE, info=FALSE) {
 
     
     ## Needed libs and stop on errors
@@ -92,6 +93,43 @@ read.xlx= function(
 
 
 
+    ## XL time is expressed as days since a set origin. So time is a fraction of the day, e.g.:
+    ## 1 sec is 1/(60*60*24)       
+
+    ## Manual Convert XL Time to R "HH:MM:SS.dec" string 
+    dtconv.str=function(xl){
+ 
+        k=86400        # 60*60*24        
+        S=xl*k         # Total secs
+        M=round(S)%/%60       # Total minutes       
+        ss=S%%60       
+        mm=M%%60        
+        hh=M%/%60
+        sprintf("%02d:%02d:%s", hh, mm, 
+               formatC(ss, width=8, format = "f", digits = 5,  flag="0", drop0trailing = T))
+    }
+    
+    ## Convert XL Date serial (w/out time) to R Date class  
+    dtconv.date=function(xl) as.Date(as.numeric(xl), origin = os_origin)
+
+
+    ## Convert XL Time/DateTime serial to R as POSIXct UTC, based on os_origin
+    dtconv.dt=function(xl){
+        as.POSIXct(as.numeric(xl)*86400, origin=os_origin, tz='UTC') # 86400=60*60*24        
+    }
+           
+    ## Convert XL Time to R "HH:MM:SS.dec" string if required
+    dtconv.str=function(d)
+        sprintf("%02d:%02d:%s", d[3], d[2],
+                formatC(d[1], width=8, format = "f", digits = 5,  flag="0", drop0trailing = T))
+    dtconv.t=function(xl){
+        xl=dtconv.dt(xl)  
+        if(!time2str) return(xl)
+        xl=as.POSIXlt(xl)
+        apply(as.data.frame(lapply(xl, "[")), 1, dtconv.str) 
+    } 
+        
+    
     ## Check libs
     ## -----------
     x=sapply(seq(1,length(packs), 2), function(i)
@@ -215,7 +253,7 @@ read.xlx= function(
     
     ## Extract sheet data
     ## -------------------
-
+    
     ## Convert sheet names in paths
     worksheet_paths=sapply(actsheets$id, function(x) list.files(
         paste0(tdir, "/xl/worksheets"),
@@ -364,7 +402,7 @@ read.xlx= function(
         list(vals=sheet.vals, styles=sheet.styles)
     })   
     databook=setNames(databook, actsheets$name)
-
+    
     ## Extract named ranges
     ## --------------------
     if(are(uranges)){
@@ -522,10 +560,10 @@ read.xlx= function(
             switch(item$styles[i],
                    character = x[,i],
                    numeric = suppressWarnings(as.numeric(x[,i])),
-                   date = as.Date(as.numeric(x[,i]), origin = os_origin),
-                   time = strftime(as.POSIXct(as.numeric(x[,i]),
-                       origin = os_origin), format = "%H:%M:%S"),
-                   datetime = as.POSIXct(as.numeric(x[,i]), origin = os_origin))
+                   date = dtconv.date(x[,i]),    # as.Date(as.numeric(x[,i]), origin = os_origin),
+                   time = dtconv.t(x[,i]),
+                     #strftime(as.POSIXct(as.numeric(x[,i]), origin = os_origin), format = "%H:%M:%S"),
+                   datetime = dtconv.dt(x[,i])) # as.POSIXct(as.numeric(x[,i]), origin = os_origin))
         })
 
         ## Store percent attributes as an attribute
