@@ -39,7 +39,7 @@ G.javaurl.bit="windows-amd64-image.zip"
 G.javazip='openjdk'
 
 ## Bloomberg API for icedtea 
-G.apiurl="http://cdn.gotraffic.net/open/blpapi_java_3.7.1.1.zip"
+G.apiurl="https://bloomberg.bintray.com/BLPAPI-Stable-Generic/blpapi_java_3.8.8.2.zip"
 G.apizip="blpapi_java"
 
 ## Rbbg win32         
@@ -488,8 +488,8 @@ makeZip=function(ask){
 ### First SF project item matching regex filter (url made from prj name)
 sfFirstbyProject=function (project, filtx, quiet=FALSE){
     if(!quiet) cat('Searching last', project, 'version on SF.net\n')
-    url=paste0("http://sourceforge.net/projects/", project, "/files/")
-    ref="http://sourceforge.net"    
+    url=paste0("https://sourceforge.net/projects/", project, "/files/")
+    ref="https://sourceforge.net"    
     page=download.html(url)    
     url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
         "//a[@class='name']",  xmlGetAttr, "href")
@@ -501,7 +501,7 @@ sfFirstbyProject=function (project, filtx, quiet=FALSE){
 ### First SF url item matching regex filter (url given from prj name)
 sfFirstbyUrl=function (url, versionx, quiet=FALSE){
     if(!quiet) cat('Searching for version ', versionx, ' on\n', url, '\n')
-    ref="http://sourceforge.net"
+    ref="https://sourceforge.net"
     if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
     page=download.html(url)    
     url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
