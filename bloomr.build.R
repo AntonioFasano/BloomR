@@ -3,7 +3,7 @@
 ###  Candidate to release. 
 
 ##   TODO
-##   
+##   Consider set url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile) as default
 
 ##  Requirements:
 ##  XML and Rcurl packages. If missing it will tray to download and install them.
@@ -554,7 +554,7 @@ javaurl.ver=function(url){
 rbbgurl.ver=function(){
     url=G.rbbgurl
     cat("Parsing page:\n", url, ' ...\n')
-    if(!url.exists(url)) stop("Unable to open rbbg page:\n", url)
+    if(!url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile)) stop("Unable to open rbbg page:\n", url)
     href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
     href=grep("^[[:digit:]]\\.[[:digit:]]", href, value=TRUE)
     url=paste0(url, href[length(href)])
@@ -607,7 +607,7 @@ download.nice=function(from, to, overwrite, ndown, desc="", cert=FALSE){
 ### Download html page with simple progress and stop on error
 download.html=function(url, refr=NULL){
     
-    if(!url.exists(url)) stop('\nCan\'t find page\n', url)
+    if(!url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile)) stop('\nCan\'t find page\n', url)
     ret=getURL(url, referer=refr, noprogress=FALSE, progressfunction=
            function(down,up) cat("\rBytes:", down[2]))
     cat("\n")
