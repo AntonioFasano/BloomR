@@ -3,7 +3,7 @@
 ###  Candidate to release. 
 
 ##   TODO
-##   Consider set url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile) as default
+##   
 
 ##  Requirements:
 ##  XML and Rcurl packages. If missing it will tray to download and install them.
@@ -170,7 +170,7 @@ downloads=function(tight, ndown){
         
     ## Get certificates from curl site
     download.nice(G.certurl, 'cacert.pem', overwrite, ndown,
-                  "Curl Certificates")
+                  "Curl Certificates", cert=FALSE)
 
     ## peazip
     cback=function(){
@@ -215,7 +215,7 @@ downloads=function(tight, ndown){
 
     ## Openjdk
     download.nice(javaurl.ver, G.javazip, overwrite, ndown,
-                  "Java files", cert=TRUE)
+                  "Java files")
 
     ## Bloomberg API
     download.nice(G.apiurl, G.apizip, overwrite, ndown,
@@ -542,9 +542,9 @@ cran.geturl=function(pack){
 javaurl.ver=function(url){
     url=G.javaurl
     cat("Parsing page:\n", url, ' ...\n')
-    if(!url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile))
+    if(!url.exists.cert(url, cert=TRUE))
         stop("Unable to open java download page:\n", url)       
-    href=getURL(url, ssl.verifypeer=FALSE, cainfo=G.certfile)   
+    href=getURL(url, ssl.verifypeer=TRUE, cainfo=G.certfile)   
     href=xpathSApply(htmlTreeParse(href, useInternalNodes=TRUE),
         "//a[@class='execute']", xmlGetAttr, "href")
     href=grep(paste0(G.javaurl.bit, "$"), href, value=TRUE)[1]
@@ -554,7 +554,7 @@ javaurl.ver=function(url){
 rbbgurl.ver=function(){
     url=G.rbbgurl
     cat("Parsing page:\n", url, ' ...\n')
-    if(!url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile)) stop("Unable to open rbbg page:\n", url)
+    if(!url.exists.cert(url, cert=TRUE)) stop("Unable to open rbbg page:\n", url)
     href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
     href=grep("^[[:digit:]]\\.[[:digit:]]", href, value=TRUE)
     url=paste0(url, href[length(href)])
@@ -568,8 +568,17 @@ rbbgurl.ver=function(){
 
 ###== Donwload helpers ==
 
+### Verify url exists using G.certfile certificate
+url.exists.cert=function(url, cert=TRUE){
+    ## cert=TRUE implies an exisiting pem G.certfile
+    
+    if(cert==FALSE) return(url.exists(url, ssl.verifypeer=FALSE))
+    if(!file.exists(G.certfile)) stop('\nCan\'t find certificate\n', G.certfile)
+    return(url.exists(url, ssl.verifypeer=TRUE, cainfo=G.certfile))
+}
+
 ### Nice user info and overwrite managements for downloads 
-download.nice=function(from, to, overwrite, ndown, desc="", cert=FALSE){
+download.nice=function(from, to, overwrite, ndown, desc="", cert=TRUE){
 
     if(desc=="") desc=sub('.+/', '', to)
     to=makePath(G.work, to)
@@ -586,7 +595,7 @@ download.nice=function(from, to, overwrite, ndown, desc="", cert=FALSE){
     ## Execute from callback 
     if(is.function(from)) from=from()
     message("from:\n", from)
-    cert= if(cert != FALSE) G.certfile else  NULL
+    cert= if(cert) G.certfile else NULL
 
     ## Download ndown times and exit deleting file on errors
     for(i in 1:ndown)
@@ -605,11 +614,13 @@ download.nice=function(from, to, overwrite, ndown, desc="", cert=FALSE){
 }
 
 ### Download html page with simple progress and stop on error
-download.html=function(url, refr=NULL){
+download.html=function(url, refr=NULL, cert=TRUE){
     
-    if(!url.exists(url, ssl.verifypeer=FALSE, cainfo=G.certfile)) stop('\nCan\'t find page\n', url)
-    ret=getURL(url, referer=refr, noprogress=FALSE, progressfunction=
-           function(down,up) cat("\rBytes:", down[2]))
+    if(!url.exists.cert(url, cert)) stop('\nCan\'t find page\n', url)
+    cert= if(cert) G.certfile else NULL    
+    ret=getURL(url, referer=refr, noprogress=FALSE,
+               ssl.verifypeer=!is.null(cert), cainfo=cert,
+               progressfunction=function(down,up) cat("\rBytes:", down[2]))
     cat("\n")
     ret
 }
@@ -675,10 +686,10 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
         return(dcur)
     }
 
-    ## Start download 
+    ## Start download
     succ=tryCatch(
         curlPerform(url=url, .opts=opt, curl=curl, writedata=f@ref,
-                    ssl.verifypeer=FALSE, cainfo=cert,
+                    ssl.verifypeer=!is.null(cert), cainfo=cert,
                     progressfunction=function(down,up)
                         dcur<<-dProgress(down, up, dcur, width),
                     noprogress=FALSE, headerfunction = headers$update),
