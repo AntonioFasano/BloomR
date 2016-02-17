@@ -633,7 +633,7 @@ download.git=function(file, to, overwrite=TRUE, ndown, desc=""){
     ## remote git
     if(!nzchar(G.github.local)) {
         from=makePath(G.github, file)
-        download.nice(from, to, overwrite=TRUE, ndown, desc, G.certfile)
+        download.nice(from, to, overwrite=TRUE, ndown, desc)
         
     ## local git
     } else {
