@@ -33,7 +33,11 @@ Download historical Bloomberg data
 
 Usage
 -----
-    br.bulk.desc(con, tiks) 
+    br.bdh(con, securities, fields="PX_LAST", start.date, end.date = NULL,
+    option.names = NULL, option.values = NULL,
+    always.display.tickers = FALSE, dates.as.row.names = (length(securities) == 1),
+    include.non.trading.days = NULL
+    ) 
 
 Arguments
 ---------
@@ -262,20 +266,76 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 
 ```
 ## Processing Financial ...
+```
+
+```
+## 
+## Attaching package: 'zoo'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+```
+
+```
 ## Loading 3988 HK Equity
+```
+
+```
 ## Loading C US Equity
+```
+
+```
 ## Loading 601288 CH Equity
+```
+
+```
 ## Loading BAC US Equity
+```
+
+```
 ## Loading HSBA LN Equity
+```
+
+```
 ## Processing Technology ...
+```
+
+```
 ## Loading QCOM US Equity
+```
+
+```
 ## Loading CSCO US Equity
+```
+
+```
 ## Loading 700 HK Equity
+```
+
+```
 ## Loading IBM US Equity
+```
+
+```
 ## Loading INTC US Equity
+```
+
+```
 ## Processing Indices ...
+```
+
+```
 ## Loading DJI Index
+```
+
+```
 ## Loading DJUSFN Index
+```
+
+```
 ## Loading W1TEC Index
 ```
 
@@ -291,28 +351,27 @@ data
 
 ```
 ## $Financial
-##            3988 HK  C US 601288 CH BAC US HSBA LN
-## 2015-05-27   9.963 9.754     8.757     NA      NA
-## 2015-05-28      NA    NA     8.878  9.818  11.006
-## 2015-05-29      NA    NA    11.443     NA      NA
-## 2015-05-30  10.800 9.798        NA     NA   9.690
-## 2015-05-31  10.119    NA     8.546     NA      NA
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2016-04-07  11.086 10.397     8.259 11.042  11.542
+## 2016-04-08   9.047 10.229     9.840     NA  10.322
+## 2016-04-09   8.929     NA    11.765  9.889      NA
+## 2016-04-10  11.479     NA    11.390  8.349   9.575
+## 2016-04-11   9.085  9.003     9.555     NA   9.338
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2015-05-27      NA  10.627     NA  9.943      NA
-## 2015-05-28   9.009      NA     NA  8.344      NA
-## 2015-05-29  11.855  10.921 10.431  9.367      NA
-## 2015-05-30   9.825  10.634     NA 11.037   9.899
-## 2015-05-31      NA  11.756     NA     NA      NA
+## 2016-04-07   8.839      NA     NA     NA  10.218
+## 2016-04-08      NA      NA     NA     NA  10.677
+## 2016-04-09  10.024      NA     NA     NA  10.912
+## 2016-04-10   9.745  10.214  9.689  11.29   8.866
+## 2016-04-11      NA      NA 10.967     NA   9.366
 ## 
 ## $Indices
-##               DJI DJUSFN  W1TEC
-## 2015-05-27  8.895 10.820 10.045
-## 2015-05-28 10.081  8.973     NA
-## 2015-05-29     NA 10.119     NA
-## 2015-05-30 10.214 11.840     NA
-## 2015-05-31 10.099  9.438     NA
+##               DJI DJUSFN W1TEC
+## 2016-04-07     NA 10.502    NA
+## 2016-04-08  8.461     NA 9.976
+## 2016-04-09  9.974     NA 8.674
+## 2016-04-10 10.133     NA 9.884
 ```
 
 Note:
@@ -421,14 +480,41 @@ You can choose to import only some of the CSV groups
 
 ```
 ## Processing Financial ...
+```
+
+```
 ## Loading 3988 HK Equity
+```
+
+```
 ## Loading C US Equity
+```
+
+```
 ## Loading 601288 CH Equity
+```
+
+```
 ## Loading BAC US Equity
+```
+
+```
 ## Loading HSBA LN Equity
+```
+
+```
 ## Processing Indices ...
+```
+
+```
 ## Loading DJI Index
+```
+
+```
 ## Loading DJUSFN Index
+```
+
+```
 ## Loading W1TEC Index
 ```
 
@@ -613,14 +699,18 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ## Loading MSFT US Equity
+```
+
+```
 ## Loading AMZN US Equity
 ```
 
 ```
 ##            MSFT US AMZN US
-## 2015-05-27      NA   9.218
-## 2015-05-29  11.226      NA
-## 2015-05-30  10.000      NA
+## 2016-04-07  10.019   8.833
+## 2016-04-08  10.451   8.934
+## 2016-04-09  10.325   9.727
+## 2016-04-10      NA   9.506
 ```
 
 ```r

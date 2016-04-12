@@ -77,7 +77,11 @@ Download historical Bloomberg data
 
 Usage
 -----
-    br.bulk.desc(con, tiks) 
+    br.bdh(con, securities, fields="PX_LAST", start.date, end.date = NULL,
+    option.names = NULL, option.values = NULL,
+    always.display.tickers = FALSE, dates.as.row.names = (length(securities) == 1),
+    include.non.trading.days = NULL
+    ) 
 
 Arguments
 ---------
@@ -1272,7 +1276,7 @@ rm(store)
 ```
 
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
+knitr:::opts_chunk$set(tidy.opts=list(width.cutoff=60))
 knit2=function(file){
     require(knitr); require(rmarkdown)
     fse=tools:::file_path_sans_ext(file)
@@ -1285,7 +1289,7 @@ knit2=function(file){
     render(paste0(fse, '.md'), pdf_document())
     render("README.md", html_document())
 }
-knit2("bloomr.rmd")
+knit2("bloomr.Rmd")
  
 
 ## if with markdown lib, but topics needs rewrite
