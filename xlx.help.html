@@ -388,16 +388,28 @@ names(surv)</code></pre>
 <pre><code>## NULL</code></pre>
 </div>
 </div>
-<div id="date-oddities" class="section level2">
-<h2>Date Oddities</h2>
-<p>Let us assume that you the locale of you Excel is English UK.</p>
-<p>In cell A1 you enter the date <code>20/10/2000</code>. Now this is a legitimate date, because in Britain day comes before month and Excel recognise it as such. In fact if you right-click on cell and select Format-&gt;Number you will find that the category is “Date” and in the Locale drop down “English (U.K.)” is selected.</p>
-<p>Now let us write in cell A2 the date <code>10/20/2000</code>. You think you have written a date, but this is UK locale, so this is just an ordinary string. In fact in Format-&gt;Number you read that the category is “General”.</p>
-<p>You may be tempted to change the category to “Date” and select “English (U.S.)” in the Locale drop down, maybe you will also select a matching type in the Type list.</p>
-<p>Unfortunately this keeps being an invalid date cell. In fact, if you type <code>=YEAR(A1)</code> in cell B1, the formula extracts the year part of the date and gives 2000, while writing <code>=YEAR(A2)</code> gives <code>#VALUE!</code> to signaling the wrong date in cell A2.</p>
-<p>To understand things better select again Format-&gt;Number for cell A1, change Locale drop down set to “English (U.K.)” to “English (U.S.)”. You now see that the value of the displayed in the cell has automatically changed from <code>20/10/2000</code> to <code>10/20/2000</code>, and the formula <code>=YEAR(A1)</code> in B1 still correctly shows 2000.</p>
-<p>So a date should be entered always respecting the locale, after you can change the way it is displayed by changing the locale.</p>
-<p>How does read.xlx behave?</p>
+<div id="excel-date-oddities" class="section level2">
+<h2>Excel Date Oddities</h2>
+<p><strong>Automatic Date Parsing</strong></p>
+<p>Let us assume that the locale of your Excel is English UK.</p>
+<p>In cell A1 you enter the string <code>20/10/2000</code>. This is a legitimate date, because in British English day comes before month and, since Excel is set to UK locale, it will recognise it as such. In fact, if you right-click on the cell and select <code>Format-&gt;Number</code> you will find that its category is “Date” and in the <code>Locale</code> drop-down “English (U.K.)” is selected.</p>
+<p>Now let us write in cell A2 the string <code>10/20/2000</code>. Of course, this can’t be parsed as a British date, since there is no month matching “20”, while it would be OK in American English. It will be interpred therefore as a generic string. In fact, in <code>Format-&gt;Number</code> you read that the category is “General”.</p>
+<p>You may be tempted to change the category to “Date” and select “English (U.S.)” in the Locale drop-down, maybe you will also select a matching type in the Type list. Unfortunately, despite changing format, the cell keeps not being recognised as a proper date. In fact, if you type <code>=YEAR(A1)</code> in another cell, the formula correctly extracts the year part of the date and gives 2000, but writing <code>=YEAR(A2)</code> gives <code>#VALUE!</code>, which signals there is no date in cell A2.</p>
+<p>To understand things better, select again <code>Format-&gt;Number</code> for cell A1 and change Locale drop-down from the current “English (U.K.)” to “English (U.S.)”. You will see that the value displayed in the cell A1 automatically changes from <code>20/10/2000</code> to <code>10/20/2000</code>, also the formula <code>=YEAR(A1)</code> keeps working and correctly displays 2000.</p>
+<p>Summing up: <em>a date should be entered always respecting the locale</em>, after entering a proper date you can change the way it is displayed by changing the locale.</p>
+<p><strong>Bugs and Limitations</strong></p>
+<p>You cannot enter dates before 1/1/1900.</p>
+<p>Leap years are not only those divisible by 4. This is wrong since years ending with “00” are leap only if divisible by 400. Instead, Excel considers the non-existing date <code>29/2/1900</code> as a proper date in Excel. Some says this bug was added intentionally to keep compatibilty with Lotus 1-2-3.</p>
+<p>Using VBA one can overcome some limitaitons.</p>
+<p><strong>Internal Storage Format</strong></p>
+<p>Whatever the locales or the components displayed, internally there is only a type denoted as <em>serial date-time</em>.</p>
+<p>This is the number of days and possibly fraction of day since 31-th December 1899, the date origin. Therefore the value 1 represents January 1, 1900; the value 1.5 represents midday on January 1, 1900.</p>
+<p>Due to the leap year bug said above, starting with the first of March, 1900 the serial numbers contain an extra day.</p>
+<p>To fix this bug it is convenient to assume as the origin 30-th December 1899. This strategy is a compromise: it gives a good representation of all dates starting from 1-st March, 1900; but misrepresents the previous dates, which should be anyway unfrequent for most use-cases.</p>
+<p><code>read.xlx</code> follows this approach. It means that, for example, the Excel date <code>15/01/1900</code> (UK format) is converted as <code>14/01/1900</code>. Consider this fact should you import dates in the range January-February 1900.</p>
+<p>When you enter a time, since there is no abstract time object, without a date specification. Excel assumes it is referred to the date January 1, 1900.</p>
+<p>When you import times, this date will instead appear; also, because of the leap year bug, “12:30” becomes the POSIX value “1899-12-30 12:30:00”.</p>
+<p><strong>How does <code>read.xlx</code> behave?</strong></p>
 <ol style="list-style-type: decimal">
 <li><p>If a cell contains the value “Charles” and you set its format to date, the conversion value in R will be not surprisingly, NA.</p></li>
 <li><p>If a date is entered not respecting the locale and you <em>don’t try to change its format category to date</em>, then this is set to the “General” format category. Normally this value will be converted to a character. See ahead for exceptions.</p></li>
