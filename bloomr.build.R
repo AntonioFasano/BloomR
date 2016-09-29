@@ -12,7 +12,7 @@
 ## 
 ##  Usage:
 ##  Source this file and run:
-##  makeBloomR("path\to\workDir")
+##  makeBloomR("path/to/workDir")
 ##  You will get the BloomR dir in the work dir
 ##
 ##  Credits:
@@ -451,12 +451,12 @@ PROF=function(){ #Keep this on separate line
 makeExe=function(ask,ndown){
 
     message('\nCreating BloomR.exe installer')
-    to=makePath(G.work, "Extract_BloomR.exe")
+    to=makePath(G.work, "BloomR_green_setup_.exe")
     if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)
 
     download.git("bloomr.nsi", "bloomr.nsi", ,ndown)
-    message('Creating self-extracting executable Extract_BloomR.exe.   \nThis may take a bit...')
+ message('Creating self-extracting executable BloomR_green_setup_.exe, add version.\nThis may take a bit...')
     nsi=makePath(G.work, 'bloomr.nsi')   
     nexe=makePath(G.work, paste0(G.nsiszip,'.d/App/NSIS/makensis.exe'))
     cmd=paste(wPath(nexe), "/v2", wPath(nsi))

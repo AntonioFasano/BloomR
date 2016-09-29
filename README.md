@@ -171,6 +171,43 @@ When you start over (hoping in a better connection), you might not want to downl
 
 
 
+Windows 10 warning 
+-----------------
+
+### Why you get it
+
+
+When you run BloomR installer in Windows 10, you might might presented with the following warning: 
+
+
+![](res/img/win10protection1.png){width=50%}
+
+
+In order to remove it, I should buy a certificate, which by the way would not make the BloomR installer safer, it would just make simpler to identify me, Antonio Fasano, as the author of the project.  
+The  certificate costs money, while this project is not for profit and does not generate any. 
+Anyway, BloomR is open source, so you can inspect the code to see if there is any wrong doing and, of  course, you can run an antivirus program on the BloomR installer before running it. 
+Bear in mind that the installer does not require administrator privileges to be executed because it does not affect critical system services. 
+
+
+### Bypass the warning
+
+All that given, to execute the BloomR installer, identify the `More info` link as displayed in the following screenshot:
+
+![](res/img/win10protectionArrow1.png){width=50%}
+
+
+After clicking on the link, you get the following:
+
+
+![](res/img/win10protection2.png){width=50%}
+
+
+
+If you want to run the executable, click `Run anyway`. 
+
+
+
+
     
 <!-- Local Variables: -->
 <!-- mode: markdown -->
