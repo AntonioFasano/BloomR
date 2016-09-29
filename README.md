@@ -180,7 +180,8 @@ Windows 10 warning
 When you run BloomR installer in Windows 10, you might might presented with the following warning: 
 
 
-![](res/img/win10protection1.png){width=50%}
+<img src="res/img/win10protection1.png" width=50%/>
+
 
 
 In order to remove it, I should buy a certificate, which by the way would not make the BloomR installer safer, it would just make simpler to identify me, Antonio Fasano, as the author of the project.  
