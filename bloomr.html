@@ -352,27 +352,27 @@ If there is only one group, the first (and unique) element of the list will be r
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2016-09-24   9.723 11.569     9.984     NA      NA
-## 2016-09-25  10.795 10.355        NA     NA   9.263
-## 2016-09-26  10.995 10.005        NA  9.188  11.666
-## 2016-09-27  10.034  9.253        NA 10.059  11.316
-## 2016-09-28  11.716  8.341        NA     NA  10.402
+## 2016-09-24  11.517     NA     9.803 11.641  10.425
+## 2016-09-25      NA 11.741    12.806 10.464      NA
+## 2016-09-26      NA     NA     9.170 10.261   9.515
+## 2016-09-27      NA     NA     8.777     NA   9.615
+## 2016-09-28      NA  8.639    11.063 10.391   8.474
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2016-09-24  10.073      NA  8.607  9.458  10.217
-## 2016-09-25   9.446      NA     NA 11.354   9.416
-## 2016-09-26   8.892  10.477     NA     NA   9.598
-## 2016-09-27  10.146      NA     NA 10.387   9.734
-## 2016-09-28  11.214      NA     NA     NA   8.715
+## 2016-09-24   9.970  10.421 10.279  9.767   9.416
+## 2016-09-25   9.765      NA  9.811  9.116   9.165
+## 2016-09-26      NA      NA     NA  9.485   8.693
+## 2016-09-27      NA      NA     NA 10.865   8.714
+## 2016-09-28  11.641      NA  9.778 10.406  10.184
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2016-09-24 10.410     NA  9.426
-## 2016-09-25     NA 10.356  8.656
-## 2016-09-26     NA     NA 11.066
-## 2016-09-27  9.044  9.121  8.443
-## 2016-09-28     NA  8.577  9.487</code></pre>
+## 2016-09-24  9.546     NA 10.354
+## 2016-09-25 10.409  9.215     NA
+## 2016-09-26 10.624     NA     NA
+## 2016-09-27 10.551     NA     NA
+## 2016-09-28 10.354     NA  9.726</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />
@@ -549,10 +549,10 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2016-09-25  10.568   9.370
-## 2016-09-26      NA  10.285
-## 2016-09-27      NA  11.376
-## 2016-09-28  10.694      NA</code></pre>
+## 2016-09-25      NA   8.175
+## 2016-09-26   8.744  10.874
+## 2016-09-27   9.513   9.482
+## 2016-09-28  11.524  10.315</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

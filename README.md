@@ -180,7 +180,7 @@ Windows 10 warning
 When you run BloomR installer in Windows 10, you might might presented with the following warning: 
 
 
-<img src="res/img/win10protection1.png" width=50%/>
+<img src="res/img/win10protection1.png" width=60%/>
 
 
 
@@ -194,14 +194,13 @@ Bear in mind that the installer does not require administrator privileges to be 
 
 All that given, to execute the BloomR installer, identify the `More info` link as displayed in the following screenshot:
 
-![](res/img/win10protectionArrow1.png){width=50%}
+<img src="res/img/win10protectionArrow1.png" width=60%/>
 
 
 After clicking on the link, you get the following:
 
 
-![](res/img/win10protection2.png){width=50%}
-
+<img src="res/img/win10protection2.png" width=60%/>
 
 
 If you want to run the executable, click `Run anyway`. 
