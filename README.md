@@ -174,7 +174,6 @@ When you start over (hoping in a better connection), you might not want to downl
 Windows 10 warning 
 -----------------
 
-### Why you get it
 
 
 When you run BloomR installer in Windows 10, you might might presented with the following warning: 
@@ -183,6 +182,7 @@ When you run BloomR installer in Windows 10, you might might presented with the 
 <img src="res/img/win10protection1.png" width=60%/>
 
 
+### Why you get it
 
 In order to remove it, I should buy a certificate, which by the way would not make the BloomR installer safer, it would just make simpler to identify me, Antonio Fasano, as the author of the project.  
 The  certificate costs money, while this project is not for profit and does not generate any. 
