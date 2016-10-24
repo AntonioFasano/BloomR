@@ -259,10 +259,10 @@ br.md2pdf=function(md.file, pdf.file){
 ## It assumes that you have installed the BloomR LaTeX addons
 
     ## Set pandoc and LaTeX exe and dir 
-    panexe=R.home("pandoc/bin/pandoc.exe")
+    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
     if(!file.exists(panexe))
         stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
-    latbin=R.home("latex/miktex/bin")
+    latbin=dbr.brmain("latex/miktex/bin")
     if(!file.exists(latbin))
         stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
 
@@ -387,8 +387,8 @@ store(bbg.close)
 
 
 .br.jar=function(){
-	jarpath=paste0(R.home(), "/blpapi_java/bin")
-        Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
+    jarpath=dbr.brmain("/blpapi_java/bin")
+    Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 
 

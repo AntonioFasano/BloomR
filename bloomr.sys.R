@@ -34,10 +34,9 @@ br.getLatexAddons=function(){
     ## Latex variables 
     laturl="http://miktex.org/portable"
     latsize=600   # min space in mega
-    latdir=R.home("latex")
+    latdir=dbr.brmain("latex")
     latinst=paste0(latdir, "/mikport.exe")
-    latbin=paste0(latdir, "/miktex/bin/latex.exe")
-
+    latbin=paste0(latdir, "/texmfs/install/miktex/bin/latex.exe")
     ## Check connection
     if(!is.character(getURL("www.google.com")))
         stop("It seems you have no internet connection")
@@ -49,11 +48,13 @@ br.getLatexAddons=function(){
     if(x/1000^2 < latsize)  stop("Not enough space on your drive")
     
     ## Get download link 
-    x=getURL(laturl) 
-    latlnk = xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE),
-        "//a[@class='dllink']",  xmlGetAttr, "href")
-    if(!nzchar(latlnk))  stop("I can't find a parsable LaTeX download")
+    ## x=getURL(laturl) 
+    ## latlnk = xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE),
+    ##     "//a[@class='dllink']",  xmlGetAttr, "href")
+    ## if(!nzchar(latlnk))  stop("I can't find a parsable LaTeX download")
 
+    latlnk="http://mirrors.ctan.org/systems/win32/miktex/setup/miktex-portable.exe"
+    
     ## Create Latex dir
     if(file.exists(latdir))
         unlink(latdir, recursive = TRUE, force = TRUE)
@@ -98,7 +99,7 @@ br.getPandoc=function(){
     ## Pandoc variables 
     panurl = "https://github.com/jgm/pandoc/releases"
     pansize = 100
-    pandir = R.home("pandoc")
+    pandir = dbr.brmain("pandoc")
     paninst = paste0(pandir, "/pandocSetup.exe")
     panbin = paste0(pandir, "/bin/pandoc.exe")
 
@@ -191,7 +192,7 @@ br.getPandoc=function(){
 ## ipacks (optional) is the list of installed packages.
 ## Used to speed-up if calling the function many times 
     
-    mpm=R.home("latex/miktex/bin/mpm.exe")
+    mpm=dbr.brmain("latex/texmfs/install/miktex/bin/mpm.exe")
     if(!file.exists(mpm)) stop(paste('Unable to find:\n', mpm))
 
     if(is.null(ipacks)) ipacks=.br.getLatex.packList(inst=TRUE)
@@ -211,8 +212,8 @@ br.getPandoc=function(){
 .br.getLatex.packList=function(inst=FALSE){
 ### Get list of all packages from MiKTeX mpm --list
 ## If inst=TRUE, give vector of names of installed ones
-    
-    mpm=R.home("latex/miktex/bin/mpm.exe")
+
+    mpm=dbr.brmain("latex/texmfs/install/miktex/bin/mpm.exe")
     if(!file.exists(mpm)) stop(paste('Unable to find:\n', mpm))
     out=system(paste(.br.wpath(mpm), '--list'), intern = TRUE, invisible = FALSE)
     if(inst) {

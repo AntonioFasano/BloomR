@@ -33,7 +33,7 @@ dbr.log=function(logfile){
     
 
 dbr.jar=function(){ # Get bbg jar path 
-    jarpath=paste0(R.home(), "/blpapi_java/bin")
+    jarpath=dbr.brmain("/blpapi_java/bin")
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
 }
 
@@ -77,3 +77,19 @@ dbr.getToken=function(logfile=NULL, host=NULL,  port=NULL){
     
 }
 
+
+dbr.brmain=function(dir=""){
+### Detect the path of the BloomR main directory and returns "path/to/bloomr-main/dir",
+### where "path/to/bloomr-main" is BloomR main full path and "dir" is the argument and might not exist.
+### BloomR main is intedented to host a subfodler for each BloomR app, e.g. R, Sumatra, BRemacs.
+### Therefore it is the parent of R.home(). It does not include the user's personal folder.
+### NOTE: currently BloomR main is R.home()!!!
+
+    file.path(dirname(R.home()), dir) # will be this in the near future
+    ##file.path(R.home(), dir)
+    
+}
+
+    
+
+    
