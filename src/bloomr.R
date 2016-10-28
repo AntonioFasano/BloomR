@@ -387,7 +387,7 @@ store(bbg.close)
 
 
 .br.jar=function(){
-    jarpath=dbr.brmain("/blpapi_java/bin")
+    jarpath=dbr.brmain("/blpapi/bin")
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 

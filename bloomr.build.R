@@ -1,13 +1,13 @@
 
 ###  BloomR source
-###  Candidate to release. 
 
 ##   TODO
 ##   Remove internet2 ?
-##   Create src dir for R and Rmd files 
-
-
-
+##   Add https://sourceforge.net/projects/emacsbinw64/files/release/
+##       Current version tested emacs-w64-25.1-Og.7z
+##       http://ess.r-project.org/downloads/ess/ess-16.10.zip
+##       https://github.com/vspinu/polymode/archive/master.zip
+##       rClr, rEikon, RDatastream 
 
 ##  Requirements:
 ##  XML and Rcurl packages. If missing it will tray to download and install them.
@@ -44,7 +44,7 @@ G.javazip='openjdk'
 
 ## Bloomberg API for icedtea 
 G.apiurl="https://bloomberg.bintray.com/BLPAPI-Stable-Generic/blpapi_java_3.8.8.2.zip"
-G.apizip="blpapi_java"
+G.apizip="blpapi"
 
 ## Rbbg win32         
 G.rbbgurl="http://r.findata.org/bin/windows/contrib/"
@@ -343,11 +343,11 @@ bloomrTree=function(ndown){
     download.git("README.html",           root.pt("README.html"), ,ndown)
     download.git("LICENSE",               root.pt("LICENSE.txt"), ,ndown)
     makeDir("bloomR/help", "BloomR help directory:")    
-    download.git("bloomr.html",           root.pt("help/bloomr.html"), ,ndown) 
-    download.git("bloomr.pdf",            root.pt("help/bloomr.pdf"), ,ndown)
-    download.git("xlx.help.html",         root.pt("help/xlx.help.html"), ,ndown)     
-    download.git("xlx.help.pdf",          root.pt("help/xlx.help.pdf"), ,ndown)
-    download.git("reports/reporting.pdf", root.pt("help/reporting.pdf"), ,ndown)     
+    download.git("src/bloomr.html",           root.pt("help/bloomr.html"), ,ndown) 
+    download.git("src/bloomr.pdf",            root.pt("help/bloomr.pdf"), ,ndown)
+    download.git("src/xlx/xlx.help.html",     root.pt("help/xlx.help.html"), ,ndown)     
+    download.git("src/xlx/xlx.help.pdf",      root.pt("help/xlx.help.pdf"), ,ndown)
+    download.git("reports/reporting.pdf",     root.pt("help/reporting.pdf"), ,ndown)     
     
 }
 
@@ -373,14 +373,15 @@ initScripts=function(ndown){
         close(con)
     }
     
-    ## Get bloomr.R and xlx.R from Github
+    ## Get bloomr lib files including xlx.R from Github
     to=app.pt("R/share/bloomr")    
     makeDir(to,"BloomR share directory:")
-    download.git("bloomr.init.R", app.pt("R/share/bloomr/bloomr.init.R"), ,ndown)
-    download.git("bloomr.api.R",  app.pt("R/share/bloomr/bloomr.api.R"), ,ndown)
-    download.git("bloomr.R",      app.pt("R/share/bloomr/bloomr.R"), ,ndown)
-    download.git("bloomr.sys.R",  app.pt("R/share/bloomr/bloomr.sys.R"), ,ndown)
-    download.git("xlx.R",         app.pt("R/share/bloomr/xlx.R"), ,ndown)
+    download.git("src/bloomr.init.R", app.pt("R/share/bloomr/bloomr.init.R"), ,ndown)
+    download.git("src/bloomr.api.R",  app.pt("R/share/bloomr/bloomr.api.R"), ,ndown)
+    download.git("src/bloomr.R",      app.pt("R/share/bloomr/bloomr.R"), ,ndown)
+    download.git("src/bloomr.sys.R",  app.pt("R/share/bloomr/bloomr.sys.R"), ,ndown)
+    download.git("src/bloomr.test.R", app.pt("R/site-library/bloomr.test.R"), ,ndown)
+    download.git("src/xlx/xlx.R",     app.pt("R/share/bloomr/xlx.R"), ,ndown)
 
     
     ## Make personal dir with some sample files
@@ -390,7 +391,7 @@ initScripts=function(ndown){
     download.git("res/tickers.csv",         root.pt("mybloomr/examples/tickers.csv"), ,ndown)
     download.git("res/tickers.eqt.csv",     root.pt("mybloomr/examples/tickers.eqt.csv"), ,ndown)
     download.git("res/my-first-report.Rmd", root.pt("mybloomr/examples/my-first-report.Rmd"), ,ndown)
-    download.git("tryme.R",                 root.pt("mybloomr/examples/tryme.R"), ,ndown)
+    download.git("res/tryme.R",                 root.pt("mybloomr/examples/tryme.R"), ,ndown)
                   
     ## Make R bootstrapper
     makeBoot(ndown)

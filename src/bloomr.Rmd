@@ -336,7 +336,7 @@ read.csv("mybloomr/tickers.csv")
 ```
 
 ```{r br.bulk.csv.demo1, opts.label='demorun'}
-read.csv("res/tickers.csv")
+read.csv("../res/tickers.csv")
 ```
 
 
@@ -356,7 +356,7 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```{r br.bulk.csv.demo3, opts.label='demorun'}
-data=br.bulk.csv(con, "res/tickers.csv")
+data=br.bulk.csv(con, "../res/tickers.csv")
 ```
 
 
@@ -388,7 +388,7 @@ class(data$Financial)
 If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:
 
 ```{r br.bulk.csv.demo6.q, opts.label='demodry'}
-data=br.bulk.csv(con, "res/tickers.csv", use.xts=FALSE) 
+data=br.bulk.csv(con, "../res/tickers.csv", use.xts=FALSE) 
 ```
 ```{r br.bulk.csv.demo6.show, opts.label='democode'}
 data=br.bulk.csv(con, "mybloomr/tickers.csv", use.xts=FALSE) 
@@ -413,7 +413,7 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv", field = "PX_OPEN")
 You can choose to import only some of the CSV groups 
 
 ```{r br.bulk.csv.demo9, opts.label='demorun'}
-data=br.bulk.csv(con, "res/tickers.csv", cols=c(1,3))
+data=br.bulk.csv(con, "../res/tickers.csv", cols=c(1,3))
 ```
 
 ```{r br.bulk.csv.demo9.show, opts.label='democode'}
@@ -437,13 +437,13 @@ read.csv("mybloomr/tickers.eqt.csv")
 ```
 
 ```{r br.bulk.csv.demo11, opts.label='demorun'}
-read.csv("res/tickers.eqt.csv")
+read.csv("../res/tickers.eqt.csv")
 ```
 
 Note how the "Equity" type is missing! But you can use this CSV file with `addtype`:
 
 ```{r br.bulk.csv.demo12.q, opts.label='demodry'}
-data=br.bulk.csv(con, "res/tickers.eqt.csv", addtype=TRUE)
+data=br.bulk.csv(con, "../res/tickers.eqt.csv", addtype=TRUE)
 ```
 
 ```{r br.bulk.csv.demo12.show, opts.label='democode'}
@@ -1066,7 +1066,7 @@ Details
 
 
 .br.jar=function(){
-    jarpath=dbr.brmain("/blpapi_java/bin")
+    jarpath=dbr.brmain("/blpapi/bin")
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 
@@ -1287,7 +1287,7 @@ knit2=function(file){
     topics()
     render(paste0(fse, '.md'), "html_document")
     render(paste0(fse, '.md'), pdf_document())
-    render("README.md", html_document())
+    render("../README.md", html_document())
 }
 knit2("bloomr.Rmd")
  

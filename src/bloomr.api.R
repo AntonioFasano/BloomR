@@ -33,7 +33,7 @@ dbr.log=function(logfile){
     
 
 dbr.jar=function(){ # Get bbg jar path 
-    jarpath=dbr.brmain("/blpapi_java/bin")
+    jarpath=dbr.brmain("/blpapi/bin")
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
 }
 
