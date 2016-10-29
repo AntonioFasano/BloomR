@@ -3,11 +3,10 @@
 
 ##   TODO
 ##   Remove internet2 ?
-##   Add https://sourceforge.net/projects/emacsbinw64/files/release/
-##       Current version tested emacs-w64-25.1-Og.7z
-##       http://ess.r-project.org/downloads/ess/ess-16.10.zip
-##       https://github.com/vspinu/polymode/archive/master.zip
-##       rClr, rEikon, RDatastream  in site-library
+##   Create makeBoot_() workhorse (see scratch in makeBoot comments) and add code for bremacs in makeBoot()
+##   Depending on makeBoot() we may or may not have subdir in src/bremacs
+##   Test breamcsTree() download.git()
+##   Add  rClr, rEikon, RDatastream  in site-library
 
 ##  Requirements:
 ##  XML and Rcurl packages. If missing it will tray to download and install them.
@@ -90,6 +89,14 @@ G.pzip="peazip"
 G.rport="rportable"
 G.nsisurl='portableapps'
 G.nsiszip='nsis'
+G.emacs='emacsbinw64'
+G.emacs.type='Og' # e.g.: emacs-w64-25.1-Og.7z
+
+## ESS, Polymode
+G.essurl='https://github.com/emacs-ess/ESS/archive/master.zip'
+G.esszip='ess'
+G.polyurl='https://github.com/vspinu/polymode/archive/master.zip'
+G.polyzip='polymode'
 
 ## Local paths
 G.work=""
@@ -101,16 +108,20 @@ G.appname="main" # BloomR application folder name. Used by app.pt()
 ## Functions returning/accepting paths normally use paths relative to G.work 
 ## The latter will use a workhorse function with work.pt() if they need to access file system 
 
-makeBloomR=function(work, tight=FALSE, ndown=2, zip=FALSE, ask=TRUE, deb=1:6, gitsim=FALSE){
-## Build the BloomR
-## work: work dir path, absolute or relative to cur path
-## tight: reuse downloaded material in workdir
-## ndown: num of download attempts; default to 2 
-## zip: if TRUE zip the BloomR output dir
-## ask: if TRUE (default), it asks to if overwrite exisint workdir or BloomeR build
-## For debug/test:
-## deb: defaults to 1:6 to execute all steps build steps, modify to debug.
-## gitsim: if set to an absolute or relative path, github downloads will be simulated from this path.
+makeBloomR=function( # Build BloomR
+                    work,         # work dir path, absolute or relative to cur path
+                    tight=FALSE,  # reuse downloaded material in workdir
+                    ndown=2,      # num of download attempts
+                    zip=FALSE,    # if TRUE zip the BloomR output dir
+                    ask=TRUE,     # asks to if overwrite existent workdir or BloomeR build
+                    bremacs=FALSE,# add bremacs
+                    ## For debug/test:
+                    deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug.
+                    gitsim=FALSE  # local path (abs. or relative)to simulate github downloads.
+){
+
+
+
 
     
     ## Set work dir
@@ -206,9 +217,7 @@ downloads=function(tight, ndown){
     }
     download.nice(cback, G.nsiszip, overwrite, ndown,
                   "NSIS")
-
     
-
     ## Openjdk
     download.nice(javaurl.ver, G.javazip, overwrite, ndown,
                   "Java files")
@@ -231,6 +240,26 @@ downloads=function(tight, ndown){
     ## ahkscript
     download.nice(G.ahkurl, G.ahkzip, overwrite, ndown,
                   "ahkscript")
+
+
+    ## bremacs
+    if(bremacs){
+        cback=function(){
+            url=sfFirstbyProject(G.emacs, '[[:digit:]]') #get release dir 
+            url=sfFirstbyUrl(url, paste0("-", G.emacs.type, ".7z"))
+            sfDirLink(url)
+        }
+        download.nice(cback, G.emacs, overwrite, ndown,
+                      "Emacs files")
+
+        ## ESS
+        download.nice(G.essurl, G.esszip, overwrite, ndown,
+                      "ESS files")
+    
+        ## polymode
+        download.nice(G.polyurl, G.polyzip, overwrite, ndown,
+                      "Polymode files")
+    }
     
 }
 
@@ -243,40 +272,17 @@ expand=function(){
           "Peazip binaries")
     
     ## R files
-    from=G.rport             # source
-    to=paste0(G.rport, '.d') # output dir    
-    #chk.write(to, overwrite, "R file directory")
-    if(is.path(to)) {
-        message('\nDeleting exisitng R files.')
-        del.path(to)
-    }
-    
-    message('\nExtracting main R files: this may take a bit.')
-    zexe=get7zbin()
-    cmd=paste(win.pt(to), win.pt(from))
-    cmd=paste0(win.pt(zexe), ' x -aoa -r -o', cmd)
-    ret=system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
-    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
-
-    
+    uzip.7z(G.rport, paste0(G.rport,'.d'), 
+          "R files")
+        
     ## NSIS files
-    to=paste0(G.nsiszip, '.d') # output dir    
-    from=G.nsiszip             # source
-    if(is.path(to)) {
-        message('\nDeleting exisitng NSIS files.')
-        del.path(to)
-    }
-    message('\nExtracting NSIS files.')
-    zexe=get7zbin()
-    cmd=paste(win.pt(to), win.pt(from))
-    cmd=paste0(win.pt(zexe), ' x -aoa -r -o', cmd)
-    ret=system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
-    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+    uzip.7z(G.nsiszip, paste0(G.nsiszip, '.d'), 
+            "NSIS files")
 
     ## openjdk 
-    uzip(G.javazip, paste0(G.javazip,'.d'),
-          "Java binaries")
-
+    uzip.7z(G.javazip, paste0(G.javazip, '.d'), 
+            "Java binaries")
+    
     ## Bloomberg API
     uzip(G.apizip, paste0(G.apizip,'.d'), 
           "API binaries")
@@ -295,15 +301,26 @@ expand=function(){
     uzip(G.ahkzip, paste0(G.ahkzip,'.d'),
           "ahkscript")
 
+    ## bremacs
+    if(bremacs){
+
+        uzip.7z(G.emacs, paste0(G.emacs,'.d'),
+             "BRemacs files")
+
+        uzip(G.esszip, paste0(G.esszip,'.d'),
+             "ESS")
+
+        uzip(G.polyzip, paste0(G.polyzip,'.d'),
+             "Polymode")
+    }        
 }
 
-### Make BloomR directory tree
 bloomrTree=function(ndown){
+### Make BloomR directory tree
 
     message("\nCreating BloomR tree")
     existMake('bloomR', TRUE, FALSE, "BloomR root dir:")
     makeDir(app.pt(), "BloomR app dir:")
-
 
 
     ## Copy R and make site direcory
@@ -348,8 +365,57 @@ bloomrTree=function(ndown){
     download.git("src/xlx/xlx.help.html",     root.pt("help/xlx.help.html"), ,ndown)     
     download.git("src/xlx/xlx.help.pdf",      root.pt("help/xlx.help.pdf"), ,ndown)
     download.git("reports/reporting.pdf",     root.pt("help/reporting.pdf"), ,ndown)     
+
+    if(bremacs) bremacsTree(ndown)
+}
+
+
+bremacsTree=function(ndown){
+### Make BRemacs directory tree
+
+    message("\nCreating BRemacs tree")
+    makeDir(app.pt("bremacs"), "BRemacs app dir:")
+
+    ## Copy Emacs 
+    from=paste0(G.emacs, '.d/emacs')
+    to=app.pt("bremacs")
+    copy.dir(from, to, "main BRemacs files")
+
+    ## Copy ESS
+    from=paste0(G.esszip, '.d/ESS-master')              
+    to=blib.pt(G.esszip)
+    copy.dir(from, to, "ESS")
+
+    ## Copy Polymode
+    from=paste0(G.polyzip, '.d/polymode-master')              
+    to=blib.pt(G.polyzip)
+    copy.dir(from, to, "Polymode")
+
+    makeDir(blib.pt("bremacs"), "BRemacs library:")
+
+    download.git("src/bremacs/",           root.pt("help/bloomr.html"), ,ndown) 
+
+
+    ## Get BRemacs lib files with ls or dir and parse into a string
+    bfiles="
+br-init-dbg.el  br-keys.elc    br-recentf.el   br-rnw.elc       br-simple-buffer-menu.el   ess-init.old.R  
+br-init.el      br-menico.el   br-recentf.elc  br-setmodes.el   br-simple-buffer-menu.elc  splith.svg      
+br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R                 splith.xpm
+"
+    bfiles=gsub(" ", "\n", bfiles)
+    bfiles=strsplit(bfiles, "\n")[[1]]
+    bfiles=bfiles[nzchar(bfiles)]
+
+    ## Download BRemacs lib files
+    d=blib.pt("bremacs")
+    x=sapply(bfiles, function(f)
+        download.git(makePath("src/bremacs/lib", f),  makePath(d, f)))
+
     
 }
+
+
+
 
 
 ###== Boot functions ==
@@ -398,8 +464,8 @@ initScripts=function(ndown){
 
 }
 
-### Make R bootstrapper
 makeBoot=function(ndown){
+### Make R bootstrapper
 
     ## Boot string    
     bloomr.run="
@@ -409,6 +475,15 @@ EnvSet,  JAVA_HOME,  %A_ScriptDir%\\%AppDir%\\openjdk/jre
 Run, %AppDir%\\R\\bin\\x64\\Rgui.exe --internet2 LANGUAGE=en
 "
     bloomr.run=gsub("%AppDir%", G.appname, bloomr.run) 
+    
+    ## Make a workhorse function !!!!!!!!!!!
+    ## makeBoot_(bloomr.run, "res/bloomr.ico")
+    ## if(bremacs){
+    ##     bremacs.run= "..."
+    ##     bremacs.run=gsub("%AppDir%", G.appname, bremacs.run) 
+    ##     makeBoot_(bremacs.run, "res/bremacs.ico")
+    ## }
+    ## Refactor code below as makeBoot_
     
     ## Make boot file
     ahkdir=work.pt(paste0(G.ahkzip, '.d/Compiler'))
@@ -760,12 +835,20 @@ root.pt=function(dir=""){
 
 
 app.pt=function(dir=""){
-### Prefix dir path with  BloomR apps' path name relative to workdir.
+### Prefix dir path with BloomR apps' path relative to workdir.
 ### App dir name depends on G.appname, its parent is BloomR root dir
 
     x=root.pt(G.appname)
     makePath(x, dir)
 }
+
+blib.pt=function(dir=""){
+### Prefix dir path with BRemacs site-lisp path relative to workdir.
+    
+    x=app.pt("bremacs/share/emacs/site-lisp")
+    makePath(x, dir)
+}
+
 
 
 win.pt=function(path){
@@ -938,6 +1021,11 @@ existMake=function(dir, overwrite, ask, desc){
     }             
 }
 
+file.read=function( # Read file  
+                   fpath # File path relative to workdir
+                   )    
+    readLines(work.pt(fpath))
+
 
 uzip=function(from, to, desc, delTarget=TRUE){
 ### Unzip making path relative to global workdir
@@ -958,6 +1046,19 @@ uzip_=function(from, to){ # uzip workhorse
         stop('\nUnable to perform extraction')  
 }
 
+uzip.7z=function(from, to, desc, delTarget=TRUE){
+    zexe=get7zbin()
+    if(is.path(to)) {
+        message('\nDeleting exisiting ', desc)
+        del.path(to)
+    }    
+    message('\nExtracting ', desc)
+    message('This may take a bit ...')
+    cmd=paste(win.pt(to), win.pt(from))
+    cmd=paste0(win.pt(zexe), ' x -aoa -r -o', cmd)
+    ret=system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+}
 
 get7zbin=function(){ # Get 7z.exe relative to workdir
     zipdir=paste0(G.pzip,'.d')
