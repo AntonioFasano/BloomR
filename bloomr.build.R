@@ -7,7 +7,7 @@
 ##       Current version tested emacs-w64-25.1-Og.7z
 ##       http://ess.r-project.org/downloads/ess/ess-16.10.zip
 ##       https://github.com/vspinu/polymode/archive/master.zip
-##       rClr, rEikon, RDatastream 
+##       rClr, rEikon, RDatastream  in site-library
 
 ##  Requirements:
 ##  XML and Rcurl packages. If missing it will tray to download and install them.
@@ -416,7 +416,7 @@ Run, %AppDir%\\R\\bin\\x64\\Rgui.exe --internet2 LANGUAGE=en
    
     ## Get icon from GitHub
     to=makePath(paste0(G.ahkzip, '.d/Compiler'), "bloomr.ico")
-    download.git("bloomr.ico", to, ,ndown)
+    download.git("res/bloomr.ico", to, ,ndown)
     
     ## Make exe
     message("\nMaking BloomR executable")
