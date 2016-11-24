@@ -1,6 +1,7 @@
 ### ToDo
 ##  Manage name conflicts between sheets and ranges and perhaps among ranges
-##  Set customs warning when prevailing style cannot be applied, advertising column position
+##  Set custom warnings when prevailing style cannot be applied, advertising column position
+
 
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
@@ -519,12 +520,19 @@ read.xlx= function(
         item=databook[[i]]        
         
         ## Get prevailing styles in each item column  
-        item$styles = sapply(item$styles, function(x) {
-            out <- names(which.max(table(x)))
-            out[is.null(out)] <- NA
-            out
+        item$styles = sapply(1:ncol(item$styles), function(i) {
+            ## Base prevailing styles only on cells with  values
+            s=item$styles[[i]]
+            v=item$vals[[i]]
+            s=s[!is.na(v)]
+            max=names(which.max(table(s)))
+            max[is.null(max)]=NA
+            max
         })
 
+
+
+        
         ## Convert style index IDs in item$styles in num-format IDs
         if(length(numfmtids) > 0)
             item$styles= sapply(item$styles, function(x)
