@@ -5,6 +5,8 @@ git*.*
 # Work dir with temp files 
 work/
 
+gitToken.R
+
 # History files
 .Rhistory
 *.*~

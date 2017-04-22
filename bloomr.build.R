@@ -1,67 +1,68 @@
 
 ###  BloomR source
 
-##   TODO
-##   Remove internet2 ?
-##   Create makeBoot_() workhorse (see scratch in makeBoot comments) and add code for bremacs in makeBoot()
-##   Depending on makeBoot() we may or may not have subdir in src/bremacs
-##   Test breamcsTree() download.git()
-##   Add  rClr, rEikon, RDatastream  in site-library
-
-##  Requirements:
-##  XML and Rcurl packages. If missing it will tray to download and install them.
-##  R should be able to connect to the Internet.
-##  .Platform$OS.type == "windows"
+##  TODO
+##  Remove internet2 ?
+##  Compile BRemacs package on first run
+##  Add  rClr, rEikon, RDatastream  in site-library?
 ## 
 ##  Usage:
 ##  Source this file and run:
 ##  makeBloomR("path/to/workDir")
-##  You will get the BloomR dir in the work dir
+##  You will get the BloomR green executable in workDir
+##
+##  Requirements:
+##  XML and Rcurl packages. If missing it will try to download and install them.
+##  R should be able to connect to the Internet.
+##  .Platform$OS.type == "windows"
 ##
 ##  Credits:
 ##  R-Portable*.exe from sourceforge.net/projects/rportable
 ##  blpapi_java*.tar from http://www.openbloomberg.com/open-api/
 ##  Rbbg_*.zip from http://r.findata.org/bin/windows/contrib/
-##  peazip  from http://sourceforge.net/projects/peazip
-##  ahkscript http://ahkscript.org
-##  nsis.sourceforge.net
+##  peazip from http://sourceforge.net/projects/peazip
+##  ahkscript from http://ahkscript.org
+##  Alex Kasko java from https://bitbucket.org/alexkasko/openjdk-unofficial-builds
+##  Nsis from nsis.sourceforge.net
+##  innoextract from http://constexpr.org/innoextract
 ##  Icon set Simplicio CC 3.0 by Neurovit: http://neurovit.deviantart.com
 ##   retrieved at https://www.iconfinder.com/icons/48750/direction_right_icon
 ##
 
 
-#### Globals
+### Globals
+G=new.env()
 
 ## java alexkasko
-G.javaurl="https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/"
-G.javaurl.dom="https://bitbucket.org"
+G$javaurl="https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/"
+G$javaurl.dom="https://bitbucket.org"
 ## win32
-G.javaurl.bit="windows-i586-image.zip"
+G$javaurl.bit="windows-i586-image.zip"
 ## win64
-G.javaurl.bit="windows-amd64-image.zip"
-G.javazip='openjdk'
+G$javaurl.bit="windows-amd64-image.zip"
+G$javazip='openjdk'
 
 ## Bloomberg API for icedtea 
-G.apiurl="https://bloomberg.bintray.com/BLPAPI-Stable-Generic/blpapi_java_3.8.8.2.zip"
-G.apizip="blpapi"
+G$apiurl="https://bloomberg.bintray.com/BLPAPI-Stable-Generic/blpapi_java_3.8.8.2.zip"
+G$apizip="blpapi"
 
 ## Rbbg win32         
-G.rbbgurl="http://r.findata.org/bin/windows/contrib/"
+G$rbbgurl="http://r.findata.org/bin/windows/contrib/"
 ## Rbbg win64
-G.rbbgurl="http://r.findata.org/bin/windows64/contrib/"
-G.rbbgzip="rbbg"
+G$rbbgurl="http://r.findata.org/bin/windows64/contrib/"
+G$rbbgzip="rbbg"
 
 ## Ahkscript
-## G.ahkurl="http://ahkscript.org/download/ahk2exe.zip" # removed
-G.ahkurl="https://autohotkey.com/download/ahk.zip"
-G.ahkzip="ahk"
+## G$ahkurl="http://ahkscript.org/download/ahk2exe.zip" # removed
+G$ahkurl="https://autohotkey.com/download/ahk.zip"
+G$ahkzip="ahk"
 
 ## Web certificates
-G.certurl='http://curl.haxx.se/ca/cacert.pem'
+G$certurl='http://curl.haxx.se/ca/cacert.pem'
 
 ## Github
-G.github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
-G.github.local="" # Auto-set by makeBloomR() if gitsim=T, relative to workdir 
+G$github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
+G$github.local="" # Auto-set by makeBloomR() if gitsim=T, relative to workdir 
 
 ## Packages to download. Case sensitive
 x="rJava zoo xts RCurl XML knitr"
@@ -80,73 +81,83 @@ x=paste(x, " mime")
 
 ## read.xlx deps
 x=paste(x, "plyr pbapply Rcpp")
-G.packlist=x
+G$packlist=x
 rm(x)
     
-    
-## SF items
-G.pzip="peazip"
-G.rport="rportable"
-G.nsisurl='portableapps'
-G.nsiszip='nsis'
-G.emacs='emacsbinw64'
-G.emacs.type='Og' # e.g.: emacs-w64-25.1-Og.7z
+## innoextract
+G$innourl="http://constexpr.org/innoextract/files"
+G$innozip='innoextract'
 
-## ESS, Polymode
-G.essurl='https://github.com/emacs-ess/ESS/archive/master.zip'
-G.esszip='ess'
-G.polyurl='https://github.com/vspinu/polymode/archive/master.zip'
-G.polyzip='polymode'
+## R
+G$rurl="https://cloud.r-project.org/bin/windows/base/"
+G$rzip='rmain'
+
+## SF items
+G$pzip="peazip"
+G$rport="rportable" # not used
+G$nsisurl='portableapps'
+G$nsiszip='nsis'
+G$emacs='emacsbinw64'
+G$emacs.type='Og' # e.g.: emacs-w64-25.1-Og.7z
+
+## ESS, Polymode, Markdown, BM
+G$essurl='https://github.com/emacs-ess/ESS/archive/master.zip'
+G$esszip='ess'
+G$polyurl='https://github.com/vspinu/polymode/archive/master.zip'
+G$polyzip='polymode'
+G$markurl='https://github.com/jrblevin/markdown-mode/archive/master.zip'
+G$markzip='markmode'
+G$bmurl='https://github.com/joodland/bm/archive/master.zip'
+G$bmzip='bmmode'
 
 ## Local paths
-G.work=""
-G.appname="main" # BloomR application folder name. Used by app.pt() 
+G$work=""
+G$appname="main" # BloomR application folder name. Used by app.pt() 
 
+## Options
+G$bremacs=FALSE
 
 
 ## Dev style 
-## Functions returning/accepting paths normally use paths relative to G.work 
-## The latter will use a workhorse function with work.pt() if they need to access file system 
+## Functions returning/accepting paths normally use paths relative to G$work.
+## The latter ones will use a workhorse function with work.pt() if they need to access file system.
 
 makeBloomR=function( # Build BloomR
                     work,         # work dir path, absolute or relative to cur path
                     tight=FALSE,  # reuse downloaded material in workdir
                     ndown=2,      # num of download attempts
                     zip=FALSE,    # if TRUE zip the BloomR output dir
-                    ask=TRUE,     # asks to if overwrite existent workdir or BloomeR build
+                    ask=TRUE,     # asks if to overwrite existent workdir and BloomR installer
                     bremacs=FALSE,# add bremacs
                     ## For debug/test:
                     deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug.
-                    gitsim=FALSE  # local path (abs. or relative)to simulate github downloads.
+                    gitsim=FALSE  # local path (abs. or relative)to simulate github downloads.  
 ){
 
-
-
-
-    
     ## Set work dir
     if(!nzchar(work)) stop("Please, specify a work directory as first arg!")
-
-    G.work<<-work
+    G$work=work
     
     ## Set git dir
-    G.github.local<<-""
+    G$github.local=""
     if(gitsim!=FALSE && nzchar(gitsim))
         if (file.info(gitsim)$isdir)
-            G.github.local<<-gitsim else {
+            G$github.local=gitsim else {
                 stop(gitsim, "is not an existing dir")}
 
-    ## Set certificate local path
-    
     ## Windows?
-    if(.Platform$OS.type != "windows") stop("Sorry, Bloomberg only exists for Windows and so BloomR.")
+    if(.Platform$OS.type != "windows")
+        stop("Sorry, Bloomberg Terminal only exists for Windows and so BloomR.")
     
-    ##  Check for required package
+    ## Check for required package
     if(!loadLib("RCurl")) return(1)
     if(!loadLib("XML")) return(1)
 
+    ## Parse options
+    G$bremacs=bremacs
+
     ## Step 1
-    if(1 %in% deb) existMake('', overwrite=!tight, ask, paste("working dir:\n", G.work))
+    if(1 %in% deb) existMake('', overwrite=!tight, ask, paste("working dir:\n", G$work))
     
     ## Step 2
     if(2 %in% deb) downloads(tight, ndown)
@@ -161,7 +172,7 @@ makeBloomR=function( # Build BloomR
     if(5 %in% deb) initScripts(ndown)
 
     ## Step 6
-    if(6 %in% deb) {makeExe(ask, ndown); if(zip) makeZip(ask)}
+    if(6 %in% deb) {makeInst(ask, ndown); if(zip) makeZip(ask)}
 }
 
 ###== Main steps ==
@@ -186,79 +197,99 @@ downloads=function(tight, ndown){
     overwrite=!tight
         
     ## Get certificates from curl site 
-    download.nice(G.certurl, cert(), overwrite, ndown,
+    download.nice(G$certurl, cert(), overwrite, ndown,
                   "Curl Certificates", cert=FALSE)
 
     ## peazip
     cback=function(){
-        url=sfFirstbyProject(G.pzip, '[[:digit:]]') #get release dir 
+        url=sfFirstbyProject(G$pzip, '[[:digit:]]') #get release dir 
         url=sfFirstbyUrl(url, "portable[^\"]*?windows")
         sfDirLink(url)
     }
-    download.nice(cback, G.pzip, overwrite, ndown,
+    download.nice(cback, G$pzip, overwrite, ndown,
                   "Peazip files")
-    
-    ## R
-    cback=function(){
-        url=sfFirstbyProject(G.rport, 'r-portable')
-        url=sfFirstbyUrl(url, '[[:digit:]]')        
-        url=sfFirstbyUrl(url, 'exe[^.]')        
-        sfDirLink(url)
-    }
-    download.nice(cback, G.rport, overwrite, ndown,
+
+    ## innoextract
+    download.nice(innourl.ver, G$innozip, overwrite, ndown,
+                  "Innoextract")
+
+    ## R 
+    download.nice(rurl.ver, G$rzip, overwrite, ndown,
                   "main R files")
+                
+    ##   ## R portable
+    ##   cback=function(){
+    ##       url=sfFirstbyProject(G$rport, 'r-portable')
+    ##       url=sfFirstbyUrl(url, '[[:digit:]]')        
+    ##       url=sfFirstbyUrl(url, 'exe[^.]')        
+    ##       sfDirLink(url)
+    ##   }
+    ##   download.nice(cback, G$rport, overwrite, ndown,
+    ##                 "main R files")
 
     ## NSIS
     cback=function(){
-        url=sfFirstbyProject(G.nsisurl, G.nsiszip)
+        url=sfFirstbyProject(G$nsisurl, G$nsiszip)
         url=sfFirstbyUrl(url, 'additional')
         url=sfFirstbyUrl(url, '[[:digit:]]')
         sfDirLink(url)
     }
-    download.nice(cback, G.nsiszip, overwrite, ndown,
+    download.nice(cback, G$nsiszip, overwrite, ndown,
                   "NSIS")
     
     ## Openjdk
-    download.nice(javaurl.ver, G.javazip, overwrite, ndown,
+    download.nice(javaurl.ver, G$javazip, overwrite, ndown,
                   "Java files")
 
     ## Bloomberg API
-    download.nice(G.apiurl, G.apizip, overwrite, ndown,
-                  "Bloomberg API")
+    download.nice(G$apiurl, G$apizip, overwrite, ndown,
+                  "Bloomberg API", cert=FALSE)
         
     ## CRAN packages
     existMake("@packs", overwrite=!tight, ask=FALSE, "packages dir:") # @ to distinguish from unzipped dir   
-    packs= strsplit(gsub('(^ +)|( +$)', '', G.packlist), split=' +')[[1]]    
+    packs= strsplit(gsub('(^ +)|( +$)', '', G$packlist), split=' +')[[1]]    
     for(pack in packs) # Loop over packs and download them 
         download.nice(cran.geturl(pack), makePath("@packs", pack), overwrite, ndown,
                   pack)
     
     ## rbbg
-    download.nice(rbbgurl.ver(), makePath("@packs", G.rbbgzip), overwrite, ndown,
+    download.nice(rbbgurl.ver(), makePath("@packs", G$rbbgzip), overwrite, ndown,
                   "rbbg files")
     
     ## ahkscript
-    download.nice(G.ahkurl, G.ahkzip, overwrite, ndown,
-                  "ahkscript")
+    ## given a not found error there is a temp fix
+    ## download.nice(G$ahkurl, G$ahkzip, overwrite, ndown,
+    ##               "ahkscript")
+    download.file(G$ahkurl, makePath(G$work, G$ahkzip))
 
 
-    ## bremacs
-    if(bremacs){
+    ## BRemacs
+    if(G$bremacs){
         cback=function(){
-            url=sfFirstbyProject(G.emacs, '[[:digit:]]') #get release dir 
-            url=sfFirstbyUrl(url, paste0("-", G.emacs.type, ".7z"))
+            url=sfFirstbyProject(G$emacs, '[[:digit:]]') #get release dir 
+            url=sfFirstbyUrl(url, paste0("-", G$emacs.type, ".7z"))
             sfDirLink(url)
         }
-        download.nice(cback, G.emacs, overwrite, ndown,
+        download.nice(cback, G$emacs, overwrite, ndown,
                       "Emacs files")
 
         ## ESS
-        download.nice(G.essurl, G.esszip, overwrite, ndown,
+        download.nice(G$essurl, G$esszip, overwrite, ndown,
                       "ESS files")
     
-        ## polymode
-        download.nice(G.polyurl, G.polyzip, overwrite, ndown,
+        ## Polymode
+        download.nice(G$polyurl, G$polyzip, overwrite, ndown,
                       "Polymode files")
+
+        ## Markdown mode
+        download.nice(G$markurl, G$markzip, overwrite, ndown,
+                      "Markdown mode files")
+        
+        ## Bookmark (bm) mode
+        download.nice(G$bmurl, G$bmzip, overwrite, ndown,
+                      "BM mode files")
+
+
     }
     
 }
@@ -268,23 +299,31 @@ downloads=function(tight, ndown){
 expand=function(){
     
     ## peazip
-    uzip(G.pzip, paste0(G.pzip,'.d'), 
+    uzip(G$pzip, paste0(G$pzip,'.d'), 
           "Peazip binaries")
     
+    ## innoextract
+    uzip(G$innozip, paste0(G$innozip,'.d'), 
+          "innoextract binaries")
+    
     ## R files
-    uzip.7z(G.rport, paste0(G.rport,'.d'), 
-          "R files")
+    innoextract(G$rzip, paste0(G$rzip,'.d'),
+                "R files")
+
+    ## R portable files
+    ## uzip.7z(G$rport, paste0(G$rport,'.d'), 
+    ##       "R files")
         
     ## NSIS files
-    uzip.7z(G.nsiszip, paste0(G.nsiszip, '.d'), 
+    uzip.7z(G$nsiszip, paste0(G$nsiszip, '.d'), 
             "NSIS files")
 
     ## openjdk 
-    uzip.7z(G.javazip, paste0(G.javazip, '.d'), 
+    uzip.7z(G$javazip, paste0(G$javazip, '.d'), 
             "Java binaries")
     
     ## Bloomberg API
-    uzip(G.apizip, paste0(G.apizip,'.d'), 
+    uzip(G$apizip, paste0(G$apizip,'.d'), 
           "API binaries")
 
     ## CRAN packages
@@ -298,21 +337,28 @@ expand=function(){
               paste('R package', pack), delTarget=FALSE)    
     
     ## ahkscript
-    uzip(G.ahkzip, paste0(G.ahkzip,'.d'),
+    uzip(G$ahkzip, paste0(G$ahkzip,'.d'),
           "ahkscript")
 
-    ## bremacs
-    if(bremacs){
+    ## BRemacs
+    if(G$bremacs){
 
-        uzip.7z(G.emacs, paste0(G.emacs,'.d'),
+        uzip.7z(G$emacs, paste0(G$emacs,'.d'),
              "BRemacs files")
 
-        uzip(G.esszip, paste0(G.esszip,'.d'),
+        uzip(G$esszip, paste0(G$esszip,'.d'),
              "ESS")
 
-        uzip(G.polyzip, paste0(G.polyzip,'.d'),
+        uzip(G$polyzip, paste0(G$polyzip,'.d'),
              "Polymode")
-    }        
+
+        uzip(G$markzip, paste0(G$markzip,'.d'),
+             "Markdown-mode")
+
+        uzip(G$bmzip, paste0(G$bmzip,'.d'),
+             "BM mode")
+
+    }
 }
 
 bloomrTree=function(ndown){
@@ -324,24 +370,24 @@ bloomrTree=function(ndown){
 
 
     ## Copy R and make site direcory
-    from=paste0(G.rport, '.d/App/R-Portable')
+    from=paste0(G$rzip , '.d/app')
     to=app.pt("R")
     copy.dir(from, to, "main R files")
     makeDir(app.pt('R/site-library'), "BloomR library:")
-    del.path(app.pt("R/unins000.dat"))
-    del.path(app.pt("R/unins000.exe"))
+    ## del.path(app.pt("R/unins000.dat"))
+    ## del.path(app.pt("R/unins000.exe"))
     
     ## Copy java
-    from=paste0(G.javazip,'.d'); x=work.pt(from)
+    from=paste0(G$javazip,'.d'); x=work.pt(from)
     from=makePath(from, dir(x))
-    to=app.pt(G.javazip)
+    to=app.pt(G$javazip)
     copy.dir(from, to, "Java modules")
     del.path(makePath(to, 'src.zip'))
 
     ## Copy Bloomberg API
-    from=paste0(G.apizip,'.d'); x=work.pt(from)
+    from=paste0(G$apizip,'.d'); x=work.pt(from)
     from=makePath(from, dir(x))
-    to=app.pt(G.apizip)
+    to=app.pt(G$apizip)
     copy.dir(from, to, "Bloomberg API")
 
     ## Copy libs
@@ -366,7 +412,14 @@ bloomrTree=function(ndown){
     download.git("src/xlx/xlx.help.pdf",      root.pt("help/xlx.help.pdf"), ,ndown)
     download.git("reports/reporting.pdf",     root.pt("help/reporting.pdf"), ,ndown)     
 
-    if(bremacs) bremacsTree(ndown)
+
+    ## Environemnt diagnostic
+    #message("\nAdding ED tools")
+    #makeDir(app.pt('ed'), "ED tools:")
+    #download.git("src/xxx",           root.pt("xxx"), ,ndown) 
+
+    
+    if(G$bremacs) bremacsTree(ndown)
 }
 
 
@@ -377,43 +430,51 @@ bremacsTree=function(ndown){
     makeDir(app.pt("bremacs"), "BRemacs app dir:")
 
     ## Copy Emacs 
-    from=paste0(G.emacs, '.d/emacs')
+    from=paste0(G$emacs, '.d/emacs')
     to=app.pt("bremacs")
     copy.dir(from, to, "main BRemacs files")
 
     ## Copy ESS
-    from=paste0(G.esszip, '.d/ESS-master')              
-    to=blib.pt(G.esszip)
+    from=paste0(G$esszip, '.d/ESS-master')              
+    to=slisp.pt(G$esszip)
     copy.dir(from, to, "ESS")
 
     ## Copy Polymode
-    from=paste0(G.polyzip, '.d/polymode-master')              
-    to=blib.pt(G.polyzip)
+    from=paste0(G$polyzip, '.d/polymode-master')              
+    to=slisp.pt(G$polyzip)
     copy.dir(from, to, "Polymode")
 
-    makeDir(blib.pt("bremacs"), "BRemacs library:")
+    ## Copy Markdown mode
+    from=paste0(G$markzip, '.d/markdown-mode-master')              
+    to=slisp.pt(G$markzip)
+    copy.dir(from, to, "Markdown mode")
 
-    download.git("src/bremacs/",           root.pt("help/bloomr.html"), ,ndown) 
-
+    ## Copy Markdown mode
+    from=paste0(G$bmzip, '.d/bm-master')              
+    to=slisp.pt(G$bmzip)
+    copy.dir(from, to, "BM mode")
+    
+    ## Copy BRemacs lib files
+    makeDir(slisp.pt("bremacs"), "BRemacs library:")
 
     ## Get BRemacs lib files with ls or dir and parse into a string
     bfiles="
-br-init-dbg.el  br-keys.elc    br-recentf.el   br-rnw.elc       br-simple-buffer-menu.el   ess-init.old.R  
+br-init-dbg.el  br-keys.elc    br-recentf.el   br-rnw.elc       br-simple-buffer-menu.el     
 br-init.el      br-menico.el   br-recentf.elc  br-setmodes.el   br-simple-buffer-menu.elc  splith.svg      
 br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R                 splith.xpm
-"
+"   # ess-init.old.R
+    
     bfiles=gsub(" ", "\n", bfiles)
     bfiles=strsplit(bfiles, "\n")[[1]]
     bfiles=bfiles[nzchar(bfiles)]
 
     ## Download BRemacs lib files
-    d=blib.pt("bremacs")
+    d=slisp.pt("bremacs")
     x=sapply(bfiles, function(f)
         download.git(makePath("src/bremacs/lib", f),  makePath(d, f)))
-
+    download.git("src/bremacs/site-start.el",   slisp.pt("site-start.el"), ,ndown) 
     
 }
-
 
 
 
@@ -453,11 +514,11 @@ initScripts=function(ndown){
     ## Make personal dir with some sample files
     makeDir(root.pt('mybloomr'), "personal directory:")
     makeDir(root.pt('mybloomr/examples'), "personal directory:")
-    download.git("res/semic.csv",           root.pt("mybloomr/examples/semic.csv"), ,ndown)
-    download.git("res/tickers.csv",         root.pt("mybloomr/examples/tickers.csv"), ,ndown)
-    download.git("res/tickers.eqt.csv",     root.pt("mybloomr/examples/tickers.eqt.csv"), ,ndown)
-    download.git("res/my-first-report.Rmd", root.pt("mybloomr/examples/my-first-report.Rmd"), ,ndown)
-    download.git("res/tryme.R",                 root.pt("mybloomr/examples/tryme.R"), ,ndown)
+    download.git("res/semic.csv",             root.pt("mybloomr/examples/semic.csv"), ,ndown)
+    download.git("res/tickers.csv",           root.pt("mybloomr/examples/tickers.csv"), ,ndown)
+    download.git("res/tickers.eqt.csv",       root.pt("mybloomr/examples/tickers.eqt.csv"), ,ndown)
+    download.git("res/my-first-report.Rmd",   root.pt("mybloomr/examples/my-first-report.Rmd"), ,ndown)
+    download.git("res/tryme.R",               root.pt("mybloomr/examples/tryme.R"), ,ndown)
                   
     ## Make R bootstrapper
     makeBoot(ndown)
@@ -474,35 +535,45 @@ EnvSet,  JAVA_HOME,  %A_ScriptDir%\\%AppDir%\\openjdk/jre
 ;EnvSet, PATH,       %A_ScriptDir%\\%AppDir%\\openjdk/bin;%path%
 Run, %AppDir%\\R\\bin\\x64\\Rgui.exe --internet2 LANGUAGE=en
 "
-    bloomr.run=gsub("%AppDir%", G.appname, bloomr.run) 
+    bloomr.run=gsub("%AppDir%", G$appname, bloomr.run)
+    makeBoot_(bloomr.run, "bloomr", ndown)
     
-    ## Make a workhorse function !!!!!!!!!!!
-    ## makeBoot_(bloomr.run, "res/bloomr.ico")
-    ## if(bremacs){
-    ##     bremacs.run= "..."
-    ##     bremacs.run=gsub("%AppDir%", G.appname, bremacs.run) 
-    ##     makeBoot_(bremacs.run, "res/bremacs.ico")
-    ## }
-    ## Refactor code below as makeBoot_
+    if(G$bremacs){
+        bremacs.run= "
+EnvSet,  HOME,       %A_ScriptDir%\\mybloomr
+EnvSet,  JAVA_HOME,  %A_ScriptDir%\\%AppDir%\\openjdk/jre
+;EnvSet, PATH,       %A_ScriptDir%\\%AppDir%\\openjdk/bin;%path%
+Run, %AppDir%\\bremacs\\bin\\runemacs.exe -q --no-splash
+"        
+        bremacs.run=gsub("%AppDir%", G$appname, bremacs.run)
+        makeBoot_(bremacs.run, "bremacs", ndown)
+    }   
+    
+}
+
+
+makeBoot_=function(script.cont, stem, ndown){
+
     
     ## Make boot file
-    ahkdir=work.pt(paste0(G.ahkzip, '.d/Compiler'))
-    cat(bloomr.run, file=makePath(ahkdir, "bloomr.run"))
+    ahkdir=work.pt(paste0(G$ahkzip, '.d/Compiler'))
+    cat(script.cont, file=makePath(ahkdir, paste0(stem, ".run")))
    
     ## Get icon from GitHub
-    to=makePath(paste0(G.ahkzip, '.d/Compiler'), "bloomr.ico")
-    download.git("res/bloomr.ico", to, ,ndown)
+    to=makePath(paste0(G$ahkzip, '.d/Compiler'), paste0(stem, ".ico"))
+    download.git(makePath("res", paste0(stem, ".ico")), to, ,ndown)
     
     ## Make exe
     message("\nMaking BloomR executable")
     cd=normalizePath(ahkdir)
     cd= paste0('cd "', cd, '" &')
-    run="Ahk2Exe.exe /in bloomr.run /icon bloomr.ico /bin \"Unicode 32-bit.bin\""
+    run=paste(
+        "Ahk2Exe.exe /in", paste0(stem, ".run"), "/icon", paste0(stem, ".ico"), "/bin \"Unicode 32-bit.bin\"")
     shell(paste(cd, run), shell=Sys.getenv("COMSPEC"))    
 
     ## Move exe
-    from=makePath(ahkdir, "bloomr.exe")
-    to=work.pt("bloomr/bloomr.exe")
+    from=makePath(ahkdir, paste0(stem, ".exe"))
+    to=work.pt(paste0("bloomr/", stem, ".exe"))
     file.rename(from, to)    
     
 }
@@ -523,24 +594,26 @@ PROF=function(){ #Keep this on separate line
 }
 
 
-###== Utlities ==
+
+###== Utilities ==
 
 ### Exe and Zip distro 
-makeExe=function(ask,ndown){
+makeInst=function(ask,ndown){
 
-    message('\nCreating BloomR.exe installer')
-    to="BloomR_green_setup_.exe" # actual name is set in nsi
+    message('\nCreating BloomR green installer')
+    ## Set name (nsi name is "BRsetup.exe")
+    to="BloomR_setup_.exe"
+    if(G$bremacs) to="BloomR+BRemacs_setup_.exe"
     if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)
-
     download.git("bloomr.nsi", "bloomr.nsi", ,ndown)
-    message('Creating self-extracting executable BloomR_green_setup_.exe, add version.\n',
-            'This may take a bit...')
+    message('Creating green installer ', to, '\nThis may take a bit...')
     nsi='bloomr.nsi'
-    nexe=paste0(G.nsiszip,'.d/App/NSIS/makensis.exe')
+    nexe=paste0(G$nsiszip,'.d/App/NSIS/makensis.exe')
     cmd=paste(win.pt(nexe), "/v2", win.pt(nsi))
     ret=system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+    file.rename(work.pt("BRsetup.exe"), work.pt(to))
 
 }
 
@@ -554,7 +627,7 @@ makeZip=function(ask){
     
     from=work.pt('bloomR/.././bloomR/*')   # In 7z ./ removes dir prefix from archive     
     zexe=get7zbin()
-    #cmd=paste("cmd.exe /c cd /D", win.pt(G.work) , "&")
+    #cmd=paste("cmd.exe /c cd /D", win.pt(G$work) , "&")
     cmd=paste(win.pt(zexe), "a", win.pt(to), win.pt(from))
     ret=system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
@@ -619,19 +692,19 @@ cran.geturl=function(pack){
 
 ## Get last versions    
 javaurl.ver=function(url){
-    url=G.javaurl
+    url=G$javaurl
     messagev("Parsing page:\n", url, ' ...')
     if(!url.exists.cert(url, cert=TRUE))
         stop("Unable to open java download page:\n", url)       
     href=getURL(url, ssl.verifypeer=TRUE, cainfo=cert.abs_())   
     href=xpathSApply(htmlTreeParse(href, useInternalNodes=TRUE),
         "//a[@class='execute']", xmlGetAttr, "href")
-    href=grep(paste0(G.javaurl.bit, "$"), href, value=TRUE)[1]
-    paste0(G.javaurl.dom, href)
+    href=grep(paste0(G$javaurl.bit, "$"), href, value=TRUE)[1]
+    paste0(G$javaurl.dom, href)
 }
 
 rbbgurl.ver=function(){
-    url=G.rbbgurl
+    url=G$rbbgurl
     messagev("Parsing page:\n", url, ' ...')
     if(!url.exists.cert(url, cert=TRUE)) stop("Unable to open rbbg page:\n", url)
     href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
@@ -642,7 +715,24 @@ rbbgurl.ver=function(){
     paste0(url, href)
 }
 
+innourl.ver=function(){
+    url=G$innourl
+    messagev("Parsing page:\n", url, ' ...')
+    if(!url.exists.cert(url, cert=FALSE)) stop("Unable to open ", url, " page:\n", url)
+    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
+    href=rev(grep("innoextract-*", href, valu=TRUE))[1]
+    href=gsub("/", "", href)
+    paste0(url, "/",  href, "/", href, "-windows.zip")
+}
 
+rurl.ver=function(){
+    url=G$rurl
+    messagev("Parsing page:\n", url, ' ...')
+    if(!url.exists.cert(url, cert=FALSE)) stop("Unable to open ", url, " page:\n", url)
+    href=xpathSApply(htmlTreeParse(getURL(url), useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
+    href=grep("R.+win\\.exe", href, value=TRUE)
+    paste0(url, "/",  href)
+}
 
 
 ###== Donwload helpers ==
@@ -678,7 +768,7 @@ download.nice=function(from, to, overwrite, ndown, desc="", cert=TRUE){
 
     ## Download ndown times and exit deleting file on errors
     for(i in 1:ndown)
-        if(s<-download.bin(from, to, cert)$succ) break
+        if(s<-download.bin(from, to, cert=cert)$succ) break
     if(!s){
         unlink(to, force = TRUE)
         stop('\nDownload error')
@@ -715,20 +805,20 @@ cert.abs_=function() {# local web certificate relative to currpath
 
 download.git=function(file, to, overwrite=TRUE, ndown, desc=""){
 ### Download (realtive to work.pt) from github or use local git dir
-### Git dir can be set with makeBloomR(gitsim=...) and is shared via global var G.github.local 
+### Git dir can be set with makeBloomR(gitsim=...) and is shared via global var G$github.local 
     
     if(!nzchar(desc)) desc=file
     
     ## remote git
-    if(!nzchar(G.github.local)) {
-        from=makePath(G.github, file)
+    if(!nzchar(G$github.local)) {
+        from=makePath(G$github, file)
         download.nice(from, to, overwrite=TRUE, ndown, desc)
         
     ## local git
     } else {
         messagev('\nDownloading', desc)
-        from=makePath(G.github.local, file)  # not relative to workdir 
-        if(!is.path.abs_(from)) stop(from, "\nnot found in local Git repo:\n", G.github.local)
+        from=makePath(G$github.local, file)  # not relative to workdir 
+        if(!is.path.abs_(from)) stop(from, "\nnot found in local Git repo:\n", G$github.local)
         to=work.pt(to)
         file.copy(from, to, overwrite=TRUE) 
     }
@@ -745,7 +835,7 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
     width= getOption("width") - 25  # output width (dots + data)
     dcur=0  # download status
     ## Referer
-    opt=list(referer=NULL); opt$referer =NULL 
+    opt=list(referer=NULL); opt$referer =refr
 
     ## Callback function for curlPerform
     dProgress=function(down, up, dcur, width){
@@ -794,7 +884,7 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
     }
     ## Follow location via recursion
     loc=ifelse(is.null(headers), NA, headers["Location"])
-    if(!is.na(loc)) download.bin(url=loc, file, refr, curl=curl) else
+    if(!is.na(loc)) download.bin(url=loc, file, refr=refr, cert=cert, curl=curl) else
     return(list(succ=!is.null(succ), headers=headers))
 }
 
@@ -821,9 +911,9 @@ makePath=function(parent, child){
 
 work.pt=function(dir=""){    
 ### Prefix dir path with work dir path
-### Work dir path is set with global G.work
+### Work dir path is set with global G$work
 
-    makePath(G.work, dir)
+    makePath(G$work, dir)
 }
 
 root.pt=function(dir=""){
@@ -836,13 +926,13 @@ root.pt=function(dir=""){
 
 app.pt=function(dir=""){
 ### Prefix dir path with BloomR apps' path relative to workdir.
-### App dir name depends on G.appname, its parent is BloomR root dir
+### App dir name depends on G$appname, its parent is BloomR root dir
 
-    x=root.pt(G.appname)
+    x=root.pt(G$appname)
     makePath(x, dir)
 }
 
-blib.pt=function(dir=""){
+slisp.pt=function(dir=""){
 ### Prefix dir path with BRemacs site-lisp path relative to workdir.
     
     x=app.pt("bremacs/share/emacs/site-lisp")
@@ -1061,7 +1151,7 @@ uzip.7z=function(from, to, desc, delTarget=TRUE){
 }
 
 get7zbin=function(){ # Get 7z.exe relative to workdir
-    zipdir=paste0(G.pzip,'.d')
+    zipdir=paste0(G$pzip,'.d')
     versiondir=get7zbin.ver_(zipdir)
     subpath='/res/7z/7z.exe'
     makePath(zipdir, paste0(versiondir, subpath))
@@ -1070,6 +1160,26 @@ get7zbin=function(){ # Get 7z.exe relative to workdir
 get7zbin.ver_=function(zipdir){ # get7zbin workhorse
     zipdir=work.pt(zipdir)
     dir(zipdir)
+}
+
+
+innoextract=function(from, to, desc, delTarget=TRUE){
+    exe=getInnobin()
+    if(is.path(to)) {
+        message('\nDeleting exisiting ', desc)
+        del.path(to)
+    }    
+    message('\nExtracting ', desc)
+    message('This may take a bit ...')
+    cmd=paste(win.pt(exe), win.pt(from),  "--output-dir", win.pt(to))
+    ret=system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+}
+
+
+getInnobin=function(){ # Get 7z.exe relative to workdir
+    innodir=paste0(G$innozip,'.d')
+    makePath(innodir, "innoextract.exe")
 }
 
 
