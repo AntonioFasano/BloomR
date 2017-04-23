@@ -4,28 +4,29 @@
 
 @Echo off
 
-:: bloomR\main\ed\
+:: Up from bloomR\main\ed\
 cd ..\..
 
 Set "BLOOMR=%CD%"
-Echo BLOOMR environment directory is:
+Echo BLOOMR env var is:
 Echo %BLOOMR%
 
 Set "HOME=%BLOOMR%\mybloomr"
-Echo HOME environment directory is:
+Echo HOME env var is:
 Echo %HOME%
 
 Set "JAVA_HOME=%BLOOMR%\main\openjdk\jre"
-Echo JAVA_HOME environment directory is:
+Echo JAVA_HOME env var is:
 Echo %JAVA_HOME%
 
 Echo Current dir set to:
-Echo %HOME%
-cd  %HOME%
+cd   %HOME%
+Echo %CD%
 
 REM Set PATH=%JAVA_HOME%\bin;%PATH%
 
-Start ..\main\R\bin\x64\Rgui.exe   --internet2 LANGUAGE=en
+Echo Start ..\main\R\bin\x64\Rgui.exe   --internet2 LANGUAGE=en
+     Start ..\main\R\bin\x64\Rgui.exe   --internet2 LANGUAGE=en
 Pause
 
 

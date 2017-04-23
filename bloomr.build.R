@@ -9,7 +9,8 @@
 ##    causes:
 ##    Fix download error in: download.nice(G$apiurl, G$apizip, ..., cert=F), if cert is T
 ##    Fix download error in: download.nice(G$ahkurl, G$ahkzip ...) 
-
+##  Create a java bin to test java directory variables
+##  Fix: ess-init.R ess-init.old.R the first is for debug the latter is tht original (tcltk)
 ##
 ##  Usage:
 ##  Source this file and run:
@@ -418,7 +419,7 @@ bloomrTree=function(ndown){
     download.git("reports/reporting.pdf",     root.pt("help/reporting.pdf"), ,ndown)     
 
 
-    ## Environemnt diagnostic
+    ## Environment diagnostic
     message("\nAdding ED tools")
     makeDir(app.pt('ed'), "ED tools:")
     download.git("src/ed/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd"), ,ndown) 
@@ -465,8 +466,8 @@ bremacsTree=function(ndown){
     bfiles="
 br-init-dbg.el  br-keys.elc    br-recentf.el   br-rnw.elc       br-simple-buffer-menu.el     
 br-init.el      br-menico.el   br-recentf.elc  br-setmodes.el   br-simple-buffer-menu.elc  splith.svg      
-br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R                 splith.xpm
-"   # ess-init.old.R
+br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R ess-init.old.R  splith.xpm
+"   
     
     bfiles=gsub(" ", "\n", bfiles)
     bfiles=strsplit(bfiles, "\n")[[1]]
@@ -549,7 +550,7 @@ Run, %AppDir%\\R\\bin\\x64\\Rgui.exe --internet2 LANGUAGE=en
     
     if(G$bremacs){
         bremacs.run= "
-EnvSet,  HOME,       %A_ScriptDir%\\mybloomr
+EnvSet,  HOME,       %A_ScriptDir%\\main\\bremacs
 EnvSet,  JAVA_HOME,  %A_ScriptDir%\\%AppDir%\\openjdk/jre
 ;EnvSet, PATH,       %A_ScriptDir%\\%AppDir%\\openjdk/bin;%path%
 Run, %AppDir%\\bremacs\\bin\\runemacs.exe -q --no-splash

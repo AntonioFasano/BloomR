@@ -2,11 +2,8 @@
 
 (defun br-init-paths ()
   
-  (setq inferior-R-program-name
-	(expand-file-name (concat invocation-directory "../../R/bin/x64/Rterm.exe")))
-
   (setq user-emacs-directory
-	(expand-file-name (concat invocation-directory "../.emacs.d")))
+	(expand-file-name (concat invocation-directory "../.emacs.d/")))
 
   ;; We do not want emacs.d in HOME, so we change the initial HOME shell value set to host emacs.d
   (setenv "HOME"
@@ -25,7 +22,12 @@
  	(locate-user-emacs-file "auto-save-list/.saves-"))
 
   (setq br-pdf-viewer (expand-file-name
-		       (concat user-emacs-directory "/../../Sumatra/SumatraPDF.exe")))
+		       (concat user-emacs-directory "../../Sumatra/SumatraPDF.exe")))
+
+  (setq br-rterm 
+	(expand-file-name (concat invocation-directory "../../R/bin/x64/Rterm.exe")))
+
+  
 
   ;; Consider file-truename as an alt to expand-file-name
   (cd "~"))
@@ -72,6 +74,8 @@ The rest goes to br-setmodes.el."
   (setq initial-major-mode 'R-mode)
   (setq initial-scratch-message "R scratchpad")
   (setq-default major-mode 'R-mode)
+  (setq inferior-R-program-name br-rterm)
+
 
   ;; Rprofile specific for EMACS/Rterm
   ;; Currently patches install.packages to use tcltk
@@ -124,7 +128,13 @@ The rest goes to br-setmodes.el."
   (br-init-set-ess)
   (br-init-history)
   (require 'br-keys)
-  )
+
+ (let ((inith "~/init.el")
+       (inite (concat user-emacs-directory "init.el")))
+    (if (file-exists-p inith) (load inith)
+      (if (file-exists-p inite) (load inite)))) 
+ )
+  
 
 (br-init-main)
 
