@@ -45,12 +45,20 @@ Too keep the size of the BloomR/BRemacs folder not too large, LaTeX bundling is 
 It bears mentioning that BloomR/BRemacs is designed to be green on your system: it never writes configuration files outside its own folder or inside the registry and never executes any operation which requires administrator privileges to run. This is a prerequisite to make it fully portable. 
 
 
+BRemacs Customisation
+---------------------
+
+Some standard Emacs variables are changed to make BRemacs portable. 
+
+The Emacs init file, `init.el`, which can be used to set configuration parameters at startup,  is normally located in the `emacs.d` directory and the latter is in turn located in the user profile directory (see environment variable `USERPROFILE`). In BRemacs the path is `<bloomr>\main\bremacs\emacs.d\init.el`, where 
+`<bloomr>` is the directory where BloomR/BRemacs files have been extracted. 
+The init file can also be in  `<bloomr>\mybloomr\init.el`. If it is in both places , the latter prevail.
 
 
 BRemacs Internals
 ----------------
 
-__Notation__  If you come from a Linux world, note that path separators in Windows are backslashes `\` and not  slashes. For Windows users, note that I will use the PowerShell notation to address enviroment variables, that is `${ENVVAR}`; curly braces are omitted if no confusion arises.
+__Notation__  If you come from a Linux world, note that path separators in Windows are backslashes `\` and not  slashes. For Windows users, note that I will use the PowerShell notation to address environment variables, that is `${ENVVAR}`; curly braces are omitted if no confusion arises.
 
 Remember that in BRemacs (and Emacs in general), you might obtain the value of a system evnironment variable `$MYVAR` with the key sequence (where `M` is the meta key  <kbd>Alt</kbd> )
 
@@ -61,11 +69,11 @@ If you have opened an R session in BRemacs you can also use:
     Sys.getenv("MYVAR")
 
 
-When you click on the the green BRemacs icon,  a number of enviroment variable are set.
+When you click on the the green BRemacs icon,  a number of environment variable are set.
 
-First `bremacs.exe` sets the enviroment variable `$BLOOMR` to the main BloomR/BRemacs folder. Initially, this is the folder chosen by the user at setup time when extracting files. The actual value of  `$BLOOMR`, if the position of the folder changes. 
+First `bremacs.exe` sets the environment variable `$BLOOMR` to the main BloomR/BRemacs folder. Initially, this is the folder chosen by the user at setup time when extracting files. The actual value of  `$BLOOMR`, if the position of the folder changes. 
 
-The enviroment variable `$HOME` is temporary  set to `${BLOOMR}\bremacs`.  This is later changed.
+The environment variable `$HOME` is temporary  set to `${BLOOMR}\bremacs`.  This is later changed.
 
 
 Since BloomR includes also a portable Java environment, it  then sets `$JAVA_HOME` to the related runtime folder, that is `${BLOOMR}\main\openjdk\jre`
@@ -95,16 +103,16 @@ Based on temporary value of `$HOME`, `runemacs.exe` creates the directory `$HOME
     ${BLOOMR}\main\bremacs\share\emacs\site-lisp\site-start.el
 
 
-In normal conditions, that is, when the enviroment variable `$EMACSDBG` is not set to 1, the `site-start.el` executes the elisp script:
+In normal conditions, that is, when the environment variable `$EMACSDBG` is not set to 1, the `site-start.el` executes the elisp script:
 
 
     ${BLOOMR}\main\bremacs\share\emacs\site-lisp\bremacs\br-init.el
 
-This is the main BRemacs init script setting configuration parmateters and loading required add-on libraries.  Its  main function `br-init-main` calls ancillary functions which:
+This is the main BRemacs initialisation script setting configuration parameters and loading required add-on libraries.  Its  main function `br-init-main` calls ancillary functions which:
 
 
 - set Emacs path variables;
-- set Emacs standard or package specifc variables;
+- set Emacs standard or package specific variables;
 - load external libraries, including a number  of BRemacs specific libraries in located in  `${BLOOMR}\main\bremacs\share\emacs\site-lisp\bremacs`.
 - load Emacs init file
 
@@ -112,8 +120,8 @@ This is the main BRemacs init script setting configuration parmateters and loadi
  
 `user-emacs-directory` is a standard variable identifying the directory for storing Emacs package configuration files and the automatically installed packages.
 
-It also changes the temporary value of the enviroment variable `$HOME` to `${BLOOMR}\mybloomr` (previously set  by `bremacs.exe` as working directory).  
-Both in BRemacs and in R, when a path contains a `~`, it is exapanded to the value  `$HOME`. 
+It also changes the temporary value of the environment variable `$HOME` to `${BLOOMR}\mybloomr` (previously set  by `bremacs.exe` as working directory).  
+Both in BRemacs and in R, when a path contains a `~`, it is expanded to the value  `$HOME`. 
 
 Finally `br-init.el` executes the BRemacs init file. (Like the standard Emacs init file) BRemacs init file is named `init.el` and  can be located in the directory set by `user-emacs-directory`, but it can also in the be in that set by the enviroment variable `$HOME`.  If it is in both places the latter prevails. 
 
@@ -123,7 +131,7 @@ Finally `br-init.el` executes the BRemacs init file. (Like the standard Emacs in
 <!-- mode: md -->
 <!-- End: -->
 
-<!--  LocalWords:  BloomR BRemacs RStudio ESS Bloomberg LaTeX
+<!--  LocalWords:  BloomR BRemacs RStudio ESS Bloomberg LaTeX init
  -->
-<!--  LocalWords:  preinstalled preconfigured
+<!--  LocalWords:  preinstalled preconfigured PowerShell
  -->

@@ -2,9 +2,9 @@
 
 ##  TODO
 ##  Remove internet2 ?
-##  Compile BRemacs package on first run
+##  Compile BRemacs packages (BM) on first run
 ##  Add  rClr, rEikon, RDatastream  in site-library?
-##  Test BRemecs
+##  Test BRemecs with rmd, rnw etc.
 ##  Fix getURL("https://www.google.com", cainfo="cacert.pem"), using http://curl.haxx.se/ca/cacert.pem which
 ##    causes:
 ##    Fix download error in: download.nice(G$apiurl, G$apizip, ..., cert=F), if cert is T

@@ -131,8 +131,8 @@ The rest goes to br-setmodes.el."
 
  (let ((inith "~/init.el")
        (inite (concat user-emacs-directory "init.el")))
-    (if (file-exists-p inith) (load inith)
-      (if (file-exists-p inite) (load inite)))) 
+    (if (file-exists-p inith) (load (file-name-sans-extensioninith))
+      (if (file-exists-p inite) (load (file-name-sans-extension inite))))) 
  )
   
 
