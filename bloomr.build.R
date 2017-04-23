@@ -1,11 +1,11 @@
-
 ###  BloomR source
 
 ##  TODO
 ##  Remove internet2 ?
 ##  Compile BRemacs package on first run
 ##  Add  rClr, rEikon, RDatastream  in site-library?
-## 
+##  Test BRemecs including bm pack
+##
 ##  Usage:
 ##  Source this file and run:
 ##  makeBloomR("path/to/workDir")
@@ -33,7 +33,7 @@
 ### Globals
 G=new.env()
 
-## java alexkasko
+## Java alexkasko
 G$javaurl="https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/"
 G$javaurl.dom="https://bitbucket.org"
 ## win32
@@ -70,13 +70,13 @@ x="rJava zoo xts RCurl XML knitr"
 ## RCurl deps
 x=paste(x, "bitops")
 
-## knitr deps
+## Knitr deps
 x=paste(x, "evaluate digest markdown yaml highr formatR stringr")
 
-## stringr deps
+## Stringr deps
 x=paste(x, "stringi magrittr")
 
-## markdown deps
+## Markdown deps
 x=paste(x, " mime")
 
 ## read.xlx deps
@@ -84,7 +84,7 @@ x=paste(x, "plyr pbapply Rcpp")
 G$packlist=x
 rm(x)
     
-## innoextract
+## Innoextract
 G$innourl="http://constexpr.org/innoextract/files"
 G$innozip='innoextract'
 
@@ -116,7 +116,6 @@ G$appname="main" # BloomR application folder name. Used by app.pt()
 
 ## Options
 G$bremacs=FALSE
-
 
 ## Dev style 
 ## Functions returning/accepting paths normally use paths relative to G$work.
@@ -414,10 +413,9 @@ bloomrTree=function(ndown){
 
 
     ## Environemnt diagnostic
-    #message("\nAdding ED tools")
-    #makeDir(app.pt('ed'), "ED tools:")
-    #download.git("src/xxx",           root.pt("xxx"), ,ndown) 
-
+    message("\nAdding ED tools")
+    makeDir(app.pt('ed'), "ED tools:")
+    download.git("src/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd"), ,ndown) 
     
     if(G$bremacs) bremacsTree(ndown)
 }
@@ -473,7 +471,11 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R      
     x=sapply(bfiles, function(f)
         download.git(makePath("src/bremacs/lib", f),  makePath(d, f)))
     download.git("src/bremacs/site-start.el",   slisp.pt("site-start.el"), ,ndown) 
-    
+
+    ## Environemnt diagnostic
+    message("\nAdding ED tools")
+    download.git("src/bremacs.ed.cmd",  app.pt("ed/bremacs.ed.cmd"), ,ndown) 
+
 }
 
 
