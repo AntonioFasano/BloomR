@@ -1,9 +1,0 @@
-
-EnvSet, HOME,       %A_ScriptDir%\main\bremacs
-EnvSet, JAVA_HOME, %A_ScriptDir%\main\openjdk\jre
-;EnvSet, PATH,       %A_ScriptDir%\main\openjdk\bin;%path%
-Run, main\bremacs\bin\runemacs.exe -q --no-splash
-
-
-;; shell build 
-;; Ahk2Exe.exe /in bremacs.run /icon bremacs.ico /bin "Unicode 32-bit.bin"
