@@ -4,7 +4,12 @@
 ##  Remove internet2 ?
 ##  Compile BRemacs package on first run
 ##  Add  rClr, rEikon, RDatastream  in site-library?
-##  Test BRemecs including bm pack
+##  Test BRemecs
+##  Fix getURL("https://www.google.com", cainfo="cacert.pem"), using http://curl.haxx.se/ca/cacert.pem which
+##    causes:
+##    Fix download error in: download.nice(G$apiurl, G$apizip, ..., cert=F), if cert is T
+##    Fix download error in: download.nice(G$ahkurl, G$ahkzip ...) 
+
 ##
 ##  Usage:
 ##  Source this file and run:
@@ -259,8 +264,9 @@ downloads=function(tight, ndown){
     ## given a not found error there is a temp fix
     ## download.nice(G$ahkurl, G$ahkzip, overwrite, ndown,
     ##               "ahkscript")
-    download.file(G$ahkurl, makePath(G$work, G$ahkzip))
-
+    if(is.path.abs_(makePath(G$work, G$ahkzip)) && !overwrite){
+        warn.path(makePath(G$work, G$ahkzip), "already exists.")
+    } else download.file(G$ahkurl, makePath(G$work, G$ahkzip))
 
     ## BRemacs
     if(G$bremacs){
@@ -415,7 +421,7 @@ bloomrTree=function(ndown){
     ## Environemnt diagnostic
     message("\nAdding ED tools")
     makeDir(app.pt('ed'), "ED tools:")
-    download.git("src/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd"), ,ndown) 
+    download.git("src/ed/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd"), ,ndown) 
     
     if(G$bremacs) bremacsTree(ndown)
 }
@@ -474,7 +480,8 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R      
 
     ## Environemnt diagnostic
     message("\nAdding ED tools")
-    download.git("src/bremacs.ed.cmd",  app.pt("ed/bremacs.ed.cmd"), ,ndown) 
+    download.git("src/ed/bremacs.ed.cmd",      app.pt("ed/bremacs.ed.cmd"),     ,ndown) 
+    download.git("src/ed/bremacs-dbg.ed.cmd",  app.pt("ed/bremacs-dbg.ed.cmd"), ,ndown) 
 
 }
 
