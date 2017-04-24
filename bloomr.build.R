@@ -540,6 +540,7 @@ makeBoot=function(ndown){
 
     ## Boot string    
     bloomr.run="
+EnvSet,  BLOOMR,     %A_ScriptDir%
 EnvSet,  HOME,       %A_ScriptDir%\\mybloomr
 EnvSet,  JAVA_HOME,  %A_ScriptDir%\\%AppDir%\\openjdk/jre
 ;EnvSet, PATH,       %A_ScriptDir%\\%AppDir%\\openjdk/bin;%path%
@@ -550,6 +551,7 @@ Run, %AppDir%\\R\\bin\\x64\\Rgui.exe --internet2 LANGUAGE=en
     
     if(G$bremacs){
         bremacs.run= "
+EnvSet,  BLOOMR,     %A_ScriptDir%
 EnvSet,  HOME,       %A_ScriptDir%\\main\\bremacs
 EnvSet,  JAVA_HOME,  %A_ScriptDir%\\%AppDir%\\openjdk/jre
 ;EnvSet, PATH,       %A_ScriptDir%\\%AppDir%\\openjdk/bin;%path%

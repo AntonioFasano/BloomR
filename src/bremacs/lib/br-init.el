@@ -1,40 +1,87 @@
+;; bremacs: br-bloomr-dir  br-app-dir br-bremacs-dir (br-locate-bloomr-path) (br-locate-app-path) (br-locate-bremacs-path) br-pdf-viewer br-rterm
+
+(defvar br-bloomr-dir 
+  (or (getenv "BLOOMR") (error "BRemacs launcher did not set `BLOOMR' environment variable."))
+  "Absolute path to directory where BloomR/BRemacs files have been extracted.
+It is set at init time based on \"BLOOMR\" environment variable.
+\"BLOOMR\" variable is dynamical set by the BRemacs launcher, i.e. \"bremacs.exe\", based on its invocation directory.")
+
+(defvar br-app-dir nil 
+  "Absolute path to BloomR/BRemacs directory designed to host BloomR applications.
+Currently its name is \"main\"; it could be \"apps\".")
+
+(defvar br-bremacs-dir nil 
+  "Absolute path to BloomR/BRemacs directory designed to host BRemacs distro files.")
+
+(defvar br-pdf-viewer nil "Location of local PDF viewer.
+Currently default location of Sumatra viewer")
+
+(defvar br-rterm  nil
+  "Location of local R x64 executable \"rterm\"")
 
 
 (defun br-init-paths ()
-  
-  (setq user-emacs-directory
-	(expand-file-name (concat invocation-directory "../.emacs.d/")))
 
+  ;; .emacs.d is set relative to Emacs invocation dir
+  (setq user-emacs-directory
+	(br-expand-as-dir (concat invocation-directory "../.emacs.d/")))
+
+  ;; Manage HOME dir
+  ;; ---------------
   ;; We do not want emacs.d in HOME, so we change the initial HOME shell value set to host emacs.d
   (setenv "HOME"
-	  (expand-file-name (concat invocation-directory "../../../mybloomr")))
+	  (br-expand-as-dir (concat invocation-directory "../../../mybloomr")))
 
-  ;; Without embedded newllines in path one might replace  \` and \' with \^ and \$
-  (setq abbreviated-home-dir (concat 
+  ;;(locate-user-emacs-file) -> (abbreviate-file-name) uses abbreviated-home-dir
+  (setq abbreviated-home-dir (concat			      
 			      "\\`" 
 			      (getenv "HOME")
 			      "\\(/\\|\\'\\)"))
-  
+  ;; Without embedded newllines in path one might replace  \` and \' with \^ and \$
+
+  ;; Reset stadandard files to be located .emacs.d
+  ;; ---------------------------------------------  
   (setq abbrev-file-name ; instead of $HOME/emacs.d/abbrev_defs
  	(locate-user-emacs-file "abbrev_defs"))
 
   (setq auto-save-list-file-prefix ; based on user-emacs-directory
  	(locate-user-emacs-file "auto-save-list/.saves-"))
 
-  (setq br-pdf-viewer (expand-file-name
-		       (concat user-emacs-directory "../../Sumatra/SumatraPDF.exe")))
+  ;; Set BloomR specific paths
+  ;; -------------------------
+  (setq br-app-dir  (br-locate-bloomr-path "main"))
+  (setq br-bremacs-dir  (br-locate-app-path "bremacs"))
 
-  (setq br-rterm 
-	(expand-file-name (concat invocation-directory "../../R/bin/x64/Rterm.exe")))
-
+  (setq br-pdf-viewer (br-locate-app-path "Sumatra/SumatraPDF.exe")) 
+  (setq br-rterm (br-locate-app-path "R/bin/x64/Rterm.exe"))
   
-
+  
   ;; Consider file-truename as an alt to expand-file-name
   (cd "~"))
 
 
+(defun br-expand-as-dir (path)
+  "Make PATH absolute and canonical, and interpret it as a directory. 
+The latter means generally removing the trailing (back)slash."
+     (file-name-as-directory (expand-file-name path)))
+
+(defun br-locate-bloomr-path (path)
+  "If PATH is absolute return PATH, else return it as an absolute path relative to `br-bloomr-dir'"
+  (expand-file-name path
+		    (file-name-as-directory (expand-file-name br-bloomr-dir))))
+
+(defun br-locate-app-path (path)
+  "If PATH is absolute return PATH, else return it as an absolute path relative to `br-app-dir'"
+  (expand-file-name path
+		    (file-name-as-directory (expand-file-name br-app-dir))))
+
+(defun br-locate-bremacs-path (path)
+  "If PATH is absolute return PATH, else return it as an absolute path relative to `br-bremacs-dir'"
+  (expand-file-name path
+		    (file-name-as-directory (expand-file-name br-bremacs-dir))))
+
 (defun br-init-visual()
-  "Mostly visual settings plus keyboard feedeback."
+  "Mostly visual settings plus keyboard feedback."
   (setq inhibit-splash-screen t)  ; for site-start invoke with  --no-splash
   (modify-frame-parameters  nil (quote ((fullscreen . maximized))))
   (set-face-attribute 'default  nil :height 146) 
@@ -120,7 +167,6 @@ The rest goes to br-setmodes.el."
   )
 
 
-
 (defun br-init-main()  
   (br-init-paths)
   (br-init-packs)
@@ -130,8 +176,8 @@ The rest goes to br-setmodes.el."
   (require 'br-keys)
 
  (let ((inith "~/init.el")
-       (inite (concat user-emacs-directory "init.el")))
-    (if (file-exists-p inith) (load (file-name-sans-extensioninith))
+       (inite (locate-user-emacs-file "init.el")))
+    (if (file-exists-p inith) (load (file-name-sans-extension inith))
       (if (file-exists-p inite) (load (file-name-sans-extension inite))))) 
  )
   
