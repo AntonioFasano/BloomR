@@ -13,6 +13,7 @@ R topics documented:
 [Internal BloomR functions](#Internal)   
 [Manage connections](#connections)   
 [Misc functions](#misc.functions)   
+[Beta functionalities](#beta.functions)   
 [Time extension functions](#time.functions)   
 
 
@@ -269,17 +270,6 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```
-## 
-## Attaching package: 'zoo'
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-```
-
-```
 ## Loading 3988 HK Equity
 ```
 
@@ -352,27 +342,26 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2016-10-24      NA 10.797    11.018     NA   9.852
-## 2016-10-25   9.874 12.121    11.369 11.156   9.638
-## 2016-10-26   9.720 10.556        NA     NA   9.636
-## 2016-10-27   9.115  9.353        NA  8.869  10.154
-## 2016-10-28  10.262 10.297        NA     NA   8.592
+## 2017-04-30   9.215     NA     7.989     NA   9.470
+## 2017-05-01   9.925  8.948        NA  8.928      NA
+## 2017-05-02  10.518 11.358    10.096  8.017   9.419
+## 2017-05-03  10.315 11.201        NA  9.630  11.152
+## 2017-05-04      NA  9.045        NA     NA   8.530
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2016-10-24   9.896   9.652 11.751     NA      NA
-## 2016-10-25   9.380  10.255  9.724     NA   9.443
-## 2016-10-26  10.034   8.270  9.987     NA      NA
-## 2016-10-27   9.038  11.078  9.361     NA      NA
-## 2016-10-28      NA  11.048     NA  10.95      NA
+## 2017-04-30  11.898  10.079 10.308 10.072  10.267
+## 2017-05-01   8.708   9.805 11.850 10.334      NA
+## 2017-05-02  12.219  10.130 10.870 10.699  10.182
+## 2017-05-03   8.543      NA  9.907     NA   9.943
+## 2017-05-04      NA  11.300  8.801 10.599      NA
 ## 
 ## $Indices
-##              DJI DJUSFN W1TEC
-## 2016-10-24 9.992 10.719 9.082
-## 2016-10-25    NA     NA 9.639
-## 2016-10-26    NA  8.994    NA
-## 2016-10-27 9.584  8.949 8.995
-## 2016-10-28 9.299 10.947 7.887
+##               DJI DJUSFN  W1TEC
+## 2017-04-30     NA  9.361 10.264
+## 2017-05-01     NA     NA  9.015
+## 2017-05-03 12.268  9.736     NA
+## 2017-05-04     NA  9.930 11.278
 ```
 
 Note:
@@ -708,10 +697,8 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2016-10-24      NA  10.541
-## 2016-10-25   9.883  10.326
-## 2016-10-27   9.505  10.499
-## 2016-10-28  10.838  10.080
+## 2017-05-03    11.3      NA
+## 2017-05-04      NA  11.346
 ```
 
 ```r
@@ -954,6 +941,19 @@ Usage
 	rm.all()
 	rm.var()
 	
+
+
+
+Beta functionalities{#beta.functions}
+=====================================
+
+Description
+------------
+Activate beta functionalities, if available for this release. 
+
+Usage
+-----
+    br.beta()
 
 
 

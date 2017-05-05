@@ -202,8 +202,12 @@ downloads=function(tight, ndown){
     overwrite=!tight
         
     ## Get certificates from curl site 
-    download.nice(G$certurl, cert(), overwrite, ndown,
-                  "Curl Certificates", cert=FALSE)
+    # download.nice(G$certurl, cert(), overwrite, ndown,
+    #              "Curl Certificates", cert=FALSE)
+    if(is.path.abs_(makePath(G$work, cert())) && !overwrite){
+        warn.path(makePath(G$work, cert()), "already exists.")
+    } else download.file(G$certurl, makePath(G$work, cert()))
+
 
     ## peazip
     cback=function(){
@@ -221,16 +225,6 @@ downloads=function(tight, ndown){
     ## R 
     download.nice(rurl.ver, G$rzip, overwrite, ndown,
                   "main R files")
-                
-    ##   ## R portable
-    ##   cback=function(){
-    ##       url=sfFirstbyProject(G$rport, 'r-portable')
-    ##       url=sfFirstbyUrl(url, '[[:digit:]]')        
-    ##       url=sfFirstbyUrl(url, 'exe[^.]')        
-    ##       sfDirLink(url)
-    ##   }
-    ##   download.nice(cback, G$rport, overwrite, ndown,
-    ##                 "main R files")
 
     ## NSIS
     cback=function(){
@@ -454,7 +448,7 @@ bremacsTree=function(ndown){
     to=slisp.pt(G$markzip)
     copy.dir(from, to, "Markdown mode")
 
-    ## Copy Markdown mode
+    ## Copy BM mode
     from=paste0(G$bmzip, '.d/bm-master')              
     to=slisp.pt(G$bmzip)
     copy.dir(from, to, "BM mode")
@@ -476,7 +470,7 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R ess-i
     ## Download BRemacs lib files
     d=slisp.pt("bremacs")
     x=sapply(bfiles, function(f)
-        download.git(makePath("src/bremacs/lib", f),  makePath(d, f)))
+        download.git(makePath("src/bremacs/lib", f),  makePath(d, f), ,ndown))
     download.git("src/bremacs/site-start.el",   slisp.pt("site-start.el"), ,ndown) 
 
     ## Environemnt diagnostic
@@ -514,6 +508,7 @@ initScripts=function(ndown){
     to=app.pt("R/share/bloomr")    
     makeDir(to,"BloomR share directory:")
     download.git("src/bloomr.init.R", app.pt("R/share/bloomr/bloomr.init.R"), ,ndown)
+    download.git("src/bloomr.beta.R", app.pt("R/share/bloomr/bloomr.beta.R"), ,ndown)
     download.git("src/bloomr.api.R",  app.pt("R/share/bloomr/bloomr.api.R"), ,ndown)
     download.git("src/bloomr.R",      app.pt("R/share/bloomr/bloomr.R"), ,ndown)
     download.git("src/bloomr.sys.R",  app.pt("R/share/bloomr/bloomr.sys.R"), ,ndown)

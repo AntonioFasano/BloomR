@@ -1152,6 +1152,28 @@ store(rm.all)
 store(rm.var)
 ```
 
+Beta functionalities{#beta.functions}
+=====================================
+
+Description
+------------
+Activate beta functionalities, if available for this release. 
+
+Usage
+-----
+    br.beta()
+
+
+```{r betafun, opts.label='purlme'}
+
+br.beta=function(){
+    f=paste0(R.home("share"), "/bloomr/bloomr.beta.R")    
+    if(file.exists(f)) source(f)  else message("No beta functionalities in this release")
+}
+
+store(br.beta)
+
+```
 
 Time extension functions{#time.functions}
 =========================================

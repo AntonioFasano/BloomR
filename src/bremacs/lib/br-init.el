@@ -1,5 +1,3 @@
-;; bremacs: br-bloomr-dir  br-app-dir br-bremacs-dir (br-locate-bloomr-path) (br-locate-app-path) (br-locate-bremacs-path) br-pdf-viewer br-rterm
-
 (defvar br-bloomr-dir 
   (or (getenv "BLOOMR") (error "BRemacs launcher did not set `BLOOMR' environment variable."))
   "Absolute path to directory where BloomR/BRemacs files have been extracted.

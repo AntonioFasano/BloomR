@@ -419,6 +419,16 @@ rm.var=function()
 store(rm.all)
 store(rm.var)
 
+## ----betafun, opts.label='purlme'----------------------------------------
+
+br.beta=function(){
+    f=paste0(R.home("share"), "/bloomr/bloomr.beta.R")    
+    if(file.exists(f)) source(f)  else message("No beta functionalities in this release")
+}
+
+store(br.beta)
+
+
 ## ----time, opts.label='purlme'-------------------------------------------
 `%+%` <- function(x,y) UseMethod("%+%")
 `%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
