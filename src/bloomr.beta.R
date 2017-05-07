@@ -86,20 +86,33 @@ store(br.hist.csv)
 
 
 ## ----br.hist, opts.label='purlme'----------------------------------------
-br.hist=function(con, tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+br.hist=function(con,
+                 #' character vector of the tickers queried for data
+                 ## std com
+                 tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
                                             
-                 addtype=FALSE, showtype=FALSE,                      
-                 use.xts=TRUE, merge.xts=TRUE,
+                 addtype=FALSE, showtype=FALSE,
+
+                 #' if TRUE (the default) time series are formatted as xts objects else as a data frame.  
+                 #' stack test
+                 # std com
+                 use.xts=TRUE, merge.xts=TRUE,   #' inner test
                  
                  ## br.bdh args
                  option.names = NULL, option.values = NULL,
-                 only.trading.days = TRUE,
+                 only.trading.days = TRUE,     #'     inner test 2
 
                  ## Simulation args                      
                  price=TRUE,
                  mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
                  same.dates=FALSE, empty.sec=0,
-                 weekend=TRUE, holidays=NULL)
+                 weekend=TRUE, holidays=NULL
+                ,
+                 #' fake arg
+                 fakearg
+                 
+                 
+                 )
 {
 
 ## Value

@@ -1,0 +1,1050 @@
+# BloomR main functions
+
+## TODO
+Complete help for functions br.try.date, br.is.same.class, br.bdh
+Fix XXXX paragraphs
+
+```{r setup, purl=FALSE, include=FALSE}
+##rm(list=ls(all=TRUE))
+
+### Shortcuts
+opts_chunk$set(echo=TRUE)
+OTS=opts_template$set
+## Build function first
+OTS(purlme=   list(purl=TRUE,  eval=!step2,   include=FALSE))
+## Demos running after function building  
+OTS(demofull= list(purl=FALSE, eval=step2,  include=TRUE))  # run w/ code + out   
+OTS(demorun=  list(purl=FALSE, eval=step2,  include=TRUE, echo=FALSE)) # run w/ out, no code 
+OTS(demodry=  list(purl=FALSE, eval=step2,  include=FALSE)) # run only (no code/out)
+OTS(democode= list(purl=FALSE, eval=FALSE,  include=TRUE))  # show code only, no run  
+
+## Purl hook
+hook_purl=function (before, options, envir) 
+{
+    .knitEnv=knitr:::.knitEnv
+    isFALSE=knitr:::isFALSE
+    label_code=knitr:::label_code
+    
+    if (before || !options$purl || options$engine != "R") 
+        return()
+    output = .knitEnv$tangle.file
+    if (isFALSE(.knitEnv$tangle.start)) {
+        .knitEnv$tangle.start = TRUE
+        unlink(output)
+    }
+    code = options$code
+    #if (isFALSE(options$eval)) 
+       ## code = comment_out(code, "# ", newline = FALSE)
+    if (is.character(output)) {
+        cat(label_code(code, options$params.src), file = output, 
+            sep = "\n", append = TRUE)
+    }
+}
+knit_hooks$set(purl = hook_purl)
+
+```
+
+
+```{r store, opts.label='purlme'}
+## Purl this first
+## Store br.* objects in bloomr env in base namespace
+assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
+
+## func: store(func);  var: store("var")
+store=function(sym){
+    if(is.function(sym)){
+        name=deparse(substitute(sym)) 
+        val=sym
+    } else {
+        name=sym
+        val=get(sym)
+    }
+    
+    assign(name, val, envir=bloomr)
+    rm( list=name, envir=parent.frame())
+}
+
+```
+
+
+br.hist.csv{#br.hist.csv}
+========================
+*Historical data from grouped tickers in a CSV file*  
+Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels. 
+It replaces `br.bulk.csv``
+
+Usage
+------
+    br.hist.csv(con, file, field="PX_LAST", start=Sys.Date()-5, end.date=Sys.Date(),
+
+                     cols=NULL, comma=TRUE,
+                     addtype=FALSE, showtype=FALSE,  
+                     use.xts=TRUE, merge.xts=TRUE,
+
+                     option.names = NULL, option.values = NULL,
+                     only.trading.days = TRUE,
+
+                     price=TRUE,
+                     mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                     same.dates=FALSE, empty.sec=0,
+                     weekend=TRUE, holidays=NULL)
+
+
+  
+Arguments
+----------
+
+con
+:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+
+file
+:   path to CSV file.  
+
+field
+:   case insensitive string denoting the Bloomberg field queried. Defaults to "PX_LAST". If the field is wrong or not accessible, data will be empty but no error will be raised.  
+
+start
+:   start date. Can be a Date object or an ISO string without separators (YYYYMMDD). Defaults to 5 days before current date.  
+
+end.date
+:   end date. Same format as `start`. Defaults to current date.  
+
+cols
+:   Logical or integer vector for selecting CSV columns (ticker groups). Defaults to all columns.  
+
+comma
+:   to be set to FALSE for (non-English) CSV, using semicolon as separator.  
+
+addtype
+:   If a string denoting the security type, it will be added to all tickers; if TRUE "Equity", will be added; if FALSE (the default), nothing will be added.  
+
+showtype
+:   if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.  
+
+use.xts
+:   if TRUE (the default) time series are formatted as xts objects else as a data frame.  
+
+merge.xts
+:   if TRUE (the default) xts objects in the same group are merged using all rows and using NAs for missing observations.
+
+option.names
+:   list of Bloomberg options names. Require `option.values` too.
+
+option.values
+:   list of Bloomberg options values related to `option.names`.
+
+only.trading.days
+:   if TRUE (the default) use only trading days, add non trading days to output with NA values. 
+
+price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays
+:   arguments passed to `br.sample()` if `con=NULL`.
+
+
+Details
+-------
+Empty CSV cells or cells interpreted as NAs will be ignored.  
+If `con=NULL`, values are simulated by means of `br.sample()`. This function is used with default values, except for `start, end.date, price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays`, which can be explicitly passed as arguments, and `sec.names` depending on tickers found in the CSV file. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
+
+Value
+-----
+a list where each element is the historical data of a CSV group.  
+If `use.xts=TRUE` and `merge.xts=FAlSE`, each group is a sub-list, whose elements are the the securoty time series as an xts object.
+If `use.xts=TRUE` and `merge.xts=TRUE`, each group is the merged xts object, obtained merging historical data of all securities of that group.
+If `use.xts=FALSE`, each group is a sub-list, where each element is the historical data of a security as a data frame.  
+If there is only one group, the first (and unique) element of the list will be returned (XXXXto check).  
+
+
+```{r br.hist.csv, opts.label='purlme'}
+br.hist.csv=function(con, file, field="PX_LAST", start=Sys.Date()-5, end.date=Sys.Date(),
+
+                     cols=NULL, comma=TRUE,
+                     addtype=FALSE, showtype=FALSE,  
+                     use.xts=TRUE, merge.xts=TRUE,
+
+                     ## br.bdh args
+                     option.names = NULL, option.values = NULL,
+                     only.trading.days = TRUE,
+
+                     ## Simulation args                      
+                     price=TRUE,
+                     mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                     same.dates=FALSE, empty.sec=0,
+                     weekend=TRUE, holidays=NULL)
+{
+
+    ## Check csv file
+    if(!file.exists(file)) stop(paste('Unable to find the csv file', file))
+    if(comma) csv=read.csv(file=file, as.is=TRUE) else{
+        csv=read.csv2(file=file, as.is=TRUE)}
+
+    ## Check cols arg
+    if(!is.null(cols)){
+        if(is.logical(cols) && !length(cols)==ncol(csv))
+            stop(paste('Length of logical vector', paste(cols, collapse=' '),
+                       'not equal to number of groups in', file))
+
+        if(is.integer(cols) && max(cols)>ncol(csv))
+            stop(paste('Unable to subset groups in', file, 'with columns', paste(cols, collapse=' ')))
+
+        if(!is.logical(cols) && !all(cols%%1==0)) stop(paste(
+         "'Col argument should be an integer or a logical vector of the same length of the groups in", file))
+        csv=csv[cols]        
+    }
+
+    ## Get group names and count
+    gnams=names(csv)
+    gcnt=ncol(csv)
+
+    ## Loop groups in csv
+    grps=list()
+    for(g in 1:gcnt){
+        message('Processing ', gnams[g],  ' ...')
+        x=list(br.hist(
+            con=con, tiks=csv[[g]], field=field, start=start, end.date=end.date,
+            
+            addtype=addtype, showtype=showtype,
+            use.xts=use.xts, merge.xts=merge.xts,
+            
+            option.names=option.names, option.values=option.values,
+            only.trading.days=only.trading.days,
+            
+            price=price, same.dates=same.dates, empty.sec=empty.sec,
+            weekend=weekend, holidays=holidays))
+        
+        names(x)=gnams[g]
+        grps=c(grps, x)        
+    }
+    if(length(grps)==1) grps=grps[[1]]
+    grps
+}
+
+store(br.hist.csv)
+
+```
+
+
+br.hist{#br.hist}
+========================
+*Historical data for vector of tickers*  
+Returns the historical data for a vector of tickers in xts or list format.
+It replaces `br.bulk.tiks``
+
+Usage
+------
+    br.hist(con, tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+                                            
+                 addtype=FALSE, showtype=FALSE,                      
+                 use.xts=TRUE, merge.xts=TRUE,
+                 
+                 option.names = NULL, option.values = NULL,
+                 only.trading.days = TRUE,
+
+                 price=TRUE,
+                 mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                 same.dates=FALSE, empty.sec=0,
+                 weekend=TRUE, holidays=NULL)
+
+  
+Arguments
+----------
+
+tiks
+:   character vector of the tickers queried for data  
+
+use.xts
+:   if TRUE (the default) time series are formatted as xts objects else as a data frame.  
+
+merge.xts
+:   if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
+
+For other arguments see the function `br.hist.csv` 
+
+
+#' @args
+
+Details
+-------
+
+If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the character vector are read from a CSV file with empty cells.  
+If `con=NULL`, values are simulated by means of `br.sample()`. Sampled values are based on default values of `br.sample()`, but it is possible to set explicitly  `start, end.date, price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays`; `sec.names` depends on `tiks` argument. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
+
+
+Value
+-----
+If `use.xts=FALSE`, a list where each element is the historical data of a security as a data frame.  
+If `use.xts=TRUE` and `merge.xts=FAlSE`, a list where each element is the historical data of a security as an xts object.  
+If `use.xts=TRUE` and `merge.xts=TRUE`, an xts oject where where each column is the historical data of a security.   
+
+
+Example
+-------
+
+```{r br.hist.exam, opts.label='demofull'}
+con=NULL # Open simulated connection and  load some data
+br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.close(con) # Use the token to release the connection
+```
+
+See Also
+--------
+
+[br.hist.csv](#br.hist.csv)
+
+```{r br.hist, opts.label='purlme'}
+br.hist=function(con,
+                 #' character vector of the tickers queried for data
+                 ## std com
+                 tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+                                            
+                 addtype=FALSE, showtype=FALSE,
+
+                 #' if TRUE (the default) time series are formatted as xts objects else as a data frame.  
+                 #' stack test
+                 # std com
+                 use.xts=TRUE, merge.xts=TRUE,   #' inner test
+                 
+                 ## br.bdh args
+                 option.names = NULL, option.values = NULL,
+                 only.trading.days = TRUE,     #'     inner test 2
+
+                 ## Simulation args                      
+                 price=TRUE,
+                 mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                 same.dates=FALSE, empty.sec=0,
+                 weekend=TRUE, holidays=NULL
+                ,
+                 #' fake arg
+                 fakearg
+                 
+                 
+                 )
+{
+
+## Value
+## -----
+##
+## use.xts=FALSE:
+## List of char mats,
+##     where 1st col, named "date", has obs. dates; 2nd col, named after the field, has field values.
+##     List is named after the tickers
+##     Empty TS -> NULL
+##     All empty TS -> List of NULLs 
+##  
+## use.xts=TRUE & merge.xts=FALSE:
+## List of XTS objects
+##     where the XTS index has obs. dates and its col, named after the field, has field values.
+##     List is named after the tickers
+##     Empty TS -> NA
+##     All empty TS -> List of NAs 
+##  
+## use.xts=TRUE & merge.xts=TRUE:
+## a) at least one non-empty TS:
+##    XTS object
+##    where the index has obs. dates and columns, named after the tickers, have field values.
+##    Empty TS -> NA column in the related XTS ticker.
+## b) All empty TS  -> vectors of NAs as long as the tickers
+##
+    
+
+    ## Check connection
+    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter') 
+    
+    ## Check tickers (skip possible empty CSV cells)
+    if(!is.character(tiks)) stop('Tickers should be in the form of a character vector')
+    tiks=tiks[!is.na(tiks)] 
+    tiks=tiks[tiks!='']
+    
+    ## Check security type to add/show
+    .br.check.type(addtype)
+    .br.check.type(showtype)
+    if(addtype==TRUE)  addtype="Equity"
+    if(addtype!=FALSE) tiks=paste(tiks, addtype)
+    if(!showtype) tiks.show=.br.cuttype(tiks) else tiks.show=tiks
+    
+    ## Check xts library availability
+    if(use.xts && !require("xts", quietly=TRUE, character.only=TRUE)) stop("Can't find library xts")
+ 
+    ## Check empty.sec is a ratio
+    if(empty.sec<0 || empty.sec>1) stop("'empty.sec' must be between 0 and 1")
+    
+    ## br.bdh() and sample() pars
+    bdhpars=list(
+        con=con, field=field, start.date=start, end.date=end.date, 
+        option.names=option.names, option.values=option.values,
+        only.trading.days=only.trading.days)
+    
+    sampars=list(nrow=NULL, price=price, start=start, end.date=end.date, 
+                 field=field,
+                 use.xts=FALSE,
+                 mean=mean, sd=sd, jitter=jitter,
+                 rand.dates=!same.dates,                 
+                 weekend=weekend, holidays=holidays)
+
+    
+    #emptydf=structure(list(date = logical(0), PX_LAST = logical(0)),
+    #                  .Names = c("date", toupper(field)), row.names = integer(0), class = "data.frame")
+
+    
+    ## Get data as list of matrices
+    LL=lapply(tiks, function(tik){
+        message('Loading ', tik)
+        if(is.null(con)) do.call("br.sample", sampars)
+          else do.call("br.bdh", c(security=tik, bdhpars))        
+    })
+
+    ## Randomly identify empty.sec
+    if(is.null(con)){        
+        x=round(length(tiks.show) * empty.sec)
+        empty=sample(length(tiks.show), x)
+        LL[empty]=rep(list(NULL), x)
+    }
+        
+    ## Convert matrices to XTS's
+    if(use.xts){
+        LL = lapply(LL, function(ts) {
+            if(!is.null(ts)) setNames(xts(as.numeric(ts[,-1]), as.Date(ts[,1])), toupper(field)) else NA
+        })
+    }
+    
+    ## Merge XTS's
+    if(use.xts && merge.xts){
+        ## If there are only NAs, output NULL
+        LL=if(all(is.na(LL))) unlist(LL)
+           else 
+               if(length(LL)>1) do.call("merge.xts", LL) else LL[[1]]
+    }
+
+    ## Return with ticker's names
+    setNames(LL, tiks.show)
+        
+    ## Zero-rows xts
+    ## In the future we can consider to use zero rows xts instead of NAs
+    ## To convert LL=list(NA, NA, ...)-> empty xts: xts(t(unlist(LL)), Sys.Date())[-1]
+    ## To set names for zero-rows xts:  dimnames(zero_xts)= list(NULL,names)
+    ## Currently zero-rows xts's do not play with merge.xts, which should be redefined 
+  
+}
+
+store(br.hist)
+
+```
+
+
+
+br.idx{#br.idx}
+========================
+
+Description
+-----------
+Returns the historical data for the constituents of an index in xts or list format.
+It replaces `br.bulk.idx`.
+
+Usage
+-----
+    br.idx(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+
+                include.idx=TRUE, showtype=FALSE,
+                use.xts=TRUE, merge.xts=TRUE,
+
+                option.names = NULL, option.values = NULL,
+                only.trading.days = TRUE,
+
+                nsec=10, sec.names = NULL,
+                
+                price=TRUE,
+                mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                same.dates=FALSE, empty.sec=0,
+                weekend=TRUE, holidays=NULL)
+				
+
+Arguments
+---------
+con
+:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+
+index
+:   string denoting the index ticker with or without the final security type label ('Index')  
+
+include.idx
+:   if TRUE (default) returns also historical data for the index.  
+
+nsec
+:   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
+
+sec.names
+:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.
+
+For other arguments see the function `br.hist`.
+
+Details
+-------
+If `con=NULL`,  values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names`.
+
+Value
+-----
+
+If `use.xts=FALSE`, a list where each element is the historical data of a constituent as a data frame.  
+If `use.xts=TRUE` and `merge.xts=FAlSE`, a list where each element is the historical data of a constituent  as an xts object.  
+If `use.xts=TRUE` and `merge.xts=TRUE`, an xts oject where where each column is the historical data of a constituent .   
+If `include.idx=TRUE`, the last column or element will be the historical data of the index.  
+
+
+
+```{r br.idx, opts.label='purlme'}
+br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+
+                include.idx=TRUE, showtype=FALSE,
+                use.xts=TRUE, merge.xts=TRUE,
+
+                ## br.bdh args
+                option.names = NULL, option.values = NULL,
+                only.trading.days = TRUE,
+
+                ## Simulation args                                      
+                nsec=10, sec.names = NULL,
+                
+                price=TRUE,
+                mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                same.dates=FALSE, empty.sec=0,
+                weekend=TRUE, holidays=NULL)
+{   
+    ## Check connection
+    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter')
+
+    ## Check index format. Add 'INDEX' if missing
+    if(!is.character(index)) stop('Index should be a string')
+    if(length(index)>1) stop('Only one index')
+    if(!grepl("INDEX$", toupper(index))) index=paste(index, 'INDEX') 
+
+    ## Get index members
+    if(is.null(con)) tiks=paste0('memb', 1:nsec) else{
+        tiks=bds(con, index, 'INDX_MEMBERS')
+        tiks=paste(tiks[[1]], 'Equity')
+    }
+
+    ## Check sec.names
+    if(is.null(con) && !is.null(sec.names)) {
+        if(!is.character(sec.names)) stop("'sec.names' should be a character vector")
+        if(length(sec.names)!=nsec)
+            stop("'sec.names' length should be equal to the number of index constituents")
+        tiks=sec.names
+    }
+    
+    ## Include index?
+    if(include.idx) tiks=c(index, tiks)
+
+    ## Get data
+    br.hist(con=con, tiks=tiks, field=field, start=start, end.date=end.date,
+        
+            addtype=FALSE, showtype=showtype,
+            use.xts=TRUE, merge.xts=TRUE,
+        
+            option.names=option.names, option.values=option.values,
+            only.trading.days=only.trading.days,
+
+            price=TRUE,
+            mean=mean, sd=sd, jitter=jitter,
+            same.dates=same.dates, empty.sec=empty.sec,
+            weekend=TRUE, holidays=NULL)       
+}
+
+store(br.idx)
+
+```
+
+
+
+
+br.sample{#br.sample}
+====================
+
+Description
+------------
+Return simulated historical data for n securities in xts or df format.
+
+Usage
+-----
+    br.sample(nrow=NULL,  price=TRUE,
+                   start=Sys.Date() - 7, end.date=Sys.Date(), 
+                   field="FIELD",
+                   use.xts=TRUE, 
+                   mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                   rand.dates=TRUE, weekend=TRUE, holidays=NULL)
+             
+
+
+Arguments
+---------
+nrow
+:   number of simulated data points for each security; if `same.dates=FALSE`, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities. Actual number of rows depends on the value of `rand.dates`, `weekend`, `holidays`. 
+
+price
+:   if TRUE (default), simulated values are non-negative.  
+
+start
+:   start date. Can be a Date object or an ISO string without separators (YYYYMMDD). Defaults to current date.  
+
+end.date
+:   end date. Same format as `start`. Defaults to current date.  
+
+field
+:   case insensitive string denoting the Bloomberg field queried. Defaults to "FIELD". 
+
+use.xts
+:   if TRUE (the default) time series are formatted as xts objects else as a data frame.  
+
+mean
+:   mean of security generated values. If `price=TRUE`, default to 10 else defaults to 0.1.  
+
+sd
+:   sd of security generated values. It defaults to 1.  
+
+jitter
+:   modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.  
+
+rand.dates
+:   if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed `nrow`.  
+
+weekend
+:   if TRUE (default), weekend dates are removed.
+
+holidays
+:   list of dates to be removed,
+
+
+Details 
+-------
+
+`br.sample()` assumes by default that data for some securities might not be available on certain days and time series might be misaligned (see "Missing observations and misalignment" in  `br.hist()`), therefore 
+the date values and count for each time series generated will randomly differ,  with `nrow` as the maximum number of days. If you want all time series to share tha same dates, set `rand.dates=FALSE`. In this case, time series produced are aligned and you don't see any merge NA, the acutal dates generated depends on the value of `weekend` and `holidays`. If there are no holidays falling in time windows queried and `weekend=FALSE` the number of generated dates equals `nrow`.
+
+
+Value
+-----
+If `use.xts=FALSE`, a data frame object, where the first column is the vector with all generated dates merged and each subsequent column contains the sampled data of a security. If `use.xts=TRUE`, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if `rand.dates=TRUE` generated data points might likely have different length 
+
+XXXX and the the date gaps will be filled with NAs, except if `no.na=TRUE`. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with `dimnames(*)[[2]]`. 
+
+```{r br.sample, opts.label='purlme'}
+br.sample=function(nrow=NULL,  price=TRUE,
+                   start=Sys.Date() - 7, end.date=Sys.Date(), 
+                   field="FIELD",
+                   use.xts=TRUE, 
+                   mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                   rand.dates=TRUE, weekend=TRUE, holidays=NULL,
+                   nsec=NULL, no.na=NULL, df=NULL, sec.names=NULL, empty.sec=NULL, same.dates=NULL)
+{
+
+    ## Deprecated args
+    .br.sample.deprecated(nsec, no.na, df, sec.names, empty.sec, same.dates)
+
+    if(!require("xts", quietly=TRUE, character.only=TRUE))  stop("Can't find library xts")
+   
+    ## Test/set args 
+    dates=.br.test.dates(start, end.date, holidays)
+    if(is.null(nrow)) nrow=dates$end - dates$start
+    nrow=as.numeric(nrow)
+      
+    ## Jitter 
+    mean.jit= mean + runif(1, -jitter, jitter)
+    
+    ## Generate TS with fixed or random dates
+    r= if(rand.dates) sample(1:nrow,1) else nrow 
+
+    ## Generate time series as a DF
+    TS=data.frame(d=sort(sample(dates$start+1:nrow-1,r)), f=round(rnorm(r,mean.jit, sd),3))
+    if(price) TS$f=abs(TS$f) # Price always non-negative
+    names(TS)=c("date", toupper(field))
+
+        
+    ## Remove weekends and holidays
+    if(weekend){
+        w=format(TS$date, "%u")
+        TS= TS[w!="6" & w!="7", ]       
+    }    
+    if(!is.null(holidays)){
+         TS=TS[!TS$date %in% holidays, ]       
+    }
+
+    ## Convert TSs to XTS's
+    TS=as.matrix(TS)
+    attr(TS, "types")=c("DATE","FLOAT64")
+    if(nrow(TS)==0) TS=NULL
+
+    
+        
+    ## Convert TSs to XTS's
+    if(use.xts){
+        TS=if(!is.null(TS)) xts(as.numeric(TS[,-1]), as.Date(TS[,1])) else NA
+    }
+
+    TS
+}
+
+store(br.sample)
+
+```
+
+```{r MISCFUNC, opts.label='purlme'}
+
+br.try.date=function(d){ # convert vector d to a date vector if possible or return null
+### Any element should be POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d"
+                           
+    if(identical(class(d), c("POSIXlt", "POSIXt"))) return(d) 
+    if(identical(class(d), c("POSIXct", "POSIXt"))) return(d)
+    if(identical(class(d), "Date")) return(d)
+
+    if(is.character(d)) {
+        
+        try=as.Date(d, "%Y%m%d")
+        if(!anyNA(try)) return(try)
+
+        try=as.Date(d, "%Y/%m/%d")
+        if(!anyNA(try)) return(try)
+
+        try=as.Date(d, "%Y-%m-%d")
+        if(!anyNA(try)) return(try)
+    }
+    
+    return(NULL)
+}
+
+br.is.same.class=function(...){ # Check if all argumets have the same class
+### Mostly intended to check if dates are homogeneous
+
+    L=lapply(list(...), class)
+    length(unique(L))==1
+}
+
+
+## ----br.bdh, opts.label='purlme'-----------------------------------------
+br.bdh=function(
+                con, security, fields="PX_LAST",
+                start.date=Sys.Date() - 7, end.date=Sys.Date(), 
+                override_fields  = NULL, override_values = NULL,               
+                option.names = NULL, option.values = NULL,
+                only.trading.days = TRUE
+                ) {
+    
+    if(is.null(con)) stop("'con' is NULL, but br.bdh() does not support simulated mode.")
+
+
+    ## Set overrides
+    if(is.null(override_fields)) {
+        override_fields="IGNORE"
+        override_values = ""
+    }
+
+    ## Test/set dates
+    dates=.br.test.dates(start.date, end.date, asChar=TRUE)
+    option.names=c(option.names, "startDate")
+    option.values=c(option.values, dates$start)
+    if(!is.null(end.date)) {
+        option.names = c(option.names, "endDate")
+        option.values = c(option.values, dates$end)
+    }
+
+
+    ## Non trading days
+    if(!only.trading.days) {
+        option.names=c("nonTradingDayFillOption", "nonTradingDayFillMethod", option.names)
+        option.values=c("ALL_CALENDAR_DAYS", "NIL_VALUE", option.values)
+    }
+
+    ## Get reference data
+    ref=con$blh(security, .jarray(fields),
+            .jarray(override_fields), .jarray(override_values),
+            .jarray(option.names), .jarray(option.values))
+    ret=ref$getData()   
+    ret=if(!is.null(ret)) .jevalArray(ret, simplify=TRUE) else ret
+
+    ## Set data attributes
+    if(!is.null(ret)) attr(ret, "types")=ref$getDataTypes()
+    ## For info on data types Rbbg:::convert.to.type
+    ## Consider also ref$getColumnNames()
+
+    ret
+}
+
+
+.br.test.dates=function(start, end, holidays=NULL, asChar=FALSE){
+
+    if(is.null(start <- br.try.date(start)))
+        stop(paste('Invalid date', start)) 
+
+    if(is.null(end <- br.try.date(end)))
+        stop(paste('Invalid date', end))
+
+    if(!is.null(holidays) &  is.null(holidays <- br.try.date(holidays)))
+        stop("Some dates are not recognised: ", paste(holidays, collapse=" "))
+
+    if(!br.is.same.class(c(list(start, end), holidays))){
+        message("Start date: ", paste(class(start), collapse=" "))
+        message("End date: ", paste(class(end), collapse=" "))
+        if(!is.null(holidays))
+            message("holidays: ", paste(class(holidays), collapse=" "))
+        stop("Not all date variable have the same class")        
+    }
+    
+    if(start>=end) stop("Start date should be set before end date!")
+
+    if(asChar){
+        start=format(start, format="%Y%m%d")
+        end=format(end, format="%Y%m%d")
+    }
+    list(start=start, end=end, holidays=holidays)
+    
+
+}
+
+.br.sample.deprecated=function(nsec=NULL, no.na=NULL, df=NULL,
+                               sec.names=NULL, empty.sec=NULL, same.dates=NULL){
+
+    if(!is.null(no.na))
+        stop("'no.na' option is now deprecated:",
+             " just use rand.dates=TRUE or apply na.omit to br.sample() output.")
+
+    if(!is.null(df))
+        stop("'df' option is now deprecated. Use: 'use.xts=FALSE'")
+    
+    if(!is.null(sec.names))
+        stop("'sec.names' option is now deprecated, as br.sample() now gives only a single time series.")
+
+    if(!is.null(empty.sec))
+        stop("'empty.sec' option is now deprecated, as br.sample() now gives only a single time series.")
+
+    if(!is.null(nsec))
+        stop("'nsec' option is now deprecated, as br.sample() now gives only a single time series.\n",
+             "Use 'br.hist(con=NULL, ...)' to simulate multiple securities.")
+
+    if(!is.null(same.dates))
+        stop("'same.dates' option is now deprecated. Use: 'rand.dates=FALSE'")
+
+}
+
+
+# br.bdh(con, "MSFT US EQUITY", "PX_LAST", "20170202", "20170210", override_fields="PRICING_SOURCE", override_values="CG")
+# br.bdh(con, "MSFT US EQUITY", "PX_LAST", "20170202", "20170210")
+
+###=============
+  
+
+
+####
+# debug(br.hist) ; br.hist(con, c("MSFT US Equity", "AMZN US Equity"), start="20170225")
+#debug(br.hist.csv)
+#debug(br.hist)
+# br.hist.csv(NULL, "wei.csv", same.dates=TRUE, empty.sec=.2)
+# br.bdh(con, "MSFT US Equity", start="20170225")
+# source("newbulk3.R")
+
+
+store(br.try.date)
+store(br.is.same.class) 
+store(br.bdh)
+
+
+```
+
+
+
+```{r topics, purl=FALSE, eval=TRUE, include=FALSE}
+read.head=function(rmdfile) {x=readLines(rmdfile); x[grep("^=+", x)-1]}
+topics=function(rmdfile, mdfile){
+    x=read.head(rmdfile)
+    x=sub("\\{", "]\\(", x )
+    x=sub("\\}", "\\)", x )
+    idx=paste0("[", x, "   ")
+    idx=c("R topics documented:", "-----------", idx)
+    txt=readLines(mdfile)
+    first=grep(".", txt)[1]
+    txt=c(txt[first], idx, txt[(first+1):length(txt)])
+    writeLines(txt, mdfile)
+#    c(txt[first], idx,  txt[(first+1):(first+4)])
+}
+
+
+```
+
+```{r parseargs, purl=FALSE, eval=TRUE, include=FALSE}
+
+## HQ means hash-quote. The symbol is used to avoid detecting it as a real comment  
+## HQ comments are copied to the above HQ @args tag
+## Inner/Outer HQ require one or more space after.
+## Outer HQ comments do not want a blank line following, but:
+##    another HQ comment (continuing it), a standard comment, the argument.
+##    However, standard comments cannot be in the be middle of outer HQ comments.
+## Inner HQ comments should appear on line with a single arguments else only the first arg is parsed
+## Tabs are not parsed as spaces currently. Avoid them.
+
+parseargs=function(rmdfile, tmpfile){
+
+    txt=readLines(rmdfile)
+    HQ=paste0("#", "'")
+
+    ## Outer HQ comments
+    ## -----------------
+    ocrex.loose=sprintf("^ *%s +", HQ)   #-> " *HQ +"
+    ocrex=sprintf("%s+[^@]", ocrex.loose) #-> " *HQ ++[^@]", ++ need perl
+
+    ## Test standard outer comments in the middle of HQ comments
+    x= grep("^ *#[^']", txt)
+    if(x[1]==1) x=x[-1]
+    if(x[length(x)]==length(txt)) x=x[-length(x)]
+    xx=lapply(x, function(xx) {
+        if(grepl(ocrex, txt[xx-1], , perl=TRUE) &  grepl(ocrex, txt[xx+1], perl=TRUE)){        
+            stop("Detected standard outer comments in the middle of HQ comments.\n",
+                 paste(txt[xx+-1:1], collapse="\n" ))}    
+    })
+
+
+    ## Get outer arg comments
+    ocomp= grep(ocrex, txt, perl=TRUE)
+    ocom=txt[ocomp]
+    ## debug 
+    ## ocom=letters[1:9]
+    ## ocomp=c(1, 3:6, 10, 21:23)
+
+    ## Identify contiguos outer comments
+    ccom=c(TRUE, diff(ocomp)!=1)
+
+    ## Stack all to first of contiguos comments 
+    ocomp2=NULL; ocom2=NULL
+    for(i in seq_along(ocomp)){
+        if(ccom[i]){
+            pos=ocomp[i]
+            ocomp2=c(ocomp2, pos)
+            val=sub(ocrex.loose, '', ocom[i])
+            ocom2=c(ocom2, val)
+        } else {
+            val=paste(val, sub(ocrex.loose, '', ocom[i]))
+            ocom2[length(ocom2)]=val        
+        }    
+    }
+    ocomp=ocomp2; ocom=ocom2
+
+    ##  Get args lines after comments
+    findAgs=function(pos){ # find non comment line postion, given outer HQ comment position 
+        while(startsWith(trimws(txt[pos]), "#")) pos=pos+1
+        pos
+    }      
+    ocomp.ags=sapply(ocomp, findAgs)
+    ocom.ags=txt[ocomp.ags]
+
+    ## Test blanks after HQ comments
+    ocom.ags=trimws(ocom.ags)
+    if(any(sapply(ocom.ags, nchar) == 0))
+        stop("Some HQ outer comments are followed by blank lines")
+              
+    ## Parse args line  
+    end=regexpr("[=,)]|$", ocom.ags)
+    ocom.ags=substr(ocom.ags, 1, end-1) 
+
+
+    ## Inner HQ comments
+    ## -----------------
+    icrex.loose=sprintf("[^ ]+ *%s ", HQ)   #-> "[^ ]+ *HQ "
+
+    ## Get outer arg comments
+    icomp= grep(icrex.loose, txt)
+    icom=txt[icomp]
+
+    ## Extract args
+    end=regexpr("[=,#]", icom)
+    icom.ags=substr(icom, 1, end-1) 
+    icom.ags=trimws(icom.ags)
+    icom=sub(paste0(".+", HQ, " +"), '', icom)
+
+
+    ## Match @args tag
+    ## ---------------
+    acrex=sprintf(" *%s +@args", HQ)   #-> " *HQ +@args"
+    
+    ## Get @args positions
+    acomp= grep(acrex, txt)
+
+    ## Merge argument slots and HQ comments by position
+    df=function(...) data.frame(..., stringsAsFactors=FALSE)
+
+    m=merge(
+        df(pos=ocomp, com=paste0(ocom.ags, "\n:   ", ocom)),
+        df(pos=icomp, com=paste0(icom.ags, "\n:   ", icom)),
+        suffixes=c('.out','.in'),
+        by="pos", all=TRUE)
+
+    m=merge(
+        df(pos=acomp, apos=TRUE),
+        m,
+        by="pos", all=TRUE)
+    
+    m[2]=!is.na(m[2])
+    m[is.na(m)]=""
+    m=df(m[1:2], com=apply(m[3:4], 1, paste, collapse=""))
+
+    ## Split by comment by slots  and cat
+    spl=rep(0, nrow(m))
+    spl[m$apos] =  m$pos[m$apos]
+    spl=cumsum(spl)
+    spl=split(m$com, spl)
+    spl=sapply(spl, function(x) paste(x[-1], collapse="\n\n"))
+
+
+    ## Replace commment slots with comments 
+    for(i in seq_along(acomp)){
+        txt[acomp[i]] = spl[i]    
+    }
+    writeLines(txt,  tmpfile)
+  
+}
+    
+```
+
+```{r attach, opts.label='purlme'}
+### Make visible br.* in bloomr env and base ns
+attach(bloomr)
+rm(store)
+```
+
+```{r build, purl=FALSE, eval=FALSE, include=FALSE}
+knitr:::opts_chunk$set(tidy.opts=list(width.cutoff=60))
+knit2=function(file){
+    require(knitr); require(rmarkdown)
+    fse=tools:::file_path_sans_ext(file)
+    step2=FALSE
+    knit(file)
+    parseargs(paste0(fse, '.Rmd'), paste0(fse, '.tmp.Rmd'))
+    step2=TRUE
+    knit(paste0(fse, '.tmp.Rmd'), output=paste0(fse, '.md'))
+    topics(paste0(fse, '.Rmd'), paste0(fse, '.md'))
+    render(paste0(fse, '.md'), "html_document")
+    render(paste0(fse, '.md'), pdf_document())
+    render("../README.md", html_document())
+    unlink(paste0(fse, '.tmp.Rmd'))
+    file.rename(paste0(fse, '.tmp.R'), paste0(fse, '.R')) 
+}
+knit2("bloomr.beta.Rmd")
+
+
+
+## if with markdown lib, but topics needs rewrite
+## shell("pandoc bloomr.md -o bloomr.pdf", shell=Sys.getenv("COMSPEC"))
+## markdownToHTML("bloomr.md", "bloomr.html") 
+## markdownToHTML("README.md", "README.html")
+
+```
+
+```{r unitests, purl=FALSE, eval=FALSE, include=FALSE}
+con=br.open() 
+br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.bulk.idx(con, "SX5E Index", field="PX_LAST")
+br.close(con) 
+```
+
+
+    
+<!-- Local Variables: -->
+<!-- mode: rmd -->
+<!-- End: -->
+
+<!--  LocalWords:  BloomR
+ -->
