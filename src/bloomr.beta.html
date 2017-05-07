@@ -163,7 +163,7 @@ Reads a CSV file containing a group of tickers in each column and returns the hi
 <dd>path to CSV file.
 </dd>
 <dt>field</dt>
-<dd>case insensitive string denoting the Bloomberg field queried. Defaults to “PX_LAST”. If the field is wrong or not accessible, data will be empty but no error will be raised.
+<dd>case insensitive string denoting the Bloomberg field queried. Defaults to “PX_LAST”. If the field is wrong or not accessible, data will be empty, but no error will be raised.
 </dd>
 <dt>start</dt>
 <dd>start date. Can be a Date object or an ISO string without separators (YYYYMMDD). Defaults to 5 days before current date.
@@ -178,13 +178,13 @@ Reads a CSV file containing a group of tickers in each column and returns the hi
 <dd>to be set to FALSE for (non-English) CSV, using semicolon as separator.
 </dd>
 <dt>addtype</dt>
-<dd>If a string denoting the security type, it will be added to all tickers; if TRUE “Equity”, will be added; if FALSE (the default), nothing will be added.
+<dd>If a string, it denotes the security type and is added to all tickers; if TRUE “Equity”, will be added; if FALSE (the default), nothing will be added.
 </dd>
 <dt>showtype</dt>
 <dd>if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.
 </dd>
 <dt>use.xts</dt>
-<dd>if TRUE (the default) time series are formatted as xts objects else as a data frame.
+<dd>if TRUE (the default) time series are formatted as xts objects. else as a data frame.
 </dd>
 <dt>merge.xts</dt>
 <dd>if TRUE (the default) xts objects in the same group are merged using all rows and using NAs for missing observations.
@@ -196,7 +196,7 @@ Reads a CSV file containing a group of tickers in each column and returns the hi
 <dd>list of Bloomberg options values related to <code>option.names</code>.
 </dd>
 <dt>only.trading.days</dt>
-<dd>if TRUE (the default) use only trading days, add non trading days to output with NA values.
+<dd>if TRUE (the default) only trading days are used, else non-trading days are added as NA values.
 </dd>
 <dt>price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays</dt>
 <dd>arguments passed to <code>br.sample()</code> if <code>con=NULL</code>.
@@ -253,16 +253,10 @@ Returns the historical data for a vector of tickers in xts or list format. It re
 <dd>character vector of the tickers queried for data
 </dd>
 <dt>use.xts</dt>
-<dd>if TRUE (the default) time series are formatted as xts objects else as a data frame. stack test
+<dd>if TRUE (the default) time series are formatted as xts objects else as a data frame.
 </dd>
-<dt>use.xts</dt>
-<dd>inner test
-</dd>
-<dt>only.trading.days</dt>
-<dd>inner test 2
-</dd>
-<dt>fakearg</dt>
-<dd>fake arg
+<dt>merge.xts</dt>
+<dd>if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
 </dd>
 </dl>
 </div>
@@ -273,9 +267,10 @@ If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</co
 </div>
 <div id="value-1" class="section level2">
 <h2>Value</h2>
-<p>If <code>use.xts=FALSE</code>, a list where each element is the historical data of a security as a data frame.<br />
-If <code>use.xts=TRUE</code> and <code>merge.xts=FAlSE</code>, a list where each element is the historical data of a security as an xts object.<br />
-If <code>use.xts=TRUE</code> and <code>merge.xts=TRUE</code>, an xts oject where where each column is the historical data of a security.</p>
+<p>If <code>use.xts=FALSE</code>, a list of character matrices, where the first column, named “date”, has the observation dates, the second column, named after the field, has field values. The list names are the tickers. Empty time series are returned as NULL. If all time series are empty a list of NULLs is returned.</p>
+<p>If <code>use.xts=TRUE</code> and <code>merge.xts=FAlSE</code>, a list of xts objects, where the xts index has the observation dates and its data column, named after the field, has field values. The list names are the tickers. Empty time series are returned as NA. If all time series are empty a list of NAs is returned.</p>
+<p>If <code>use.xts=TRUE</code> and <code>merge.xts=TRUE</code>, then when:<br />
+A) There is at least one non-empty TS, an xts object is returned, where the index has the observation dates and columns, named after the tickers, have field values. Empty time series are returned as a NA column for the related xts ticker. B) All time series are empty a vectors of NAs of the same length as the queries tickers is returned.</p>
 </div>
 <div id="example" class="section level2">
 <h2>Example</h2>

@@ -19,14 +19,54 @@ store=function(sym){
 
 
 ## ----br.hist.csv, opts.label='purlme'------------------------------------
-br.hist.csv=function(con, file, field="PX_LAST", start=Sys.Date()-5, end.date=Sys.Date(),
+br.hist.csv=function(
+                     #' the connection token returned from br.open().
+                     #' If `NULL` simulated values are generated.   
+                     con,
+                     file, #' path to CSV file.
 
-                     cols=NULL, comma=TRUE,
-                     addtype=FALSE, showtype=FALSE,  
-                     use.xts=TRUE, merge.xts=TRUE,
+                     #' case insensitive string denoting the Bloomberg field queried. Defaults to "PX_LAST".
+                     #' If the field is wrong or not accessible, data will be empty,
+                     #' but no error will be raised.
+                     field="PX_LAST",
+
+                     #' start date. Can be a Date object or an ISO string without separators (YYYYMMDD).
+                     #' Defaults to 5 days before current date.  
+                     start=Sys.Date()-5,
+                    
+                     end.date=Sys.Date(), #' end date. Same format as `start`. Defaults to current date.  
+
+                     #' Logical or integer vector for selecting CSV columns (ticker groups).
+                     #' Defaults to all columns.  
+                     cols=NULL,
+
+                     #' to be set to FALSE for (non-English) CSV, using semicolon as separator.  
+                     comma=TRUE,
+
+                     #'  If a string, it denotes the security type and is added to all tickers;
+                     #' if TRUE "Equity", will be added; if FALSE (the default), nothing will be added.  
+                     addtype=FALSE,
+
+                     #' if TRUE, security types will be removed from names of list or xts output.
+                     #' It defaults to FALSE.  
+                     showtype=FALSE,
+
+                     #' if TRUE (the default) time series are formatted as xts objects.
+                     #' else as a data frame.  
+                     use.xts=TRUE,
+                     
+                     #' if TRUE (the default) xts objects in the same group are merged using all rows and
+                     #' using NAs for missing observations.
+                     merge.xts=TRUE,
 
                      ## br.bdh args
-                     option.names = NULL, option.values = NULL,
+                     #' list of Bloomberg options names. Require `option.values` too.
+                     option.names = NULL,
+                     #' list of Bloomberg options values related to `option.names`.
+                     option.values = NULL,
+
+                     #' if TRUE (the default) only trading days are used,
+                     #' else non-trading days are added as NA values. 
                      only.trading.days = TRUE,
 
                      ## Simulation args                      
@@ -87,58 +127,29 @@ store(br.hist.csv)
 
 ## ----br.hist, opts.label='purlme'----------------------------------------
 br.hist=function(con,
+                 
                  #' character vector of the tickers queried for data
-                 ## std com
                  tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
                                             
                  addtype=FALSE, showtype=FALSE,
 
                  #' if TRUE (the default) time series are formatted as xts objects else as a data frame.  
-                 #' stack test
-                 # std com
-                 use.xts=TRUE, merge.xts=TRUE,   #' inner test
+                 use.xts=TRUE,
+
+                 #' if TRUE (the default) xts objects are merged using all rows
+                 #' and using NAs for missing observations.
+                 merge.xts=TRUE,   
                  
                  ## br.bdh args
                  option.names = NULL, option.values = NULL,
-                 only.trading.days = TRUE,     #'     inner test 2
+                 only.trading.days = TRUE,
 
                  ## Simulation args                      
                  price=TRUE,
                  mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
                  same.dates=FALSE, empty.sec=0,
-                 weekend=TRUE, holidays=NULL
-                ,
-                 #' fake arg
-                 fakearg
-                 
-                 
-                 )
+                 weekend=TRUE, holidays=NULL )
 {
-
-## Value
-## -----
-##
-## use.xts=FALSE:
-## List of char mats,
-##     where 1st col, named "date", has obs. dates; 2nd col, named after the field, has field values.
-##     List is named after the tickers
-##     Empty TS -> NULL
-##     All empty TS -> List of NULLs 
-##  
-## use.xts=TRUE & merge.xts=FALSE:
-## List of XTS objects
-##     where the XTS index has obs. dates and its col, named after the field, has field values.
-##     List is named after the tickers
-##     Empty TS -> NA
-##     All empty TS -> List of NAs 
-##  
-## use.xts=TRUE & merge.xts=TRUE:
-## a) at least one non-empty TS:
-##    XTS object
-##    where the index has obs. dates and columns, named after the tickers, have field values.
-##    Empty TS -> NA column in the related XTS ticker.
-## b) All empty TS  -> vectors of NAs as long as the tickers
-##
     
 
     ## Check connection

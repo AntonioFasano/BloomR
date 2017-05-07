@@ -47,10 +47,10 @@ con
 :   the connection token returned from br.open(). If `NULL` simulated values are generated.   
 
 file
-:   path to CSV file.  
+:   path to CSV file.
 
 field
-:   case insensitive string denoting the Bloomberg field queried. Defaults to "PX_LAST". If the field is wrong or not accessible, data will be empty but no error will be raised.  
+:   case insensitive string denoting the Bloomberg field queried. Defaults to "PX_LAST". If the field is wrong or not accessible, data will be empty, but no error will be raised.
 
 start
 :   start date. Can be a Date object or an ISO string without separators (YYYYMMDD). Defaults to 5 days before current date.  
@@ -65,29 +65,28 @@ comma
 :   to be set to FALSE for (non-English) CSV, using semicolon as separator.  
 
 addtype
-:   If a string denoting the security type, it will be added to all tickers; if TRUE "Equity", will be added; if FALSE (the default), nothing will be added.  
+:   If a string, it denotes the security type and is added to all tickers; if TRUE "Equity", will be added; if FALSE (the default), nothing will be added.  
 
 showtype
 :   if TRUE, security types will be removed from names of list or xts output. It defaults to FALSE.  
 
 use.xts
-:   if TRUE (the default) time series are formatted as xts objects else as a data frame.  
+:   if TRUE (the default) time series are formatted as xts objects. else as a data frame.  
 
 merge.xts
 :   if TRUE (the default) xts objects in the same group are merged using all rows and using NAs for missing observations.
 
-option.names
+option.names 
 :   list of Bloomberg options names. Require `option.values` too.
 
-option.values
+option.values 
 :   list of Bloomberg options values related to `option.names`.
 
-only.trading.days
-:   if TRUE (the default) use only trading days, add non trading days to output with NA values. 
+only.trading.days 
+:   if TRUE (the default) only trading days are used, else non-trading days are added as NA values. 
 
 price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays
 :   arguments passed to `br.sample()` if `con=NULL`.
-
 
 Details
 -------
@@ -147,16 +146,10 @@ tiks
 :   character vector of the tickers queried for data
 
 use.xts
-:   if TRUE (the default) time series are formatted as xts objects else as a data frame.   stack test
+:   if TRUE (the default) time series are formatted as xts objects else as a data frame.  
 
-use.xts
-:   inner test
-
-only.trading.days
-:   inner test 2
-
-fakearg
-:   fake arg
+merge.xts
+:   if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
 
 Details
 -------
@@ -167,9 +160,15 @@ If `con=NULL`, values are simulated by means of `br.sample()`. Sampled values ar
 
 Value
 -----
-If `use.xts=FALSE`, a list where each element is the historical data of a security as a data frame.  
-If `use.xts=TRUE` and `merge.xts=FAlSE`, a list where each element is the historical data of a security as an xts object.  
-If `use.xts=TRUE` and `merge.xts=TRUE`, an xts oject where where each column is the historical data of a security.   
+If `use.xts=FALSE`, a list of character matrices, where the first column, named "date", has the observation dates, the second column, named after the field, has field values. The list names are the tickers. 
+Empty time series are returned as NULL. If all time series are empty a list of NULLs is returned.
+
+If `use.xts=TRUE` and `merge.xts=FAlSE`, a list of xts objects, where the xts index has the observation dates and its data column, named after the field, has field values. The list names are the tickers. 
+Empty time series are returned as NA. If all time series are empty a list of NAs is returned.
+
+If `use.xts=TRUE` and `merge.xts=TRUE`, then when:  
+A) There is at least one non-empty TS, an xts object is returned, where the index has the observation dates and columns, named after the tickers, have field values. Empty time series are returned as a NA column for the related xts ticker.
+B) All time series are empty a vectors of NAs of the same length as the queries tickers is returned. 
 
 
 Example
