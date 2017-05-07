@@ -11,6 +11,7 @@
 ##    Fix download error in: download.nice(G$ahkurl, G$ahkzip ...) 
 ##  Create a java bin to test java directory variables
 ##  Fix: ess-init.R ess-init.old.R the first is for debug the latter is tht original (tcltk)
+##  Read help in src\bloomr.beta.Rmd
 ##
 ##  Usage:
 ##  Source this file and run:

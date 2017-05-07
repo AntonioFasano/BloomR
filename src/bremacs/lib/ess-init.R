@@ -1,4 +1,5 @@
 
+## Patch install.packages to show dialog boxes to user
 untrace(install.packages)
 trace(install.packages, 
     tracer=quote({wasloaded='package:tcltk' %in% search(); require(tcltk)}) ,

@@ -121,11 +121,20 @@ The rest goes to br-setmodes.el."
   (setq-default major-mode 'R-mode)
   (setq inferior-R-program-name br-rterm)
 
-
-  ;; Rprofile specific for EMACS/Rterm
-  ;; Currently patches install.packages to use tcltk
+  ;; Set R init file to to main\bremacs\share\emacs\site-lisp\bremacs\ess-init.R
+  ;; This is equivalent to standard \etc\Rprofile.site, but is run only when starting R from BRemacs
   (setf (cdr (assoc 'inferior-ess-start-file ess-r-customize-alist))
-	(concat (file-name-directory (locate-library  "br-init")) "ess-init.R")))
+	(concat (file-name-directory (locate-library  "br-init")) "ess-init.R"))
+
+  ;; Use BRemacs for help
+  ;; (add-hook 'ess-post-run-hook
+  ;;  	    (lambda()
+  ;;  	      (when (string= ess-dialect "R")
+  ;;  		(ess-eval-linewise "options(chmhelp=FALSE, help_type=\"text\")"
+  ;;  				   nil nil nil 'wait))))
+  ;; (setq ess-help-own-frame t ess-help-reuse-window nil) ; new frame for each help instance
+
+  )
 
 
 (defun br-init-packs()
