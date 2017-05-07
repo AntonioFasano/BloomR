@@ -16,6 +16,7 @@ Fix XXXX paragraphs
 
 
 
+
 br.hist.csv{#br.hist.csv}
 ========================
 *Historical data from grouped tickers in a CSV file*  
@@ -131,18 +132,6 @@ Arguments
 ----------
 
 tiks
-:   character vector of the tickers queried for data  
-
-use.xts
-:   if TRUE (the default) time series are formatted as xts objects else as a data frame.  
-
-merge.xts
-:   if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
-
-For other arguments see the function `br.hist.csv` 
-
-
-tiks
 :   character vector of the tickers queried for data
 
 use.xts
@@ -150,6 +139,10 @@ use.xts
 
 merge.xts
 :   if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
+
+For other arguments see the function `br.hist.csv`.
+
+
 
 Details
 -------
@@ -181,15 +174,24 @@ br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 ```
 
 ```
-## Error in br.hist(con, c("MSFT US", "AMZN US"), addtype = TRUE): could not find function ".br.check.type"
+## Loading MSFT US Equity
+```
+
+```
+## Loading AMZN US Equity
+```
+
+```
+##            MSFT US AMZN US
+## 2017-05-01  11.559   9.651
+## 2017-05-02   9.881  10.455
+## 2017-05-03  11.304   8.216
+## 2017-05-04  10.936   8.053
+## 2017-05-05  11.947  10.301
 ```
 
 ```r
 br.close(con) # Use the token to release the connection
-```
-
-```
-## Error in eval(expr, envir, enclos): could not find function "br.close"
 ```
 
 See Also

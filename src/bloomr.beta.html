@@ -247,18 +247,7 @@ Returns the historical data for a vector of tickers in xts or list format. It re
 <dd>if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
 </dd>
 </dl>
-<p>For other arguments see the function <code>br.hist.csv</code></p>
-<dl>
-<dt>tiks</dt>
-<dd>character vector of the tickers queried for data
-</dd>
-<dt>use.xts</dt>
-<dd>if TRUE (the default) time series are formatted as xts objects else as a data frame.
-</dd>
-<dt>merge.xts</dt>
-<dd>if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
-</dd>
-</dl>
+<p>For other arguments see the function <code>br.hist.csv</code>.</p>
 </div>
 <div id="details-1" class="section level2">
 <h2>Details</h2>
@@ -276,9 +265,15 @@ A) There is at least one non-empty TS, an xts object is returned, where the inde
 <h2>Example</h2>
 <pre class="r"><code>con=NULL # Open simulated connection and  load some data
 br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></pre>
-<pre><code>## Error in br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype = TRUE): could not find function &quot;.br.check.type&quot;</code></pre>
+<pre><code>## Loading MSFT US Equity</code></pre>
+<pre><code>## Loading AMZN US Equity</code></pre>
+<pre><code>##            MSFT US AMZN US
+## 2017-05-01  11.559   9.651
+## 2017-05-02   9.881  10.455
+## 2017-05-03  11.304   8.216
+## 2017-05-04  10.936   8.053
+## 2017-05-05  11.947  10.301</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
-<pre><code>## Error in eval(expr, envir, enclos): could not find function &quot;br.close&quot;</code></pre>
 </div>
 <div id="see-also" class="section level2">
 <h2>See Also</h2>

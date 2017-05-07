@@ -44,6 +44,13 @@ knit_hooks$set(purl = hook_purl)
 
 ```
 
+```{r betaonly, purl=FALSE, eval=!step2,  include=FALSE}
+
+## Calling bloomr.R is necessary to run examples requiring functions not yet present here.
+if(grepl("^bloomr\\.beta\\.", current_input()))
+    source("bloomr.R")
+
+```
 
 ```{r store, opts.label='purlme'}
 ## Purl this first
