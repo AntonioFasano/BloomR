@@ -59,7 +59,10 @@ from `'poly-head-tail-mode' to `'border-mode")
   :type 'object)
 
 (declare-function define-polymode "polymode") ;; don't know if needed
-(define-polymode bremacs-rmd-mode pm-poly/bremacs-rmd)
+(define-polymode bremacs-rmd-mode pm-poly/bremacs-rmd
+  ;; default hook sets R help buffers to poly-ess-help+r-mode, but currently this doesn't work
+  :after-hook (setq ess-help-mode-hook nil)
+  )
 
 ;;; end Create bremacs-rmd-mode========
 

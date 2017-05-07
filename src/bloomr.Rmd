@@ -1275,7 +1275,7 @@ store(day.us)
 ```
 
 ```{r topics, purl=FALSE, eval=TRUE, include=FALSE}
-read.head=function() {x=readLines('bloomr.rmd'); x[grep("^=+", x)-1]}
+read.head=function() {x=readLines('bloomr.Rmd'); x[grep("^=+", x)-1]}
 topics=function(){
     x=read.head()
     x=sub("\\{", "]\\(", x )

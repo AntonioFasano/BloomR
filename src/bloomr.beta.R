@@ -1,5 +1,24 @@
+## ----store, opts.label='purlme'------------------------------------------
+## Purl this first
+## Store br.* objects in bloomr env in base namespace
+assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
 
-## ----br.bulk.csv, opts.label='purlme'------------------------------------
+## func: store(func);  var: store("var")
+store=function(sym){
+    if(is.function(sym)){
+        name=deparse(substitute(sym)) 
+        val=sym
+    } else {
+        name=sym
+        val=get(sym)
+    }
+    
+    assign(name, val, envir=bloomr)
+    rm( list=name, envir=parent.frame())
+}
+
+
+## ----br.hist.csv, opts.label='purlme'------------------------------------
 br.hist.csv=function(con, file, field="PX_LAST", start=Sys.Date()-5, end.date=Sys.Date(),
 
                      cols=NULL, comma=TRUE,
@@ -63,8 +82,10 @@ br.hist.csv=function(con, file, field="PX_LAST", start=Sys.Date()-5, end.date=Sy
     grps
 }
 
+store(br.hist.csv)
 
-## ----br.hist, opts.label='purlme'-----------------------------------
+
+## ----br.hist, opts.label='purlme'----------------------------------------
 br.hist=function(con, tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
                                             
                  addtype=FALSE, showtype=FALSE,                      
@@ -186,8 +207,10 @@ br.hist=function(con, tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Da
   
 }
 
+store(br.hist)
 
-## ----br.bulk.idx, opts.label='purlme'------------------------------------
+
+## ----br.idx, opts.label='purlme'-----------------------------------------
 br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
 
                 include.idx=TRUE, showtype=FALSE,
@@ -245,6 +268,7 @@ br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Da
             weekend=TRUE, holidays=NULL)       
 }
 
+store(br.idx)
 
 
 ## ----br.sample, opts.label='purlme'--------------------------------------
@@ -303,6 +327,10 @@ br.sample=function(nrow=NULL,  price=TRUE,
     TS
 }
 
+store(br.sample)
+
+
+## ----MISCFUNC, opts.label='purlme'---------------------------------------
 
 br.try.date=function(d){ # convert vector d to a date vector if possible or return null
 ### Any element should be POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d"
@@ -454,4 +482,16 @@ br.bdh=function(
 # br.hist.csv(NULL, "wei.csv", same.dates=TRUE, empty.sec=.2)
 # br.bdh(con, "MSFT US Equity", start="20170225")
 # source("newbulk3.R")
+
+
+store(br.try.date)
+store(br.is.same.class) 
+store(br.bdh)
+
+
+
+## ----attach, opts.label='purlme'-----------------------------------------
+### Make visible br.* in bloomr env and base ns
+attach(bloomr)
+rm(store)
 
