@@ -7,9 +7,15 @@ Complete help for functions br.try.date, br.is.same.class, br.bdh
 When in br.desc 'CIE_DES_BULK' is not availbale use NA
 allow br.desc/br.bulk.desc to use simulated
 Find a better place for  br.beta(): here it does not make sense. In bloomr.Rmd prevents a replacement with the beta when it is ready for shipping. 
-
-
+Use safer way to get internal variables `get(".br.types", pos = "bloomr")`
 Fix XXXX paragraphs
+For final tests (when beta is release candidate), do not use source('bloomr.R')
+
+### Terminal tests  
+copy of br.desc for simulations
+always.display.tickers, dates.as.row.names 
+
+
 
 ```{r setup, purl=FALSE, include=FALSE}
 ##rm(list=ls(all=TRUE))
@@ -1178,10 +1184,11 @@ type
 Details
 -------
 `.br.is.con` checks for the validity of a connection token.
-`.br.types` is a character vector with security types suitable as an argument for `br.bulk*` functions.
+`.br.types` is a character vector with security types suitable as an argument for BloomR multi-ticker  functions.
 `.br.check.type` checks if a type matches `.br.types`.
 `.br.cuttype` cuts trailing security type from character vector.
 `.br.jar()` returns the path to the blpapi*.jar
+`.br.session` object storing BloomR session information. 
 
 
 ```{r bbg-internal, opts.label='purlme'}
@@ -1196,14 +1203,14 @@ Details
 .br.check.type=function(type) {
     if(is.character(type)){
 	x=toupper(type)
-	xx=toupper(.br.types)
+	xx=toupper(get(".br.types", pos = "bloomr"))
 	if(!any(xx %in% x)) stop(paste(x, 'not in', paste(xx, collapse=' ')))
     }
 }
 
 ## Cut trailing security type from character vector 
 .br.cuttype=function(type){
-    p=paste0(' +', .br.types, '$|', collapse='')
+    p=paste0(' +', get(".br.types", pos = "bloomr"), '$|', collapse='')
     p=sub('\\|$', '', p)
     sub(p, '', type, ignore.case=TRUE)
 }
@@ -1214,12 +1221,21 @@ Details
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 
+## Legal security types
+.br.session=NULL
+.br.session$simulated=FALSE 
+.br.session$tokenasked=FALSE 
+.br.session$tokensuccess=FALSE 
+
+
 
 store(.br.is.con)
 store(".br.types")
 store(.br.check.type) 
 store(.br.cuttype)
 store(.br.jar)
+store(.br.session)
+
 ```
 
 
@@ -1228,23 +1244,31 @@ Manage connections{#connections}
 
 Description
 ------------
-Open and close the connection to the Bloomberg service.   
+Open,close and test the connection to the Bloomberg service.   
 
 
 Usage
 -----
     br.open()
     br.close(con)
-	
+    br.simulate(is=TRUE)
+    br.is.sim()
+
+
 Arguments
 ---------
 con
 :   the connection token returned from br.open()
 
+is
+:   if TRUE (default), simulate connection. 
+
+
 Details
 -------
 
-`br.open` returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to `br.close`. If you are using simulated data and so your connection token is NULL, closing the connection is optional. Anyway running `br.close(con)`, even if `con==NULL` avoids adding this line when you switch to a actual data download.
+`br.open` returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to `br.close`. If you have run `br.simulate(is=TRUE)`, data are simulated (and your connection token is `NULL`). ` br.is.sim()` tests if the connection is simulated.   
+If ` br.is.sim()`, closing the connection is optional. Anyway running `br.close(con)`, even if `con==NULL` avoids adding this line when you switch to a actual data download.
 
 
 Example
@@ -1252,18 +1276,41 @@ Example
 
 ```{r connections.exem, opts.label='democode'}
 con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 br.close(con) # Use the token to release the connection
 
 ```
 
 
 ```{r connections, opts.label='purlme'}
-br.open=function() blpConnect(blpapi.jar.file=.br.jar())
-br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
+br.open=function() {
+
+    if(br.is.sim()) return NULL
+
+    assign(".br.session$tokenasked", TRUE, pos = "bloomr")
+    blpConnect(blpapi.jar.file=.br.jar())
+    assign(".br.session$tokensuccess", TRUE, pos = "bloomr")
+}
+
+br.close=function(conn) {
+    if(!is.null(conn)) blpDisconnect(conn)
+    assign(".br.session$tokenasked", FALSE, pos = "bloomr")
+    assign(".br.session$tokensuccess", FALSE, pos = "bloomr")
+}
+
+br.simulate=function(is=TRUE) {
+    assign(".br.session$simulated", is, pos = "bloomr")    
+}
+
+br.is.sim=function() {
+    get(".br.session$simulated", pos = "bloomr")
+}
 
 store(br.open)
 store(br.close)
+store(br.simulate)
+store(br.is.sim)
+
 ```
 
 
