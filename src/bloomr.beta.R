@@ -18,6 +18,56 @@ store=function(sym){
 }
 
 
+## ----br.bdh, opts.label='purlme'-----------------------------------------
+br.bdh=function(
+                con, security, fields="PX_LAST",
+                start.date=Sys.Date() - 7, end.date=Sys.Date(), 
+                override_fields  = NULL, override_values = NULL,               
+                option.names = NULL, option.values = NULL,
+                only.trading.days = TRUE
+                ) {
+    
+    if(is.null(con)) stop("'con' is NULL, but br.bdh() does not support simulated mode.")
+
+
+    ## Set overrides
+    if(is.null(override_fields)) {
+        override_fields="IGNORE"
+        override_values = ""
+    }
+
+    ## Test/set dates
+    dates=.br.test.dates(start.date, end.date, asChar=TRUE)
+    option.names=c(option.names, "startDate")
+    option.values=c(option.values, dates$start)
+    if(!is.null(end.date)) {
+        option.names = c(option.names, "endDate")
+        option.values = c(option.values, dates$end)
+    }
+
+
+    ## Non trading days
+    if(!only.trading.days) {
+        option.names=c("nonTradingDayFillOption", "nonTradingDayFillMethod", option.names)
+        option.values=c("ALL_CALENDAR_DAYS", "NIL_VALUE", option.values)
+    }
+
+    ## Get reference data
+    ref=con$blh(security, .jarray(fields),
+            .jarray(override_fields), .jarray(override_values),
+            .jarray(option.names), .jarray(option.values))
+    ret=ref$getData()   
+    ret=if(!is.null(ret)) .jevalArray(ret, simplify=TRUE) else ret
+
+    ## Set data attributes
+    if(!is.null(ret)) attr(ret, "types")=ref$getDataTypes()
+    ## For info on data types Rbbg:::convert.to.type
+    ## Consider also ref$getColumnNames()
+
+    ret
+}
+store(br.bdh)
+
 ## ----br.hist.csv, opts.label='purlme'------------------------------------
 br.hist.csv=function(
                      #' the connection token returned from br.open().
@@ -123,6 +173,79 @@ br.hist.csv=function(
 }
 
 store(br.hist.csv)
+
+
+## ----br.bulk.desc, opts.label='purlme'-----------------------------------
+br.bulk.desc=function(con, tiks) {
+
+    LL = lapply(tiks, function(tik){
+        message('Reading ', tik)
+        br.desc(con, tik)             
+    })
+    names(LL)=tiks
+    LL
+}
+store(br.bulk.desc)
+
+## ----br.idx, opts.label='purlme'-----------------------------------------
+br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+
+                include.idx=TRUE, showtype=FALSE,
+                use.xts=TRUE, merge.xts=TRUE,
+
+                ## br.bdh args
+                option.names = NULL, option.values = NULL,
+                only.trading.days = TRUE,
+
+                ## Simulation args                                      
+                nsec=10, sec.names = NULL,
+                
+                price=TRUE,
+                mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                same.dates=FALSE, empty.sec=0,
+                weekend=TRUE, holidays=NULL)
+{   
+    ## Check connection
+    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter')
+
+    ## Check index format. Add 'INDEX' if missing
+    if(!is.character(index)) stop('Index should be a string')
+    if(length(index)>1) stop('Only one index')
+    if(!grepl("INDEX$", toupper(index))) index=paste(index, 'INDEX') 
+
+    ## Get index members
+    if(is.null(con)) tiks=paste0('memb', 1:nsec) else{
+        tiks=bds(con, index, 'INDX_MEMBERS')
+        tiks=paste(tiks[[1]], 'Equity')
+    }
+
+    ## Check sec.names
+    if(is.null(con) && !is.null(sec.names)) {
+        if(!is.character(sec.names)) stop("'sec.names' should be a character vector")
+        if(length(sec.names)!=nsec)
+            stop("'sec.names' length should be equal to the number of index constituents")
+        tiks=sec.names
+    }
+    
+    ## Include index?
+    if(include.idx) tiks=c(index, tiks)
+
+    ## Get data
+    br.hist(con=con, tiks=tiks, field=field, start=start, end.date=end.date,
+        
+            addtype=FALSE, showtype=showtype,
+            use.xts=TRUE, merge.xts=TRUE,
+        
+            option.names=option.names, option.values=option.values,
+            only.trading.days=only.trading.days,
+
+            price=TRUE,
+            mean=mean, sd=sd, jitter=jitter,
+            same.dates=same.dates, empty.sec=empty.sec,
+            weekend=TRUE, holidays=NULL)       
+}
+
+store(br.idx)
 
 
 ## ----br.hist, opts.label='purlme'----------------------------------------
@@ -234,66 +357,70 @@ br.hist=function(con,
 store(br.hist)
 
 
-## ----br.idx, opts.label='purlme'-----------------------------------------
-br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+## ----br.desc, opts.label='purlme'----------------------------------------
+br.desc=function(con, tik)
+{
 
-                include.idx=TRUE, showtype=FALSE,
-                use.xts=TRUE, merge.xts=TRUE,
-
-                ## br.bdh args
-                option.names = NULL, option.values = NULL,
-                only.trading.days = TRUE,
-
-                ## Simulation args                                      
-                nsec=10, sec.names = NULL,
-                
-                price=TRUE,
-                mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
-                same.dates=FALSE, empty.sec=0,
-                weekend=TRUE, holidays=NULL)
-{   
     ## Check connection
-    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter')
+    if(!.br.is.con(con)) stop('Invalid connection parameter') 
 
-    ## Check index format. Add 'INDEX' if missing
-    if(!is.character(index)) stop('Index should be a string')
-    if(length(index)>1) stop('Only one index')
-    if(!grepl("INDEX$", toupper(index))) index=paste(index, 'INDEX') 
+    ## Check ticker format
+    if(!is.character(tik)) stop('The ticker should be a string')
+    if(length(tik)>1) stop('Only one  ticker')
+       
+    ## Short description fields as data frame
+    des=paste0('ds00', 1:9)
+    des=des[-7] # not usually working 
+    x=bdp(con, tik, des)
+    x=data.frame(t(x), stringsAsFactors=FALSE)
 
-    ## Get index members
-    if(is.null(con)) tiks=paste0('memb', 1:nsec) else{
-        tiks=bds(con, index, 'INDX_MEMBERS')
-        tiks=paste(tiks[[1]], 'Equity')
-    }
+    ## Long description field
+    xx=bds(con, tik, 'CIE_DES_BULK')
 
-    ## Check sec.names
-    if(is.null(con) && !is.null(sec.names)) {
-        if(!is.character(sec.names)) stop("'sec.names' should be a character vector")
-        if(length(sec.names)!=nsec)
-            stop("'sec.names' length should be equal to the number of index constituents")
-        tiks=sec.names
-    }
-    
-    ## Include index?
-    if(include.idx) tiks=c(index, tiks)
-
-    ## Get data
-    br.hist(con=con, tiks=tiks, field=field, start=start, end.date=end.date,
-        
-            addtype=FALSE, showtype=showtype,
-            use.xts=TRUE, merge.xts=TRUE,
-        
-            option.names=option.names, option.values=option.values,
-            only.trading.days=only.trading.days,
-
-            price=TRUE,
-            mean=mean, sd=sd, jitter=jitter,
-            same.dates=same.dates, empty.sec=empty.sec,
-            weekend=TRUE, holidays=NULL)       
+    ## Merge fields add long desc to DF
+    if(!is.null(xx)) colnames(xx) = colnames(x)
+    rnams=c(rownames(x), rownames(xx))
+    x=rbind(x,xx)
+    rownames(x)=rnams
+    x
 }
+store(br.desc)
 
-store(br.idx)
+## ----br.md2pdf, opts.label='purlme'--------------------------------------
 
+br.md2pdf=function(md.file, pdf.file){
+### Make a markdown file into a PDF
+## It assumes that you have installed the BloomR LaTeX addons
+
+    ## Set pandoc and LaTeX exe and dir 
+    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
+    if(!file.exists(panexe))
+        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
+    latbin=dbr.brmain("latex/miktex/bin")
+    if(!file.exists(latbin))
+        stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
+
+    ## Shell escape
+    panexe=.br.wpath(panexe)
+
+    ## Set system Path to LaTeX bin
+    old.path=Sys.getenv('Path')
+    x=paste0(Sys.getenv("Path"), ';', gsub('/', '\\\\',  latbin))
+    Sys.setenv(Path=x)
+
+    cmd=paste(panexe, .br.wpath(md.file), '-o', .br.wpath(pdf.file))
+    out  <-  system(cmd, intern = TRUE, invisible = FALSE)
+
+    ## Restore origina system Path
+    Sys.setenv(Path=old.path)
+
+    ## Return errors if any
+    if(!is.null(attr(out, 'status')))  message(paste(out, collapse="\n"))
+
+    invisible(out)
+
+}
+store(br.md2pdf)
 
 ## ----br.sample, opts.label='purlme'--------------------------------------
 br.sample=function(nrow=NULL,  price=TRUE,
@@ -354,6 +481,74 @@ br.sample=function(nrow=NULL,  price=TRUE,
 store(br.sample)
 
 
+## ----bbg-internal, opts.label='purlme'-----------------------------------
+
+## Check connection token
+.br.is.con=function(con) identical(attr(con, 'jclass'), "org/findata/blpwrapper/Connection")
+
+## Legal security types
+.br.types=c('Govt', 'Corp', 'Mtge', 'M-Mkt', 'Muni', 'Pfd', 'Equity', 'Comdty', 'Index', 'Curncy')
+
+## Check security type
+.br.check.type=function(type) {
+    if(is.character(type)){
+	x=toupper(type)
+	xx=toupper(.br.types)
+	if(!any(xx %in% x)) stop(paste(x, 'not in', paste(xx, collapse=' ')))
+    }
+}
+
+## Cut trailing security type from character vector 
+.br.cuttype=function(type){
+    p=paste0(' +', .br.types, '$|', collapse='')
+    p=sub('\\|$', '', p)
+    sub(p, '', type, ignore.case=TRUE)
+}
+
+
+.br.jar=function(){
+    jarpath=dbr.brmain("/blpapi/bin")
+    Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
+    }
+
+
+store(.br.is.con)
+store(".br.types")
+store(.br.check.type) 
+store(.br.cuttype)
+store(.br.jar)
+
+## ----connections, opts.label='purlme'------------------------------------
+br.open=function() blpConnect(blpapi.jar.file=.br.jar())
+br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
+
+store(br.open)
+store(br.close)
+
+## ----miscfunc, opts.label='purlme'---------------------------------------
+
+#Clean up
+## Remove visible and invisible objects
+rm.all=function() 
+    rm(list=ls(all=TRUE, envir=parent.frame()), envir=parent.frame())
+
+## Remove visible non-function objects
+rm.var=function() 
+    rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
+
+store(rm.all)
+store(rm.var)
+
+## ----betafun, opts.label='purlme'----------------------------------------
+
+br.beta=function(){
+    f=paste0(R.home("share"), "/bloomr/bloomr.beta.R")    
+    if(file.exists(f)) source(f)  else message("No beta functionalities in this release")
+}
+
+store(br.beta)
+
+
 ## ----MISCFUNC, opts.label='purlme'---------------------------------------
 
 br.try.date=function(d){ # convert vector d to a date vector if possible or return null
@@ -386,56 +581,6 @@ br.is.same.class=function(...){ # Check if all argumets have the same class
 }
 
 
-## ----br.bdh, opts.label='purlme'-----------------------------------------
-br.bdh=function(
-                con, security, fields="PX_LAST",
-                start.date=Sys.Date() - 7, end.date=Sys.Date(), 
-                override_fields  = NULL, override_values = NULL,               
-                option.names = NULL, option.values = NULL,
-                only.trading.days = TRUE
-                ) {
-    
-    if(is.null(con)) stop("'con' is NULL, but br.bdh() does not support simulated mode.")
-
-
-    ## Set overrides
-    if(is.null(override_fields)) {
-        override_fields="IGNORE"
-        override_values = ""
-    }
-
-    ## Test/set dates
-    dates=.br.test.dates(start.date, end.date, asChar=TRUE)
-    option.names=c(option.names, "startDate")
-    option.values=c(option.values, dates$start)
-    if(!is.null(end.date)) {
-        option.names = c(option.names, "endDate")
-        option.values = c(option.values, dates$end)
-    }
-
-
-    ## Non trading days
-    if(!only.trading.days) {
-        option.names=c("nonTradingDayFillOption", "nonTradingDayFillMethod", option.names)
-        option.values=c("ALL_CALENDAR_DAYS", "NIL_VALUE", option.values)
-    }
-
-    ## Get reference data
-    ref=con$blh(security, .jarray(fields),
-            .jarray(override_fields), .jarray(override_values),
-            .jarray(option.names), .jarray(option.values))
-    ret=ref$getData()   
-    ret=if(!is.null(ret)) .jevalArray(ret, simplify=TRUE) else ret
-
-    ## Set data attributes
-    if(!is.null(ret)) attr(ret, "types")=ref$getDataTypes()
-    ## For info on data types Rbbg:::convert.to.type
-    ## Consider also ref$getColumnNames()
-
-    ret
-}
-
-
 .br.test.dates=function(start, end, holidays=NULL, asChar=FALSE){
 
     if(is.null(start <- br.try.date(start)))
@@ -461,10 +606,15 @@ br.bdh=function(
         start=format(start, format="%Y%m%d")
         end=format(end, format="%Y%m%d")
     }
-    list(start=start, end=end, holidays=holidays)
-    
+    list(start=start, end=end, holidays=holidays)    
 
 }
+
+store(br.try.date)
+store(br.is.same.class) 
+
+
+## ----deprecated, opts.label='purlme'-------------------------------------
 
 .br.sample.deprecated=function(nsec=NULL, no.na=NULL, df=NULL,
                                sec.names=NULL, empty.sec=NULL, same.dates=NULL){
@@ -492,26 +642,60 @@ br.bdh=function(
 }
 
 
-# br.bdh(con, "MSFT US EQUITY", "PX_LAST", "20170202", "20170210", override_fields="PRICING_SOURCE", override_values="CG")
-# br.bdh(con, "MSFT US EQUITY", "PX_LAST", "20170202", "20170210")
+## ----time, opts.label='purlme'-------------------------------------------
+`%+%` <- function(x,y) UseMethod("%+%")
+`%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
+`%-%` <- function(x,y) UseMethod("%-%")
+`%-%.Date` <- function(date,n) seq(date, by = paste (-n, "months"), length = 2)[2]
 
-###=============
-  
+year=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%Y")) else year(d)=n
+    d    
+}
+`year<-`=function (d, value) d <-as.Date(paste0(value, format(d, "-%m-%d")))
 
+month=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%m")) else month(d)=n
+    d 
+}
+`month<-`=function (d, value) d <-as.Date(paste0(format(d, "%Y-"),  value, format(d, "-%d")))
 
-####
-# debug(br.hist) ; br.hist(con, c("MSFT US Equity", "AMZN US Equity"), start="20170225")
-#debug(br.hist.csv)
-#debug(br.hist)
-# br.hist.csv(NULL, "wei.csv", same.dates=TRUE, empty.sec=.2)
-# br.bdh(con, "MSFT US Equity", start="20170225")
-# source("newbulk3.R")
+day=function(d, n=NULL){
+    if(is.null(n)) d=as.numeric(format(d, "%d")) else day(d)=n
+    d 
+}
+`day<-`=function (d, value) d <-as.Date(paste0(format(d, "%Y-%m-"),  value))
 
+last.day=function(d){
+    x=d %+% 1 #add a month
+    day(x)=1  #set to 1st
+    day(x-1)  #get day before
+}
 
-store(br.try.date)
-store(br.is.same.class) 
-store(br.bdh)
+day.us=function(d1, d2){
+    #set to first of month
+    x1=day(d1,1);x2=day(d2,1);
+    x=seq(x1, x2, by="1 month")
+    #last day of each month in seq
+    x=sapply(x, last.day)
+    #count 31d-months
+    x=length(which(x>30))
+    #substract 1 for each 31d-month
+    as.numeric(d2-d1-x)
+}
 
+store(day)
+store(month)
+store(year)
+store(`day<-`)
+store(`month<-`)
+store(`year<-`)
+store(`%+%`)
+store(`%-%`)
+store(`%+%.Date`)
+store(`%-%.Date`)
+store(last.day)
+store(day.us)
 
 
 ## ----attach, opts.label='purlme'-----------------------------------------

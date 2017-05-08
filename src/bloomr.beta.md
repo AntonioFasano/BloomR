@@ -1,18 +1,168 @@
 # BloomR main functions
 R topics documented:
 -----------
+[br.bdh](#br.bdh)   
 [br.hist.csv](#br.hist.csv)   
-[br.hist](#br.hist)   
+[br.bulk.desc](#br.bulk.desc)   
 [br.idx](#br.idx)   
+[br.hist](#br.hist)   
+[br.desc](#br.desc)   
+[br.md2pdf](#br.md2pdf)    
 [br.sample](#br.sample)   
+[Internal BloomR functions](#Internal)   
+[Manage connections](#connections)   
+[Misc functions](#misc.functions)   
+[Beta functionalities](#beta.functions)   
+[Beta misc functions](#beta.misc.functions)   
+[Deprecated functions](#deprecated.functions)   
+[Time extension functions](#time.functions)   
 
 ## TODO
 Complete help for functions br.try.date, br.is.same.class, br.bdh
+When in br.desc 'CIE_DES_BULK' is not availbale use NA
+allow br.desc/br.bulk.desc to use simulated
+Find a better place for  br.beta(): here it does not make sense. In bloomr.Rmd prevents a replacement with the beta when it is ready for shipping. 
+
+
 Fix XXXX paragraphs
 
 
 
 
+
+
+
+br.bdh{#br.bdh}
+===============
+*Historical data*
+
+XXXXRemove always.display.ticker, dates.as.row.names?
+XXXXCheck only  only.trading.days description
+XXXXMove staff in auto args
+
+Description
+-----------
+Download historical Bloomberg data 
+
+Usage
+-----
+    br.bdh=function(con, security, fields="PX_LAST", start.date=Sys.Date() - 7, end.date=Sys.Date(), 
+    override_fields= NULL, override_values=NULL, 
+    option.names = NULL, option.values = NULL,
+    only.trading.days = TRUE
+    )     
+
+Arguments
+---------
+con
+:   the connection token returned from br.open()
+
+securities
+:   character vector of the tickers queried for data  
+
+field
+:   case insensitive character vector of the Bloomberg field queried. Defaults to "PX_LAST". 
+
+start.date
+:   Time series start date as a Date object or an ISO string without separators (YYYYMMDD). Time series will actually begin at `start.date` if there is data available; otherwise it will start at the first significant date. 
+
+end.date
+:   Time series end  date as a Date object or an ISO string without separators (YYYYMMDD). If NULL or missing, it defaults to the last available date. 
+
+option.names, option.values
+:   See details
+
+always.display.tickers 
+:   (removed) Displays tickers in first column even if a single one is requested. Defaults to FALSE
+
+dates.as.row.names  
+:   (removed) Displays dates _also_ as row names. Defaults to TRUE for single ticker query, FALSE otherwise. 
+
+only.trading.days
+:   If FALSE, rows are returned for all requested dates, even when no markets data is available.  
+XXXXCheck! It defaults to FALSE for a single security or and TRUE for multiple securities. In the latter case, use `na.omit`  or `na.exclude` to remove these rows.
+
+
+Details
+-------
+For multi-ticker queries you might consider to use `br.hist()` which features also a simulated mode.
+
+`option.names` and `option.values` are options vectors affecting the returned data. Options are set pairwise, for example to set `opt1` and `opt2`  respectively to `val1` and `val2`, you would pass the arguments:
+
+    option.names=c("opt1", "opt2"), option.values=c("val1", "val2")
+
+Here is a list of options:
+
+
+
+periodicityAdjustment
+:   Determine the frequency and calendar type of the output. To be used in conjunction with `periodicitySelection`. If `ACTUAL`, it  reverts to the actual date from today (if the end date is left blank) 
+or from the End Date. If `CALENDAR`, (for pricing fields), it  reverts to the last business day of the specified calendar period. Calendar Quarterly (CQ), Calendar Semi-Annually (CS), or Calendar Yearly (CY). If `FISCAL`, it reverts to the fiscal period end for the company - Fiscal Quarterly (FQ), Fiscal Semi-Annually (FS) and Fiscal Yearly (FY) only.
+
+periodicitySelection
+:   Determine the frequency of the output. To be used in conjunction with periodicityAdjustment.
+if `DAILY`, `WEEKLY`, `MONTHLY`, `QUARTERLY`, `SEMI_ANNUALLY`, `YEARLY`.
+
+currency
+:   Amends the value from local to desired currency. The value is a 3 letter ISO code string, e.g. USD, GBP. View `WCV<GO>` on the Bloomberg terminal for the full list.
+
+overrideOption
+:   Indicates whether to use the average or the closing price in quote calculation. Values can be 
+`OVERRIDE_OPTION_CLOSE` for using the closing price or `OVERRIDE_OPTION_GPA`  for the average price.
+
+pricingOption
+:   Sets quote to Price or Yield for a debt instrument whose default value is quoted in yield (depending on pricing source).
+`PRICING_OPTION_PRICE` sets quote to price; `PRICING_OPTION_YIELD` sets quote to yield.
+
+nonTradingDayFillOption 
+:   Sets to include/exclude non trading days where no data was generated.
+`NON_TRADING_WEEKDAYS` includes all weekdays (Monday to Friday); `ALL_CALENDAR_DAYS`  includes all days of the calendar; `ACTIVE_DAYS_ONLY`  includes only the days where the instrument and field pair 
+were updated.
+
+
+nonTradingDayFillMethod
+:   If data is to be displayed for non trading days what is the data to be returned.
+ `PREVIOUS_VALUE` searches back and retrieve the previous value available for this security field pair. The search back period is up to one month. `NIL_VALUE` returns blank for the "value" value 
+within the data element for this field.
+
+maxDataPoints
+:   the maximum number of data points to return. If the original data set is larger, the response will be a subset, containing only the last `maxDataPoints` data points.
+
+returnEids
+:   returns the entitlement identifiers associated with security. If TRUE, populates data with an extra element containing a name and value for the EID date.
+
+returnRelativeDate
+:   returns data with a relative date. If TRUE, populates data with an extra element containing a name and value for the relative date. For example RELATIVE_DATE = 2002 Q2
+
+adjustmentNormal
+:   Adjust for "change on day". If TRUE, adjusts historical pricing to reflect: Regular Cash, Interim, 1st Interim, 2nd Interim, 3rd Interim, 4th Interim, 5th Interim, Income, Estimated, Partnership Distribution, Final, Interest on Capital, Distribution, Prorated.
+
+adjustmentAbnormal 
+:   Adjusts for Anormal Cash Dividends. If TRUE, adjusts historical pricing to reflect: Special Cash, Liquidation, Capital Gains, Long-Term Capital Gains, Short-Term Capital Gains, Memorial, Return of Capital, Rights Redemption, Miscellaneous, Return Premium, Preferred Rights Redemption, Proceeds/Rights, Proceeds/Shares, Proceeds/Warrants.
+
+
+adjustmentSplit
+:   Capital Changes Defaults. If TRUE, adjusts historical pricing and/or volume to reflect: Spin-Offs, Stock Splits/Consolidations, Stock Dividend/Bonus, Rights Offerings/Entitlement.
+
+adjustmentFollowDPDF
+:   If TRUE (defaults) Follow the Bloomberg function as from `DPDF<GO>`.
+
+CalendarCodeOverride
+:   Returns the data based on the calendar of the specified country, exchange, or 
+religion. Value is  a two character calendar code as from `CDR<GO>`. This will cause the data to be aligned according to the calendar  and including calendar holidays. Only applies only to DAILY requests.
+
+calendarOverridesInfo
+:   (Experimental, not tested) Returns data based on the calendar code of multiple countries, exchanges, or religious calendars as from `CDR<GO>`. This will cause the data to be aligned according to the set calendar(s) including their calendar holidays and only applies to DAILY requests.
+Requires `calendarOverrides`, which is a character vector of  two-character calendar codes as from `CDR<GO>`; `calendareOverridesOperation`, which can be  `CDR_AND`  returning  the intersection of trading days among multiple calendars or  `CDR_OR` returning the union of trading days. That is, a data point is returned if a date is a valid trading day for any of the calendar codes specified in the request.
+
+Overrides
+:   (Experimental, not tested) Append overrides to modify the calculation. `fieldID` specifies  a field mnemonic or alpha-numeric, such as `PR092` or `PRICING_SOURCE`. Review FLDS<GO> for list of possible overrides. `value` sets the desired override value
+
+
+
+Value
+-----
+A data frame with historical data. If tickers are displayed, the first column shows tickers, the second one the time series dates and the following ones the values of the queried fields; otherwise the columns start with dates. Dates will also be shown as rows if `dates.as.row.names=TRUE`. If multiple tickers are queried, they are vertically stacked respecting the order in `securities` vector.
 
 
 
@@ -105,9 +255,443 @@ If there is only one group, the first (and unique) element of the list will be r
 
 
 
+Demonstration
+-------------
+
+
+A sample CSV with Bloomberg tickers will look like follows:
+
+
+
+```r
+read.csv("mybloomr/tickers.csv")
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.csv
+```
+
+
+```
+##          Financial     Technology      Indices
+## 1   3988 HK Equity QCOM US Equity    DJI Index
+## 2      C US Equity CSCO US Equity DJUSFN Index
+## 3 601288 CH Equity  700 HK Equity  W1TEC Index
+## 4    BAC US Equity  IBM US Equity             
+## 5   HSBA LN Equity INTC US Equity
+```
+
+
+Note: 
+
+* CSV group headers are mandatory;
+* Group headers need not to be the same length. 
+
+We can now download data:
+
+
+```r
+con=NULL  #Simulated mode: replace with con=br.open() on terminal
+```
+
+
+```r
+data=br.hist.csv(con, "mybloomr/tickers.csv") 
+```
+
+
+```
+## Processing Financial ...
+```
+
+```
+## Loading 3988 HK Equity
+```
+
+```
+## Loading C US Equity
+```
+
+```
+## Loading 601288 CH Equity
+```
+
+```
+## Loading BAC US Equity
+```
+
+```
+## Loading HSBA LN Equity
+```
+
+```
+## Processing Technology ...
+```
+
+```
+## Loading QCOM US Equity
+```
+
+```
+## Loading CSCO US Equity
+```
+
+```
+## Loading 700 HK Equity
+```
+
+```
+## Loading IBM US Equity
+```
+
+```
+## Loading INTC US Equity
+```
+
+```
+## Processing Indices ...
+```
+
+```
+## Loading DJI Index
+```
+
+```
+## Loading DJUSFN Index
+```
+
+```
+## Loading W1TEC Index
+```
+
+
+Above you see some info about data being processed that we will not show anymore in the following.
+
+If you want to have detailed ticker descriptions,  see [br.bulk.desc Example](#br.bulk.desc.exem). Downloaded data look like follows:
+
+
+```r
+data
+```
+
+```
+## $Financial
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2017-05-03   8.041 11.500        NA     NA   9.786
+## 2017-05-04   9.697     NA    12.130     NA  11.901
+## 2017-05-05  10.163 11.847     9.324     NA      NA
+## 
+## $Technology
+##            QCOM US CSCO US 700 HK IBM US INTC US
+## 2017-05-03   8.847   8.324 10.472  9.979      NA
+## 2017-05-04   9.316      NA     NA  9.349   8.538
+## 2017-05-05   8.452  10.550     NA     NA  10.282
+## 
+## $Indices
+##               DJI DJUSFN  W1TEC
+## 2017-05-03 11.542     NA  9.713
+## 2017-05-04     NA 11.134 11.367
+## 2017-05-05  9.077     NA 11.048
+```
+
+Note:
+
+* The name of the securities tickers is stored without the security type: "Equity", "Index", etc.  
+If this piece of info is significant for you, pass `showtype = TRUE`.   
+
+* Time series start date defaults to 5 days before current date, unless you set `start` to: 
+an R Date object (`start=as.Date("2014/9/30")`) or to a  more friendly ISO string (`start="20140930")`).     
+
+Data are stored as a list of xts objects, each representing one group of tickers in the CSV file.
+
+
+
+```r
+length(data)
+```
+
+```
+## [1] 3
+```
+
+```r
+names(data)
+```
+
+```
+## [1] "Financial"  "Technology" "Indices"
+```
+
+```r
+class(data$Financial)
+```
+
+```
+## [1] "xts" "zoo"
+```
+
+If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:
+
+
+
+```r
+data=br.hist.csv(con, "mybloomr/tickers.csv", use.xts=FALSE) 
+```
+
+
+```r
+length(data)
+```
+
+```
+## [1] 3
+```
+
+```r
+names(data)
+```
+
+```
+## [1] "Financial"  "Technology" "Indices"
+```
+
+```r
+class(data$Financial)
+```
+
+```
+## [1] "list"
+```
+
+```r
+length(data$Financial)
+```
+
+```
+## [1] 5
+```
+
+```r
+names(data$Financial)
+```
+
+```
+## [1] "3988 HK"   "C US"      "601288 CH" "BAC US"    "HSBA LN"
+```
+
+```r
+class(data$Financial$`BAC US`)
+```
+
+```
+## [1] "matrix"
+```
+
+By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
+
+
+```r
+data=br.hist.csv(con, "mybloomr/tickers.csv", field = "PX_OPEN") 
+```
+
+
+You can choose to import only some of the CSV groups 
+
+
+```
+## Processing Financial ...
+```
+
+```
+## Loading 3988 HK Equity
+```
+
+```
+## Loading C US Equity
+```
+
+```
+## Loading 601288 CH Equity
+```
+
+```
+## Loading BAC US Equity
+```
+
+```
+## Loading HSBA LN Equity
+```
+
+```
+## Processing Indices ...
+```
+
+```
+## Loading DJI Index
+```
+
+```
+## Loading DJUSFN Index
+```
+
+```
+## Loading W1TEC Index
+```
+
+
+```r
+data=br.hist.csv(con, "mybloomr/tickers.csv", cols=c(1,3))
+## or equivalently:
+data=br.hist.csv(con, "mybloomr/tickers.csv", cols=c(TRUE, FALSE, TRUE))
+```
+
+
+```r
+names(data)
+```
+
+```
+## [1] "Financial" "Indices"
+```
+ 
+In the CSV file, if your tickers represent all equities, you can omit the type.   
+
+Consider this CSV:
+
+
+```r
+read.csv("mybloomr/tickers.eqt.csv")
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv
+```
+
+
+```
+##   Financial Technology
+## 1   3988 HK    QCOM US
+## 2      C US    CSCO US
+## 3 601288 CH     700 HK
+## 4    BAC US     IBM US
+## 5   HSBA LN    INTC US
+```
+
+Note how the "Equity" type is missing! But you can use this CSV file with `addtype`:
+
+
+
+
+```r
+data=br.hist.csv(con, "mybloomr/tickers.eqt.csv", addtype=TRUE)
+```
+
+Before _going home_, don't forget to:
+
+
+```r
+br.close(con)
+```
+
+
+br.bulk.desc{#br.bulk.desc}
+===========================
+
+Description
+-----------
+Get security descriptions for a vector of tickers.
+
+Usage
+-----
+    br.bulk.desc(con, tiks) 
+
+Arguments
+---------
+con
+:    the connection token returned from br.open()  
+
+tiks
+:    character vector of the tickers queried for data  
+
+Value
+-----
+A list of data frames, each representing the description of a security. For the format of data frames see the function `br.desc`.
+
+
+
+
+Example{#br.bulk.desc.exam}
+----------------------------
+
+
+```r
+con=br.open()
+data=read.csv("mybloomr/tickers.csv", as.is=TRUE)
+br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
+br.close(con)
+```
+
+
+br.idx{#br.idx}
+===============
+
+Description
+-----------
+Returns the historical data for the constituents of an index in xts or list format.
+It replaces `br.bulk.idx`.
+
+Usage
+-----
+    br.idx(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+
+                include.idx=TRUE, showtype=FALSE,
+                use.xts=TRUE, merge.xts=TRUE,
+
+                option.names = NULL, option.values = NULL,
+                only.trading.days = TRUE,
+
+                nsec=10, sec.names = NULL,
+                
+                price=TRUE,
+                mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                same.dates=FALSE, empty.sec=0,
+                weekend=TRUE, holidays=NULL)
+				
+
+Arguments
+---------
+con
+:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+
+index
+:   string denoting the index ticker with or without the final security type label ('Index')  
+
+include.idx
+:   if TRUE (default) returns also historical data for the index.  
+
+nsec
+:   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
+
+sec.names
+:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.
+
+For other arguments see the function `br.hist`.
+
+Details
+-------
+If `con=NULL`,  values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names`.
+
+Value
+-----
+
+If `use.xts=FALSE`, a list where each element is the historical data of a constituent as a data frame.  
+If `use.xts=TRUE` and `merge.xts=FAlSE`, a list where each element is the historical data of a constituent  as an xts object.  
+If `use.xts=TRUE` and `merge.xts=TRUE`, an xts oject where where each column is the historical data of a constituent .   
+If `include.idx=TRUE`, the last column or element will be the historical data of the index.  
+
+
+
+
+
 
 br.hist{#br.hist}
-========================
+==================
 *Historical data for vector of tickers*  
 Returns the historical data for a vector of tickers in xts or list format.
 It replaces `br.bulk.tiks``
@@ -183,11 +767,8 @@ br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2017-05-01  11.559   9.651
-## 2017-05-02   9.881  10.455
-## 2017-05-03  11.304   8.216
-## 2017-05-04  10.936   8.053
-## 2017-05-05  11.947  10.301
+## 2017-05-02  10.577   9.335
+## 2017-05-04   8.775      NA
 ```
 
 ```r
@@ -202,66 +783,59 @@ See Also
 
 
 
-
-br.idx{#br.idx}
-========================
+br.desc{#br.desc}
+================
 
 Description
 -----------
-Returns the historical data for the constituents of an index in xts or list format.
-It replaces `br.bulk.idx`.
+Get security descriptions.
 
 Usage
 -----
-    br.idx(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
-
-                include.idx=TRUE, showtype=FALSE,
-                use.xts=TRUE, merge.xts=TRUE,
-
-                option.names = NULL, option.values = NULL,
-                only.trading.days = TRUE,
-
-                nsec=10, sec.names = NULL,
-                
-                price=TRUE,
-                mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
-                same.dates=FALSE, empty.sec=0,
-                weekend=TRUE, holidays=NULL)
-				
+    br.desc(con, tik)
 
 Arguments
 ---------
 con
-:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+:   the connection token returned from br.open()  
 
-index
-:   string denoting the index ticker with or without the final security type label ('Index')  
-
-include.idx
-:   if TRUE (default) returns also historical data for the index.  
-
-nsec
-:   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
-
-sec.names
-:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.
-
-For other arguments see the function `br.hist`.
-
-Details
--------
-If `con=NULL`,  values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names`.
+tik
+:   string denoting the ticker queried for data  
 
 Value
 -----
-
-If `use.xts=FALSE`, a list where each element is the historical data of a constituent as a data frame.  
-If `use.xts=TRUE` and `merge.xts=FAlSE`, a list where each element is the historical data of a constituent  as an xts object.  
-If `use.xts=TRUE` and `merge.xts=TRUE`, an xts oject where where each column is the historical data of a constituent .   
-If `include.idx=TRUE`, the last column or element will be the historical data of the index.  
+A data frame containing the value of the Bloomberg fields form `ds001` to `ds009` and the long field `CIE_DES_BULK`.
 
 
 
+
+br.md2pdf{#br.md2pdf} 
+=====================
+
+Description
+-----------
+Make a markdown file into a PDF
+It assumes that you have installed the BloomR LaTeX addons
+
+Usage
+-----
+    br.md2pdf(md.file, pdf.file)
+
+Arguments
+---------
+md.file
+:   path to the markdown file to be converted.  
+
+pdf.file
+:   path to the PDF file to be generated.  
+
+Details
+-------
+The function will stop with an error if you have not installed BloomR LaTeX addons. To install them use `br.getLatexAddons()`.
+
+Value
+-----
+If there are no errors, it returns zero invisibly, otherwise it prints an error message and returns the related error code.
 
 
 
@@ -336,6 +910,200 @@ Value
 If `use.xts=FALSE`, a data frame object, where the first column is the vector with all generated dates merged and each subsequent column contains the sampled data of a security. If `use.xts=TRUE`, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if `rand.dates=TRUE` generated data points might likely have different length 
 
 XXXX and the the date gaps will be filled with NAs, except if `no.na=TRUE`. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with `dimnames(*)[[2]]`. 
+
+
+
+
+Internal BloomR functions{#Internal}
+=====================================
+
+Description:
+------------
+Internal functions not to be used by the end user
+
+Usage:
+------
+
+    .br.is.con(con)
+    .br.types
+    .br.check.type(type) 
+    .br.cuttype(type)
+    .br.jar()
+
+Arguments:
+----------
+con
+:   the connection token returned from br.open()  
+
+type
+:   a string representing the security type  
+
+Details
+-------
+`.br.is.con` checks for the validity of a connection token.
+`.br.types` is a character vector with security types suitable as an argument for `br.bulk*` functions.
+`.br.check.type` checks if a type matches `.br.types`.
+`.br.cuttype` cuts trailing security type from character vector.
+`.br.jar()` returns the path to the blpapi*.jar
+
+
+
+
+
+Manage connections{#connections}
+===============================
+
+Description
+------------
+Open and close the connection to the Bloomberg service.   
+
+
+Usage
+-----
+    br.open()
+    br.close(con)
+	
+Arguments
+---------
+con
+:   the connection token returned from br.open()
+
+Details
+-------
+
+`br.open` returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to `br.close`. If you are using simulated data and so your connection token is NULL, closing the connection is optional. Anyway running `br.close(con)`, even if `con==NULL` avoids adding this line when you switch to a actual data download.
+
+
+Example
+-------
+
+
+```r
+con=br.open() # Open the connection and get the token and load some data
+br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.close(con) # Use the token to release the connection
+```
+
+
+
+
+
+Misc functions{#misc.functions}
+==============================
+
+Description
+------------
+`rm.all` deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot).
+`rm.var` deletes non-function objects from memory.
+
+
+Usage
+-----
+	rm.all()
+	rm.var()
+	
+
+
+
+
+Beta functionalities{#beta.functions}
+=====================================
+
+Description
+------------
+Activate beta functionalities, if available for this release. 
+
+Usage
+-----
+    br.beta()
+
+
+
+
+Beta misc functions{#beta.misc.functions}
+=========================================
+
+Description
+------------
+
+`br.try.date` converts a vector to a date vector if possible or return null. Any vector element should be POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d"
+
+`br.is.same.class` check if all supplied argumets have the same class. It is mostly intended to check if dates are homogeneous. 
+
+`.br.test.dates` tests the validity of given start, end date, possibly against a holiday vector.
+
+Usage
+-----
+    br.try.date(d)
+    br.is.same.class(...)
+    .br.test.dates(start, end, holidays=NULL, asChar=FALSE)
+
+
+
+Deprecated functions{#deprecated.functions}
+===========================================
+
+Description
+------------
+Functions (planned to be) deprecated.
+
+Usage
+-----
+    .br.sample.deprecated(nsec=NULL, no.na=NULL, df=NULL,
+                     sec.names=NULL, empty.sec=NULL, same.dates=NULL)
+
+ 
+Arguments
+---------
+See current non beta BloomR.
+
+
+
+
+
+Time extension functions{#time.functions}
+=========================================
+
+Description
+------------
+Functions to get, set dates.
+
+Usage
+-----
+    day(d)
+    month(d)
+    year(d)
+    day(d, n)
+    month(d, n)
+    year(d, n)
+    day(d)=x
+    month(d)=x
+    year(d)=x
+    d %+% n
+    d %-% n
+    last.day(d)
+    day.us(d1, d2)
+
+Arguments
+---------
+d, d1, d2
+:   objects of class date  
+
+x
+:   an integer representing the day/month/year  
+
+n
+:   an integer representing the months to add/subtract
+
+
+Details
+-------
+If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
+`%+%` and `%-%` add and subtract months to a date.  
+`last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
+
+
+
 
 
 

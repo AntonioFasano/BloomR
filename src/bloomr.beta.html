@@ -123,21 +123,147 @@ $(document).ready(function () {
 <h1>BloomR main functions</h1>
 <div id="r-topics-documented" class="section level2">
 <h2>R topics documented:</h2>
-<p><a href="#br.hist.csv">br.hist.csv</a><br />
-<a href="#br.hist">br.hist</a><br />
+<p><a href="#br.bdh">br.bdh</a><br />
+<a href="#br.hist.csv">br.hist.csv</a><br />
+<a href="#br.bulk.desc">br.bulk.desc</a><br />
 <a href="#br.idx">br.idx</a><br />
-<a href="#br.sample">br.sample</a></p>
+<a href="#br.hist">br.hist</a><br />
+<a href="#br.desc">br.desc</a><br />
+<a href="#br.md2pdf">br.md2pdf</a><br />
+<a href="#br.sample">br.sample</a><br />
+<a href="#Internal">Internal BloomR functions</a><br />
+<a href="#connections">Manage connections</a><br />
+<a href="#misc.functions">Misc functions</a><br />
+<a href="#beta.functions">Beta functionalities</a><br />
+<a href="#beta.misc.functions">Beta misc functions</a><br />
+<a href="#deprecated.functions">Deprecated functions</a><br />
+<a href="#time.functions">Time extension functions</a></p>
 </div>
 <div id="todo" class="section level2">
 <h2>TODO</h2>
-<p>Complete help for functions br.try.date, br.is.same.class, br.bdh Fix XXXX paragraphs</p>
+<p>Complete help for functions br.try.date, br.is.same.class, br.bdh When in br.desc ‘CIE_DES_BULK’ is not availbale use NA allow br.desc/br.bulk.desc to use simulated Find a better place for br.beta(): here it does not make sense. In bloomr.Rmd prevents a replacement with the beta when it is ready for shipping.</p>
+<p>Fix XXXX paragraphs</p>
+</div>
+</div>
+<div id="br.bdh" class="section level1">
+<h1>br.bdh</h1>
+<p><em>Historical data</em></p>
+<p>XXXXRemove always.display.ticker, dates.as.row.names? XXXXCheck only only.trading.days description XXXXMove staff in auto args</p>
+<div id="description" class="section level2">
+<h2>Description</h2>
+<p>Download historical Bloomberg data</p>
+</div>
+<div id="usage" class="section level2">
+<h2>Usage</h2>
+<pre><code>br.bdh=function(con, security, fields=&quot;PX_LAST&quot;, start.date=Sys.Date() - 7, end.date=Sys.Date(), 
+override_fields= NULL, override_values=NULL, 
+option.names = NULL, option.values = NULL,
+only.trading.days = TRUE
+)     </code></pre>
+</div>
+<div id="arguments" class="section level2">
+<h2>Arguments</h2>
+<dl>
+<dt>con</dt>
+<dd>the connection token returned from br.open()
+</dd>
+<dt>securities</dt>
+<dd>character vector of the tickers queried for data
+</dd>
+<dt>field</dt>
+<dd>case insensitive character vector of the Bloomberg field queried. Defaults to “PX_LAST”.
+</dd>
+<dt>start.date</dt>
+<dd>Time series start date as a Date object or an ISO string without separators (YYYYMMDD). Time series will actually begin at <code>start.date</code> if there is data available; otherwise it will start at the first significant date.
+</dd>
+<dt>end.date</dt>
+<dd>Time series end date as a Date object or an ISO string without separators (YYYYMMDD). If NULL or missing, it defaults to the last available date.
+</dd>
+<dt>option.names, option.values</dt>
+<dd>See details
+</dd>
+<dt>always.display.tickers</dt>
+<dd>(removed) Displays tickers in first column even if a single one is requested. Defaults to FALSE
+</dd>
+<dt>dates.as.row.names</dt>
+<dd>(removed) Displays dates <em>also</em> as row names. Defaults to TRUE for single ticker query, FALSE otherwise.
+</dd>
+<dt>only.trading.days</dt>
+<dd>If FALSE, rows are returned for all requested dates, even when no markets data is available.<br />
+XXXXCheck! It defaults to FALSE for a single security or and TRUE for multiple securities. In the latter case, use <code>na.omit</code> or <code>na.exclude</code> to remove these rows.
+</dd>
+</dl>
+</div>
+<div id="details" class="section level2">
+<h2>Details</h2>
+<p>For multi-ticker queries you might consider to use <code>br.hist()</code> which features also a simulated mode.</p>
+<p><code>option.names</code> and <code>option.values</code> are options vectors affecting the returned data. Options are set pairwise, for example to set <code>opt1</code> and <code>opt2</code> respectively to <code>val1</code> and <code>val2</code>, you would pass the arguments:</p>
+<pre><code>option.names=c(&quot;opt1&quot;, &quot;opt2&quot;), option.values=c(&quot;val1&quot;, &quot;val2&quot;)</code></pre>
+<p>Here is a list of options:</p>
+<dl>
+<dt>periodicityAdjustment</dt>
+<dd>Determine the frequency and calendar type of the output. To be used in conjunction with <code>periodicitySelection</code>. If <code>ACTUAL</code>, it reverts to the actual date from today (if the end date is left blank) or from the End Date. If <code>CALENDAR</code>, (for pricing fields), it reverts to the last business day of the specified calendar period. Calendar Quarterly (CQ), Calendar Semi-Annually (CS), or Calendar Yearly (CY). If <code>FISCAL</code>, it reverts to the fiscal period end for the company - Fiscal Quarterly (FQ), Fiscal Semi-Annually (FS) and Fiscal Yearly (FY) only.
+</dd>
+<dt>periodicitySelection</dt>
+<dd>Determine the frequency of the output. To be used in conjunction with periodicityAdjustment. if <code>DAILY</code>, <code>WEEKLY</code>, <code>MONTHLY</code>, <code>QUARTERLY</code>, <code>SEMI_ANNUALLY</code>, <code>YEARLY</code>.
+</dd>
+<dt>currency</dt>
+<dd>Amends the value from local to desired currency. The value is a 3 letter ISO code string, e.g. USD, GBP. View <code>WCV&lt;GO&gt;</code> on the Bloomberg terminal for the full list.
+</dd>
+<dt>overrideOption</dt>
+<dd>Indicates whether to use the average or the closing price in quote calculation. Values can be <code>OVERRIDE_OPTION_CLOSE</code> for using the closing price or <code>OVERRIDE_OPTION_GPA</code> for the average price.
+</dd>
+<dt>pricingOption</dt>
+<dd>Sets quote to Price or Yield for a debt instrument whose default value is quoted in yield (depending on pricing source). <code>PRICING_OPTION_PRICE</code> sets quote to price; <code>PRICING_OPTION_YIELD</code> sets quote to yield.
+</dd>
+<dt>nonTradingDayFillOption</dt>
+<dd>Sets to include/exclude non trading days where no data was generated. <code>NON_TRADING_WEEKDAYS</code> includes all weekdays (Monday to Friday); <code>ALL_CALENDAR_DAYS</code> includes all days of the calendar; <code>ACTIVE_DAYS_ONLY</code> includes only the days where the instrument and field pair were updated.
+</dd>
+<dt>nonTradingDayFillMethod</dt>
+<dd>If data is to be displayed for non trading days what is the data to be returned. <code>PREVIOUS_VALUE</code> searches back and retrieve the previous value available for this security field pair. The search back period is up to one month. <code>NIL_VALUE</code> returns blank for the “value” value within the data element for this field.
+</dd>
+<dt>maxDataPoints</dt>
+<dd>the maximum number of data points to return. If the original data set is larger, the response will be a subset, containing only the last <code>maxDataPoints</code> data points.
+</dd>
+<dt>returnEids</dt>
+<dd>returns the entitlement identifiers associated with security. If TRUE, populates data with an extra element containing a name and value for the EID date.
+</dd>
+<dt>returnRelativeDate</dt>
+<dd>returns data with a relative date. If TRUE, populates data with an extra element containing a name and value for the relative date. For example RELATIVE_DATE = 2002 Q2
+</dd>
+<dt>adjustmentNormal</dt>
+<dd>Adjust for “change on day”. If TRUE, adjusts historical pricing to reflect: Regular Cash, Interim, 1st Interim, 2nd Interim, 3rd Interim, 4th Interim, 5th Interim, Income, Estimated, Partnership Distribution, Final, Interest on Capital, Distribution, Prorated.
+</dd>
+<dt>adjustmentAbnormal</dt>
+<dd>Adjusts for Anormal Cash Dividends. If TRUE, adjusts historical pricing to reflect: Special Cash, Liquidation, Capital Gains, Long-Term Capital Gains, Short-Term Capital Gains, Memorial, Return of Capital, Rights Redemption, Miscellaneous, Return Premium, Preferred Rights Redemption, Proceeds/Rights, Proceeds/Shares, Proceeds/Warrants.
+</dd>
+<dt>adjustmentSplit</dt>
+<dd>Capital Changes Defaults. If TRUE, adjusts historical pricing and/or volume to reflect: Spin-Offs, Stock Splits/Consolidations, Stock Dividend/Bonus, Rights Offerings/Entitlement.
+</dd>
+<dt>adjustmentFollowDPDF</dt>
+<dd>If TRUE (defaults) Follow the Bloomberg function as from <code>DPDF&lt;GO&gt;</code>.
+</dd>
+<dt>CalendarCodeOverride</dt>
+<dd>Returns the data based on the calendar of the specified country, exchange, or religion. Value is a two character calendar code as from <code>CDR&lt;GO&gt;</code>. This will cause the data to be aligned according to the calendar and including calendar holidays. Only applies only to DAILY requests.
+</dd>
+<dt>calendarOverridesInfo</dt>
+<dd>(Experimental, not tested) Returns data based on the calendar code of multiple countries, exchanges, or religious calendars as from <code>CDR&lt;GO&gt;</code>. This will cause the data to be aligned according to the set calendar(s) including their calendar holidays and only applies to DAILY requests. Requires <code>calendarOverrides</code>, which is a character vector of two-character calendar codes as from <code>CDR&lt;GO&gt;</code>; <code>calendareOverridesOperation</code>, which can be <code>CDR_AND</code> returning the intersection of trading days among multiple calendars or <code>CDR_OR</code> returning the union of trading days. That is, a data point is returned if a date is a valid trading day for any of the calendar codes specified in the request.
+</dd>
+<dt>Overrides</dt>
+<dd>(Experimental, not tested) Append overrides to modify the calculation. <code>fieldID</code> specifies a field mnemonic or alpha-numeric, such as <code>PR092</code> or <code>PRICING_SOURCE</code>. Review FLDS<GO> for list of possible overrides. <code>value</code> sets the desired override value
+</dd>
+</dl>
+</div>
+<div id="value" class="section level2">
+<h2>Value</h2>
+<p>A data frame with historical data. If tickers are displayed, the first column shows tickers, the second one the time series dates and the following ones the values of the queried fields; otherwise the columns start with dates. Dates will also be shown as rows if <code>dates.as.row.names=TRUE</code>. If multiple tickers are queried, they are vertically stacked respecting the order in <code>securities</code> vector.</p>
 </div>
 </div>
 <div id="br.hist.csv" class="section level1">
 <h1>br.hist.csv</h1>
 <p><em>Historical data from grouped tickers in a CSV file</em><br />
 Reads a CSV file containing a group of tickers in each column and returns the historical data in xts or list format. The CSV file is assumed to have headers denoting group labels. It replaces `br.bulk.csv``</p>
-<div id="usage" class="section level2">
+<div id="usage-1" class="section level2">
 <h2>Usage</h2>
 <pre><code>br.hist.csv(con, file, field=&quot;PX_LAST&quot;, start=Sys.Date()-5, end.date=Sys.Date(),
 
@@ -153,7 +279,7 @@ Reads a CSV file containing a group of tickers in each column and returns the hi
                  same.dates=FALSE, empty.sec=0,
                  weekend=TRUE, holidays=NULL)</code></pre>
 </div>
-<div id="arguments" class="section level2">
+<div id="arguments-1" class="section level2">
 <h2>Arguments</h2>
 <dl>
 <dt>con</dt>
@@ -203,90 +329,175 @@ Reads a CSV file containing a group of tickers in each column and returns the hi
 </dd>
 </dl>
 </div>
-<div id="details" class="section level2">
+<div id="details-1" class="section level2">
 <h2>Details</h2>
 <p>Empty CSV cells or cells interpreted as NAs will be ignored.<br />
 If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. This function is used with default values, except for <code>start, end.date, price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays</code>, which can be explicitly passed as arguments, and <code>sec.names</code> depending on tickers found in the CSV file. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
 </div>
-<div id="value" class="section level2">
+<div id="value-1" class="section level2">
 <h2>Value</h2>
 <p>a list where each element is the historical data of a CSV group.<br />
 If <code>use.xts=TRUE</code> and <code>merge.xts=FAlSE</code>, each group is a sub-list, whose elements are the the securoty time series as an xts object. If <code>use.xts=TRUE</code> and <code>merge.xts=TRUE</code>, each group is the merged xts object, obtained merging historical data of all securities of that group. If <code>use.xts=FALSE</code>, each group is a sub-list, where each element is the historical data of a security as a data frame.<br />
 If there is only one group, the first (and unique) element of the list will be returned (XXXXto check).</p>
 </div>
+<div id="demonstration" class="section level2">
+<h2>Demonstration</h2>
+<p>A sample CSV with Bloomberg tickers will look like follows:</p>
+<pre class="r"><code>read.csv(&quot;mybloomr/tickers.csv&quot;)
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.csv</code></pre>
+<pre><code>##          Financial     Technology      Indices
+## 1   3988 HK Equity QCOM US Equity    DJI Index
+## 2      C US Equity CSCO US Equity DJUSFN Index
+## 3 601288 CH Equity  700 HK Equity  W1TEC Index
+## 4    BAC US Equity  IBM US Equity             
+## 5   HSBA LN Equity INTC US Equity</code></pre>
+<p>Note:</p>
+<ul>
+<li>CSV group headers are mandatory;</li>
+<li>Group headers need not to be the same length.</li>
+</ul>
+<p>We can now download data:</p>
+<pre class="r"><code>con=NULL  #Simulated mode: replace with con=br.open() on terminal</code></pre>
+<pre class="r"><code>data=br.hist.csv(con, &quot;mybloomr/tickers.csv&quot;) </code></pre>
+<pre><code>## Processing Financial ...</code></pre>
+<pre><code>## Loading 3988 HK Equity</code></pre>
+<pre><code>## Loading C US Equity</code></pre>
+<pre><code>## Loading 601288 CH Equity</code></pre>
+<pre><code>## Loading BAC US Equity</code></pre>
+<pre><code>## Loading HSBA LN Equity</code></pre>
+<pre><code>## Processing Technology ...</code></pre>
+<pre><code>## Loading QCOM US Equity</code></pre>
+<pre><code>## Loading CSCO US Equity</code></pre>
+<pre><code>## Loading 700 HK Equity</code></pre>
+<pre><code>## Loading IBM US Equity</code></pre>
+<pre><code>## Loading INTC US Equity</code></pre>
+<pre><code>## Processing Indices ...</code></pre>
+<pre><code>## Loading DJI Index</code></pre>
+<pre><code>## Loading DJUSFN Index</code></pre>
+<pre><code>## Loading W1TEC Index</code></pre>
+<p>Above you see some info about data being processed that we will not show anymore in the following.</p>
+<p>If you want to have detailed ticker descriptions, see <a href="#br.bulk.desc.exem">br.bulk.desc Example</a>. Downloaded data look like follows:</p>
+<pre class="r"><code>data</code></pre>
+<pre><code>## $Financial
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2017-05-03   8.041 11.500        NA     NA   9.786
+## 2017-05-04   9.697     NA    12.130     NA  11.901
+## 2017-05-05  10.163 11.847     9.324     NA      NA
+## 
+## $Technology
+##            QCOM US CSCO US 700 HK IBM US INTC US
+## 2017-05-03   8.847   8.324 10.472  9.979      NA
+## 2017-05-04   9.316      NA     NA  9.349   8.538
+## 2017-05-05   8.452  10.550     NA     NA  10.282
+## 
+## $Indices
+##               DJI DJUSFN  W1TEC
+## 2017-05-03 11.542     NA  9.713
+## 2017-05-04     NA 11.134 11.367
+## 2017-05-05  9.077     NA 11.048</code></pre>
+<p>Note:</p>
+<ul>
+<li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />
+If this piece of info is significant for you, pass <code>showtype = TRUE</code>.</p></li>
+<li><p>Time series start date defaults to 5 days before current date, unless you set <code>start</code> to: an R Date object (<code>start=as.Date(&quot;2014/9/30&quot;)</code>) or to a more friendly ISO string (<code>start=&quot;20140930&quot;)</code>).</p></li>
+</ul>
+<p>Data are stored as a list of xts objects, each representing one group of tickers in the CSV file.</p>
+<pre class="r"><code>length(data)</code></pre>
+<pre><code>## [1] 3</code></pre>
+<pre class="r"><code>names(data)</code></pre>
+<pre><code>## [1] &quot;Financial&quot;  &quot;Technology&quot; &quot;Indices&quot;</code></pre>
+<pre class="r"><code>class(data$Financial)</code></pre>
+<pre><code>## [1] &quot;xts&quot; &quot;zoo&quot;</code></pre>
+<p>If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:</p>
+<pre class="r"><code>data=br.hist.csv(con, &quot;mybloomr/tickers.csv&quot;, use.xts=FALSE) </code></pre>
+<pre class="r"><code>length(data)</code></pre>
+<pre><code>## [1] 3</code></pre>
+<pre class="r"><code>names(data)</code></pre>
+<pre><code>## [1] &quot;Financial&quot;  &quot;Technology&quot; &quot;Indices&quot;</code></pre>
+<pre class="r"><code>class(data$Financial)</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<pre class="r"><code>length(data$Financial)</code></pre>
+<pre><code>## [1] 5</code></pre>
+<pre class="r"><code>names(data$Financial)</code></pre>
+<pre><code>## [1] &quot;3988 HK&quot;   &quot;C US&quot;      &quot;601288 CH&quot; &quot;BAC US&quot;    &quot;HSBA LN&quot;</code></pre>
+<pre class="r"><code>class(data$Financial$`BAC US`)</code></pre>
+<pre><code>## [1] &quot;matrix&quot;</code></pre>
+<p>By defaults time series list values from the Bloomberg “PX_LAST” field. To change the default field use:</p>
+<pre class="r"><code>data=br.hist.csv(con, &quot;mybloomr/tickers.csv&quot;, field = &quot;PX_OPEN&quot;) </code></pre>
+<p>You can choose to import only some of the CSV groups</p>
+<pre><code>## Processing Financial ...</code></pre>
+<pre><code>## Loading 3988 HK Equity</code></pre>
+<pre><code>## Loading C US Equity</code></pre>
+<pre><code>## Loading 601288 CH Equity</code></pre>
+<pre><code>## Loading BAC US Equity</code></pre>
+<pre><code>## Loading HSBA LN Equity</code></pre>
+<pre><code>## Processing Indices ...</code></pre>
+<pre><code>## Loading DJI Index</code></pre>
+<pre><code>## Loading DJUSFN Index</code></pre>
+<pre><code>## Loading W1TEC Index</code></pre>
+<pre class="r"><code>data=br.hist.csv(con, &quot;mybloomr/tickers.csv&quot;, cols=c(1,3))
+## or equivalently:
+data=br.hist.csv(con, &quot;mybloomr/tickers.csv&quot;, cols=c(TRUE, FALSE, TRUE))</code></pre>
+<pre class="r"><code>names(data)</code></pre>
+<pre><code>## [1] &quot;Financial&quot; &quot;Indices&quot;</code></pre>
+<p>In the CSV file, if your tickers represent all equities, you can omit the type.</p>
+<p>Consider this CSV:</p>
+<pre class="r"><code>read.csv(&quot;mybloomr/tickers.eqt.csv&quot;)
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv</code></pre>
+<pre><code>##   Financial Technology
+## 1   3988 HK    QCOM US
+## 2      C US    CSCO US
+## 3 601288 CH     700 HK
+## 4    BAC US     IBM US
+## 5   HSBA LN    INTC US</code></pre>
+<p>Note how the “Equity” type is missing! But you can use this CSV file with <code>addtype</code>:</p>
+<pre class="r"><code>data=br.hist.csv(con, &quot;mybloomr/tickers.eqt.csv&quot;, addtype=TRUE)</code></pre>
+<p>Before <em>going home</em>, don’t forget to:</p>
+<pre class="r"><code>br.close(con)</code></pre>
 </div>
-<div id="br.hist" class="section level1">
-<h1>br.hist</h1>
-<p><em>Historical data for vector of tickers</em><br />
-Returns the historical data for a vector of tickers in xts or list format. It replaces `br.bulk.tiks``</p>
-<div id="usage-1" class="section level2">
+</div>
+<div id="br.bulk.desc" class="section level1">
+<h1>br.bulk.desc</h1>
+<div id="description-1" class="section level2">
+<h2>Description</h2>
+<p>Get security descriptions for a vector of tickers.</p>
+</div>
+<div id="usage-2" class="section level2">
 <h2>Usage</h2>
-<pre><code>br.hist(con, tiks, field=&quot;PX_LAST&quot;, start=Sys.Date()-7, end.date=Sys.Date(),
-                                        
-             addtype=FALSE, showtype=FALSE,                      
-             use.xts=TRUE, merge.xts=TRUE,
-             
-             option.names = NULL, option.values = NULL,
-             only.trading.days = TRUE,
-
-             price=TRUE,
-             mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
-             same.dates=FALSE, empty.sec=0,
-             weekend=TRUE, holidays=NULL)</code></pre>
+<pre><code>br.bulk.desc(con, tiks) </code></pre>
 </div>
-<div id="arguments-1" class="section level2">
+<div id="arguments-2" class="section level2">
 <h2>Arguments</h2>
 <dl>
+<dt>con</dt>
+<dd>the connection token returned from br.open()
+</dd>
 <dt>tiks</dt>
 <dd>character vector of the tickers queried for data
 </dd>
-<dt>use.xts</dt>
-<dd>if TRUE (the default) time series are formatted as xts objects else as a data frame.
-</dd>
-<dt>merge.xts</dt>
-<dd>if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
-</dd>
 </dl>
-<p>For other arguments see the function <code>br.hist.csv</code>.</p>
 </div>
-<div id="details-1" class="section level2">
-<h2>Details</h2>
-<p>If an element of <code>tiks</code> is <code>NA</code> or empty (<code>&quot;&quot;</code>) it is ignored. This is intended to avoid errors when the character vector are read from a CSV file with empty cells.<br />
-If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. Sampled values are based on default values of <code>br.sample()</code>, but it is possible to set explicitly <code>start, end.date, price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays</code>; <code>sec.names</code> depends on <code>tiks</code> argument. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
-</div>
-<div id="value-1" class="section level2">
+<div id="value-2" class="section level2">
 <h2>Value</h2>
-<p>If <code>use.xts=FALSE</code>, a list of character matrices, where the first column, named “date”, has the observation dates, the second column, named after the field, has field values. The list names are the tickers. Empty time series are returned as NULL. If all time series are empty a list of NULLs is returned.</p>
-<p>If <code>use.xts=TRUE</code> and <code>merge.xts=FAlSE</code>, a list of xts objects, where the xts index has the observation dates and its data column, named after the field, has field values. The list names are the tickers. Empty time series are returned as NA. If all time series are empty a list of NAs is returned.</p>
-<p>If <code>use.xts=TRUE</code> and <code>merge.xts=TRUE</code>, then when:<br />
-A) There is at least one non-empty TS, an xts object is returned, where the index has the observation dates and columns, named after the tickers, have field values. Empty time series are returned as a NA column for the related xts ticker. B) All time series are empty a vectors of NAs of the same length as the queries tickers is returned.</p>
+<p>A list of data frames, each representing the description of a security. For the format of data frames see the function <code>br.desc</code>.</p>
 </div>
-<div id="example" class="section level2">
+<div id="br.bulk.desc.exam" class="section level2">
 <h2>Example</h2>
-<pre class="r"><code>con=NULL # Open simulated connection and  load some data
-br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></pre>
-<pre><code>## Loading MSFT US Equity</code></pre>
-<pre><code>## Loading AMZN US Equity</code></pre>
-<pre><code>##            MSFT US AMZN US
-## 2017-05-01  11.559   9.651
-## 2017-05-02   9.881  10.455
-## 2017-05-03  11.304   8.216
-## 2017-05-04  10.936   8.053
-## 2017-05-05  11.947  10.301</code></pre>
-<pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
-</div>
-<div id="see-also" class="section level2">
-<h2>See Also</h2>
-<p><a href="#br.hist.csv">br.hist.csv</a></p>
+<pre class="r"><code>con=br.open()
+data=read.csv(&quot;mybloomr/tickers.csv&quot;, as.is=TRUE)
+br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
+br.close(con)</code></pre>
 </div>
 </div>
 <div id="br.idx" class="section level1">
 <h1>br.idx</h1>
-<div id="description" class="section level2">
+<div id="description-2" class="section level2">
 <h2>Description</h2>
 <p>Returns the historical data for the constituents of an index in xts or list format. It replaces <code>br.bulk.idx</code>.</p>
 </div>
-<div id="usage-2" class="section level2">
+<div id="usage-3" class="section level2">
 <h2>Usage</h2>
 <pre><code>br.idx(con, index, field=&quot;PX_LAST&quot;, start=Sys.Date()-7, end.date=Sys.Date(),
 
@@ -304,7 +515,7 @@ br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></
             weekend=TRUE, holidays=NULL)
             </code></pre>
 </div>
-<div id="arguments-2" class="section level2">
+<div id="arguments-3" class="section level2">
 <h2>Arguments</h2>
 <dl>
 <dt>con</dt>
@@ -329,7 +540,7 @@ br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></
 <h2>Details</h2>
 <p>If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. This function is used with default values, except for <code>nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names</code>.</p>
 </div>
-<div id="value-2" class="section level2">
+<div id="value-3" class="section level2">
 <h2>Value</h2>
 <p>If <code>use.xts=FALSE</code>, a list where each element is the historical data of a constituent as a data frame.<br />
 If <code>use.xts=TRUE</code> and <code>merge.xts=FAlSE</code>, a list where each element is the historical data of a constituent as an xts object.<br />
@@ -337,13 +548,131 @@ If <code>use.xts=TRUE</code> and <code>merge.xts=TRUE</code>, an xts oject where
 If <code>include.idx=TRUE</code>, the last column or element will be the historical data of the index.</p>
 </div>
 </div>
+<div id="br.hist" class="section level1">
+<h1>br.hist</h1>
+<p><em>Historical data for vector of tickers</em><br />
+Returns the historical data for a vector of tickers in xts or list format. It replaces `br.bulk.tiks``</p>
+<div id="usage-4" class="section level2">
+<h2>Usage</h2>
+<pre><code>br.hist(con, tiks, field=&quot;PX_LAST&quot;, start=Sys.Date()-7, end.date=Sys.Date(),
+                                        
+             addtype=FALSE, showtype=FALSE,                      
+             use.xts=TRUE, merge.xts=TRUE,
+             
+             option.names = NULL, option.values = NULL,
+             only.trading.days = TRUE,
+
+             price=TRUE,
+             mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+             same.dates=FALSE, empty.sec=0,
+             weekend=TRUE, holidays=NULL)</code></pre>
+</div>
+<div id="arguments-4" class="section level2">
+<h2>Arguments</h2>
+<dl>
+<dt>tiks</dt>
+<dd>character vector of the tickers queried for data
+</dd>
+<dt>use.xts</dt>
+<dd>if TRUE (the default) time series are formatted as xts objects else as a data frame.
+</dd>
+<dt>merge.xts</dt>
+<dd>if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
+</dd>
+</dl>
+<p>For other arguments see the function <code>br.hist.csv</code>.</p>
+</div>
+<div id="details-3" class="section level2">
+<h2>Details</h2>
+<p>If an element of <code>tiks</code> is <code>NA</code> or empty (<code>&quot;&quot;</code>) it is ignored. This is intended to avoid errors when the character vector are read from a CSV file with empty cells.<br />
+If <code>con=NULL</code>, values are simulated by means of <code>br.sample()</code>. Sampled values are based on default values of <code>br.sample()</code>, but it is possible to set explicitly <code>start, end.date, price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays</code>; <code>sec.names</code> depends on <code>tiks</code> argument. These arguments are ignored if <code>con!=NULL</code>. See <code>br.sample()</code> help for more.</p>
+</div>
+<div id="value-4" class="section level2">
+<h2>Value</h2>
+<p>If <code>use.xts=FALSE</code>, a list of character matrices, where the first column, named “date”, has the observation dates, the second column, named after the field, has field values. The list names are the tickers. Empty time series are returned as NULL. If all time series are empty a list of NULLs is returned.</p>
+<p>If <code>use.xts=TRUE</code> and <code>merge.xts=FAlSE</code>, a list of xts objects, where the xts index has the observation dates and its data column, named after the field, has field values. The list names are the tickers. Empty time series are returned as NA. If all time series are empty a list of NAs is returned.</p>
+<p>If <code>use.xts=TRUE</code> and <code>merge.xts=TRUE</code>, then when:<br />
+A) There is at least one non-empty TS, an xts object is returned, where the index has the observation dates and columns, named after the tickers, have field values. Empty time series are returned as a NA column for the related xts ticker. B) All time series are empty a vectors of NAs of the same length as the queries tickers is returned.</p>
+</div>
+<div id="example" class="section level2">
+<h2>Example</h2>
+<pre class="r"><code>con=NULL # Open simulated connection and  load some data
+br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></pre>
+<pre><code>## Loading MSFT US Equity</code></pre>
+<pre><code>## Loading AMZN US Equity</code></pre>
+<pre><code>##            MSFT US AMZN US
+## 2017-05-02  10.577   9.335
+## 2017-05-04   8.775      NA</code></pre>
+<pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
+</div>
+<div id="see-also" class="section level2">
+<h2>See Also</h2>
+<p><a href="#br.hist.csv">br.hist.csv</a></p>
+</div>
+</div>
+<div id="br.desc" class="section level1">
+<h1>br.desc</h1>
+<div id="description-3" class="section level2">
+<h2>Description</h2>
+<p>Get security descriptions.</p>
+</div>
+<div id="usage-5" class="section level2">
+<h2>Usage</h2>
+<pre><code>br.desc(con, tik)</code></pre>
+</div>
+<div id="arguments-5" class="section level2">
+<h2>Arguments</h2>
+<dl>
+<dt>con</dt>
+<dd>the connection token returned from br.open()
+</dd>
+<dt>tik</dt>
+<dd>string denoting the ticker queried for data
+</dd>
+</dl>
+</div>
+<div id="value-5" class="section level2">
+<h2>Value</h2>
+<p>A data frame containing the value of the Bloomberg fields form <code>ds001</code> to <code>ds009</code> and the long field <code>CIE_DES_BULK</code>.</p>
+</div>
+</div>
+<div id="br.md2pdf" class="section level1">
+<h1>br.md2pdf</h1>
+<div id="description-4" class="section level2">
+<h2>Description</h2>
+<p>Make a markdown file into a PDF It assumes that you have installed the BloomR LaTeX addons</p>
+</div>
+<div id="usage-6" class="section level2">
+<h2>Usage</h2>
+<pre><code>br.md2pdf(md.file, pdf.file)</code></pre>
+</div>
+<div id="arguments-6" class="section level2">
+<h2>Arguments</h2>
+<dl>
+<dt>md.file</dt>
+<dd>path to the markdown file to be converted.
+</dd>
+<dt>pdf.file</dt>
+<dd>path to the PDF file to be generated.
+</dd>
+</dl>
+</div>
+<div id="details-4" class="section level2">
+<h2>Details</h2>
+<p>The function will stop with an error if you have not installed BloomR LaTeX addons. To install them use <code>br.getLatexAddons()</code>.</p>
+</div>
+<div id="value-6" class="section level2">
+<h2>Value</h2>
+<p>If there are no errors, it returns zero invisibly, otherwise it prints an error message and returns the related error code.</p>
+</div>
+</div>
 <div id="br.sample" class="section level1">
 <h1>br.sample</h1>
-<div id="description-1" class="section level2">
+<div id="description-5" class="section level2">
 <h2>Description</h2>
 <p>Return simulated historical data for n securities in xts or df format.</p>
 </div>
-<div id="usage-3" class="section level2">
+<div id="usage-7" class="section level2">
 <h2>Usage</h2>
 <pre><code>br.sample(nrow=NULL,  price=TRUE,
                start=Sys.Date() - 7, end.date=Sys.Date(), 
@@ -353,7 +682,7 @@ If <code>include.idx=TRUE</code>, the last column or element will be the histori
                rand.dates=TRUE, weekend=TRUE, holidays=NULL)
          </code></pre>
 </div>
-<div id="arguments-3" class="section level2">
+<div id="arguments-7" class="section level2">
 <h2>Arguments</h2>
 <dl>
 <dt>nrow</dt>
@@ -394,14 +723,171 @@ If <code>include.idx=TRUE</code>, the last column or element will be the histori
 </dd>
 </dl>
 </div>
-<div id="details-3" class="section level2">
+<div id="details-5" class="section level2">
 <h2>Details</h2>
 <p><code>br.sample()</code> assumes by default that data for some securities might not be available on certain days and time series might be misaligned (see “Missing observations and misalignment” in <code>br.hist()</code>), therefore the date values and count for each time series generated will randomly differ, with <code>nrow</code> as the maximum number of days. If you want all time series to share tha same dates, set <code>rand.dates=FALSE</code>. In this case, time series produced are aligned and you don’t see any merge NA, the acutal dates generated depends on the value of <code>weekend</code> and <code>holidays</code>. If there are no holidays falling in time windows queried and <code>weekend=FALSE</code> the number of generated dates equals <code>nrow</code>.</p>
 </div>
-<div id="value-3" class="section level2">
+<div id="value-7" class="section level2">
 <h2>Value</h2>
 <p>If <code>use.xts=FALSE</code>, a data frame object, where the first column is the vector with all generated dates merged and each subsequent column contains the sampled data of a security. If <code>use.xts=TRUE</code>, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if <code>rand.dates=TRUE</code> generated data points might likely have different length</p>
 <p>XXXX and the the date gaps will be filled with NAs, except if <code>no.na=TRUE</code>. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with <code>dimnames(*)[[2]]</code>.</p>
+</div>
+</div>
+<div id="Internal" class="section level1">
+<h1>Internal BloomR functions</h1>
+<div id="description-6" class="section level2">
+<h2>Description:</h2>
+<p>Internal functions not to be used by the end user</p>
+</div>
+<div id="usage-8" class="section level2">
+<h2>Usage:</h2>
+<pre><code>.br.is.con(con)
+.br.types
+.br.check.type(type) 
+.br.cuttype(type)
+.br.jar()</code></pre>
+</div>
+<div id="arguments-8" class="section level2">
+<h2>Arguments:</h2>
+<dl>
+<dt>con</dt>
+<dd>the connection token returned from br.open()
+</dd>
+<dt>type</dt>
+<dd>a string representing the security type
+</dd>
+</dl>
+</div>
+<div id="details-6" class="section level2">
+<h2>Details</h2>
+<p><code>.br.is.con</code> checks for the validity of a connection token. <code>.br.types</code> is a character vector with security types suitable as an argument for <code>br.bulk*</code> functions. <code>.br.check.type</code> checks if a type matches <code>.br.types</code>. <code>.br.cuttype</code> cuts trailing security type from character vector. <code>.br.jar()</code> returns the path to the blpapi*.jar</p>
+</div>
+</div>
+<div id="connections" class="section level1">
+<h1>Manage connections</h1>
+<div id="description-7" class="section level2">
+<h2>Description</h2>
+<p>Open and close the connection to the Bloomberg service.</p>
+</div>
+<div id="usage-9" class="section level2">
+<h2>Usage</h2>
+<pre><code>br.open()
+br.close(con)</code></pre>
+</div>
+<div id="arguments-9" class="section level2">
+<h2>Arguments</h2>
+<dl>
+<dt>con</dt>
+<dd>the connection token returned from br.open()
+</dd>
+</dl>
+</div>
+<div id="details-7" class="section level2">
+<h2>Details</h2>
+<p><code>br.open</code> returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to <code>br.close</code>. If you are using simulated data and so your connection token is NULL, closing the connection is optional. Anyway running <code>br.close(con)</code>, even if <code>con==NULL</code> avoids adding this line when you switch to a actual data download.</p>
+</div>
+<div id="example-1" class="section level2">
+<h2>Example</h2>
+<pre class="r"><code>con=br.open() # Open the connection and get the token and load some data
+br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
+br.close(con) # Use the token to release the connection</code></pre>
+</div>
+</div>
+<div id="misc.functions" class="section level1">
+<h1>Misc functions</h1>
+<div id="description-8" class="section level2">
+<h2>Description</h2>
+<p><code>rm.all</code> deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot). <code>rm.var</code> deletes non-function objects from memory.</p>
+</div>
+<div id="usage-10" class="section level2">
+<h2>Usage</h2>
+<pre><code>rm.all()
+rm.var()</code></pre>
+</div>
+</div>
+<div id="beta.functions" class="section level1">
+<h1>Beta functionalities</h1>
+<div id="description-9" class="section level2">
+<h2>Description</h2>
+<p>Activate beta functionalities, if available for this release.</p>
+</div>
+<div id="usage-11" class="section level2">
+<h2>Usage</h2>
+<pre><code>br.beta()</code></pre>
+</div>
+</div>
+<div id="beta.misc.functions" class="section level1">
+<h1>Beta misc functions</h1>
+<div id="description-10" class="section level2">
+<h2>Description</h2>
+<p><code>br.try.date</code> converts a vector to a date vector if possible or return null. Any vector element should be POSIXlt, POSIXct, Date, “%Y/%m/%d”, or “%Y-%m-%d”</p>
+<p><code>br.is.same.class</code> check if all supplied argumets have the same class. It is mostly intended to check if dates are homogeneous.</p>
+<p><code>.br.test.dates</code> tests the validity of given start, end date, possibly against a holiday vector.</p>
+</div>
+<div id="usage-12" class="section level2">
+<h2>Usage</h2>
+<pre><code>br.try.date(d)
+br.is.same.class(...)
+.br.test.dates(start, end, holidays=NULL, asChar=FALSE)</code></pre>
+</div>
+</div>
+<div id="deprecated.functions" class="section level1">
+<h1>Deprecated functions</h1>
+<div id="description-11" class="section level2">
+<h2>Description</h2>
+<p>Functions (planned to be) deprecated.</p>
+</div>
+<div id="usage-13" class="section level2">
+<h2>Usage</h2>
+<pre><code>.br.sample.deprecated(nsec=NULL, no.na=NULL, df=NULL,
+                 sec.names=NULL, empty.sec=NULL, same.dates=NULL)</code></pre>
+</div>
+<div id="arguments-10" class="section level2">
+<h2>Arguments</h2>
+<p>See current non beta BloomR.</p>
+</div>
+</div>
+<div id="time.functions" class="section level1">
+<h1>Time extension functions</h1>
+<div id="description-12" class="section level2">
+<h2>Description</h2>
+<p>Functions to get, set dates.</p>
+</div>
+<div id="usage-14" class="section level2">
+<h2>Usage</h2>
+<pre><code>day(d)
+month(d)
+year(d)
+day(d, n)
+month(d, n)
+year(d, n)
+day(d)=x
+month(d)=x
+year(d)=x
+d %+% n
+d %-% n
+last.day(d)
+day.us(d1, d2)</code></pre>
+</div>
+<div id="arguments-11" class="section level2">
+<h2>Arguments</h2>
+<dl>
+<dt>d, d1, d2</dt>
+<dd>objects of class date
+</dd>
+<dt>x</dt>
+<dd>an integer representing the day/month/year
+</dd>
+<dt>n</dt>
+<dd>an integer representing the months to add/subtract
+</dd>
+</dl>
+</div>
+<div id="details-8" class="section level2">
+<h2>Details</h2>
+<p>If <code>component</code> is <code>day</code>, <code>month</code> or <code>year</code>: <code>component(d)</code> returns the <em>component</em> of the date <code>d</code> as an integer; <code>component(d, n)</code> returns the date <code>d</code> with the <em>component</em> set to the integer <code>n</code>; <code>component(d)= n</code> sets to the <em>component</em> of the date <code>d</code> to the integer <code>n</code>.<br />
+<code>%+%</code> and <code>%-%</code> add and subtract months to a date.<br />
+<code>last.day</code> returns last day of the month as an integer. <code>day.us</code> calculates date differences with the US convention.</p>
 <!-- Local Variables: -->
 <!-- mode: rmd -->
 <!-- End: -->

@@ -494,10 +494,10 @@ br.bulk.desc=function(con, tiks) {
 store(br.bulk.desc)
 ```
 
-Example{#br.bulk.desc.exem}
+Example{#br.bulk.desc.exam}
 ----------------------------
 
-```{r br.bulk.desc.exem.show,  opts.label='democode'}
+```{r br.bulk.desc.exam.show,  opts.label='democode'}
 con=br.open()
 data=read.csv("mybloomr/tickers.csv", as.is=TRUE)
 br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
@@ -635,7 +635,7 @@ If `use.xts=FALSE`, a list, where each element is the historical data of a secur
 Example
 -------
 
-```{r br.bulk.tiks.exem, opts.label='demofull'}
+```{r br.bulk.tiks.exam, opts.label='demofull'}
 con=NULL # Open simulated connection and  load some data
 br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 br.close(con) # Use the token to release the connection

@@ -460,8 +460,9 @@ bremacsTree=function(ndown){
     bfiles="
 br-init-dbg.el  br-keys.elc    br-recentf.el   br-rnw.elc       br-simple-buffer-menu.el     
 br-init.el      br-menico.el   br-recentf.elc  br-setmodes.el   br-simple-buffer-menu.elc  splith.svg      
-br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R ess-init.old.R  splith.xpm
-"   
+br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  splith.xpm
+"
+    #ess-init.old.R
     
     bfiles=gsub(" ", "\n", bfiles)
     bfiles=strsplit(bfiles, "\n")[[1]]
