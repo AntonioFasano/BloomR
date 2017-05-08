@@ -195,9 +195,9 @@ read.xlx= function(
     actsheets= xmlToList(xmlParse(file.path(tdir, "xl/workbook.xml")))
     actsheets=data.frame(t(data.frame(actsheets$sheets)), stringsAsFactors = FALSE )
     rownames(actsheets) <- NULL
-    actsheets$id <- gsub("\\D", "", actsheets$id)
+    #XXXXXXXXXXXXXXXXX actsheets$id <- gsub("\\D", "", actsheets$id)
     wbsheets=actsheets$name
-
+    
     ## Check sheet header length 
     n=length(header.sheets)
     if(n>1 && length(wbsheets) !=  n && is.null(usheets))
@@ -255,12 +255,22 @@ read.xlx= function(
     ## Extract sheet data
     ## -------------------
     
-    ## Convert sheet names in paths
-    worksheet_paths=sapply(actsheets$id, function(x) list.files(
+    #XXXX Convert sheet names in paths (OLD method to be removed)
+    x <- gsub("\\D", "", actsheets$id)
+    worksheet_paths=sapply(x, function(x) list.files(
         paste0(tdir, "/xl/worksheets"),
         full.name = TRUE,
         pattern = paste0("sheet", x, "\\.xml$")))
 
+    ## Convert sheet IDs in paths via _rels/workbook.xml.rels
+    rels=xmlToList(xmlParse(file.path(tdir, "xl/_rels/workbook.xml.rels")))
+    rels.id=sapply(rels, `[`, "Id")
+    worksheet_paths=sapply(actsheets$id, function(id) rels[rels.id == id]$Relationship["Target"])
+    worksheet_paths=paste0(tdir, "/xl/", worksheet_paths)
+   
+
+    
+    
     ## Stack cells with attributes (value, refs, sheet) in a DF
     ## Get the "sheetData" node (with cell attribs) from each sheet
     cellstack  <- lapply(worksheet_paths, function(x) xmlRoot(xmlParse(x))[["sheetData"]])

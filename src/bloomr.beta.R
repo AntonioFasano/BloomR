@@ -493,14 +493,14 @@ store(br.sample)
 .br.check.type=function(type) {
     if(is.character(type)){
 	x=toupper(type)
-	xx=toupper(.br.types)
+	xx=toupper(get(".br.types", pos = "bloomr"))
 	if(!any(xx %in% x)) stop(paste(x, 'not in', paste(xx, collapse=' ')))
     }
 }
 
 ## Cut trailing security type from character vector 
 .br.cuttype=function(type){
-    p=paste0(' +', .br.types, '$|', collapse='')
+    p=paste0(' +', get(".br.types", pos = "bloomr"), '$|', collapse='')
     p=sub('\\|$', '', p)
     sub(p, '', type, ignore.case=TRUE)
 }
@@ -511,19 +511,49 @@ store(br.sample)
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 
+## Legal security types
+.br.session=NULL
+.br.session$simulated=FALSE 
+.br.session$tokenasked=FALSE 
+.br.session$tokensuccess=FALSE 
 
 store(.br.is.con)
 store(".br.types")
 store(.br.check.type) 
 store(.br.cuttype)
 store(.br.jar)
+store(".br.session")
+
 
 ## ----connections, opts.label='purlme'------------------------------------
-br.open=function() blpConnect(blpapi.jar.file=.br.jar())
-br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
+br.open=function() {
+
+    if(br.is.sim()) return(NULL)
+
+    assign(".br.session$tokenasked", TRUE, pos = "bloomr")
+    blpConnect(blpapi.jar.file=.br.jar())
+    assign(".br.session$tokensuccess", TRUE, pos = "bloomr")
+}
+
+br.close=function(conn) {
+    if(!is.null(conn)) blpDisconnect(conn)
+    assign(".br.session$tokenasked", FALSE, pos = "bloomr")
+    assign(".br.session$tokensuccess", FALSE, pos = "bloomr")
+}
+
+br.simulate=function(is=TRUE) {
+    assign(".br.session$simulated", is, pos = "bloomr")    
+}
+
+br.is.sim=function() {
+    get(".br.session$simulated", pos = "bloomr")
+}
 
 store(br.open)
 store(br.close)
+store(br.simulate)
+store(br.is.sim)
+
 
 ## ----miscfunc, opts.label='purlme'---------------------------------------
 

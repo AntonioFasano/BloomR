@@ -1227,14 +1227,12 @@ Details
 .br.session$tokenasked=FALSE 
 .br.session$tokensuccess=FALSE 
 
-
-
 store(.br.is.con)
 store(".br.types")
 store(.br.check.type) 
 store(.br.cuttype)
 store(.br.jar)
-store(.br.session)
+store(".br.session")
 
 ```
 
@@ -1285,7 +1283,7 @@ br.close(con) # Use the token to release the connection
 ```{r connections, opts.label='purlme'}
 br.open=function() {
 
-    if(br.is.sim()) return NULL
+    if(br.is.sim()) return(NULL)
 
     assign(".br.session$tokenasked", TRUE, pos = "bloomr")
     blpConnect(blpapi.jar.file=.br.jar())

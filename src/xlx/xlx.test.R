@@ -6,7 +6,7 @@
 
 ## Customise test spread
 ## ---------------------
-SPREAD='res/xlx.test.xlsx'
+SPREAD='xlx.test.xlsx'
 NNS=2  # number of non-empty sheets in SPREAD
 
 
@@ -102,12 +102,12 @@ main=function(){
 
 ## Flat call    
 out=callme()
-msg("list of", NNS, "sheets as DF, w/out headers.")
+msg("list of", NNS, "sheets as DF, with headers.")
 tests(1, (class(out)== 'list'))
 tests(2, length(out)== NNS)
 tests(3, class(out[[1]])== "data.frame")
 tests(4, class(out[[2]])== "data.frame")
-tests(5, !is.head.eu(out[[1]]))
+tests(5, is.head.eu(out[[1]]))
 
 ## Single sheet 
 out=callme(sheets=tolower("survey2"), header.sheets=TRUE)

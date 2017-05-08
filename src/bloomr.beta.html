@@ -141,8 +141,11 @@ $(document).ready(function () {
 </div>
 <div id="todo" class="section level2">
 <h2>TODO</h2>
-<p>Complete help for functions br.try.date, br.is.same.class, br.bdh When in br.desc ‘CIE_DES_BULK’ is not availbale use NA allow br.desc/br.bulk.desc to use simulated Find a better place for br.beta(): here it does not make sense. In bloomr.Rmd prevents a replacement with the beta when it is ready for shipping.</p>
-<p>Fix XXXX paragraphs</p>
+<p>Complete help for functions br.try.date, br.is.same.class, br.bdh When in br.desc ‘CIE_DES_BULK’ is not availbale use NA allow br.desc/br.bulk.desc to use simulated Find a better place for br.beta(): here it does not make sense. In bloomr.Rmd prevents a replacement with the beta when it is ready for shipping. Use safer way to get internal variables <code>get(&quot;.br.types&quot;, pos = &quot;bloomr&quot;)</code> Fix XXXX paragraphs For final tests (when beta is release candidate), do not use source(‘bloomr.R’)</p>
+<div id="terminal-tests" class="section level3">
+<h3>Terminal tests</h3>
+<p>copy of br.desc for simulations always.display.tickers, dates.as.row.names</p>
+</div>
 </div>
 </div>
 <div id="br.bdh" class="section level1">
@@ -361,6 +364,11 @@ If there is only one group, the first (and unique) element of the list will be r
 <pre class="r"><code>con=NULL  #Simulated mode: replace with con=br.open() on terminal</code></pre>
 <pre class="r"><code>data=br.hist.csv(con, &quot;mybloomr/tickers.csv&quot;) </code></pre>
 <pre><code>## Processing Financial ...</code></pre>
+<pre><code>## 
+## Attaching package: 'zoo'</code></pre>
+<pre><code>## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric</code></pre>
 <pre><code>## Loading 3988 HK Equity</code></pre>
 <pre><code>## Loading C US Equity</code></pre>
 <pre><code>## Loading 601288 CH Equity</code></pre>
@@ -380,22 +388,22 @@ If there is only one group, the first (and unique) element of the list will be r
 <p>If you want to have detailed ticker descriptions, see <a href="#br.bulk.desc.exem">br.bulk.desc Example</a>. Downloaded data look like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2017-05-03   8.041 11.500        NA     NA   9.786
-## 2017-05-04   9.697     NA    12.130     NA  11.901
-## 2017-05-05  10.163 11.847     9.324     NA      NA
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2017-05-03  10.290    NA     8.745     NA   9.645
+## 2017-05-04      NA 9.243     9.082     NA  10.516
+## 2017-05-05   9.844 9.317     9.923     NA      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2017-05-03   8.847   8.324 10.472  9.979      NA
-## 2017-05-04   9.316      NA     NA  9.349   8.538
-## 2017-05-05   8.452  10.550     NA     NA  10.282
+## 2017-05-03      NA      NA 10.067     NA  11.637
+## 2017-05-04   7.750      NA  7.894     NA   9.445
+## 2017-05-05   9.067      NA     NA  9.074  10.752
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2017-05-03 11.542     NA  9.713
-## 2017-05-04     NA 11.134 11.367
-## 2017-05-05  9.077     NA 11.048</code></pre>
+## 2017-05-03     NA  8.203     NA
+## 2017-05-04 11.991 11.288  9.706
+## 2017-05-05  8.618  9.657 10.009</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />
@@ -422,7 +430,7 @@ If this piece of info is significant for you, pass <code>showtype = TRUE</code>.
 <pre class="r"><code>names(data$Financial)</code></pre>
 <pre><code>## [1] &quot;3988 HK&quot;   &quot;C US&quot;      &quot;601288 CH&quot; &quot;BAC US&quot;    &quot;HSBA LN&quot;</code></pre>
 <pre class="r"><code>class(data$Financial$`BAC US`)</code></pre>
-<pre><code>## [1] &quot;matrix&quot;</code></pre>
+<pre><code>## [1] &quot;NULL&quot;</code></pre>
 <p>By defaults time series list values from the Bloomberg “PX_LAST” field. To change the default field use:</p>
 <pre class="r"><code>data=br.hist.csv(con, &quot;mybloomr/tickers.csv&quot;, field = &quot;PX_OPEN&quot;) </code></pre>
 <p>You can choose to import only some of the CSV groups</p>
@@ -601,8 +609,10 @@ br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2017-05-02  10.577   9.335
-## 2017-05-04   8.775      NA</code></pre>
+## 2017-05-02  10.770      NA
+## 2017-05-03   9.970      NA
+## 2017-05-04   9.472   9.077
+## 2017-05-05   9.486      NA</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">
@@ -760,19 +770,21 @@ br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></
 </div>
 <div id="details-6" class="section level2">
 <h2>Details</h2>
-<p><code>.br.is.con</code> checks for the validity of a connection token. <code>.br.types</code> is a character vector with security types suitable as an argument for <code>br.bulk*</code> functions. <code>.br.check.type</code> checks if a type matches <code>.br.types</code>. <code>.br.cuttype</code> cuts trailing security type from character vector. <code>.br.jar()</code> returns the path to the blpapi*.jar</p>
+<p><code>.br.is.con</code> checks for the validity of a connection token. <code>.br.types</code> is a character vector with security types suitable as an argument for BloomR multi-ticker functions. <code>.br.check.type</code> checks if a type matches <code>.br.types</code>. <code>.br.cuttype</code> cuts trailing security type from character vector. <code>.br.jar()</code> returns the path to the blpapi*.jar <code>.br.session</code> object storing BloomR session information.</p>
 </div>
 </div>
 <div id="connections" class="section level1">
 <h1>Manage connections</h1>
 <div id="description-7" class="section level2">
 <h2>Description</h2>
-<p>Open and close the connection to the Bloomberg service.</p>
+<p>Open,close and test the connection to the Bloomberg service.</p>
 </div>
 <div id="usage-9" class="section level2">
 <h2>Usage</h2>
 <pre><code>br.open()
-br.close(con)</code></pre>
+br.close(con)
+br.simulate(is=TRUE)
+br.is.sim()</code></pre>
 </div>
 <div id="arguments-9" class="section level2">
 <h2>Arguments</h2>
@@ -780,16 +792,20 @@ br.close(con)</code></pre>
 <dt>con</dt>
 <dd>the connection token returned from br.open()
 </dd>
+<dt>is</dt>
+<dd>if TRUE (default), simulate connection.
+</dd>
 </dl>
 </div>
 <div id="details-7" class="section level2">
 <h2>Details</h2>
-<p><code>br.open</code> returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to <code>br.close</code>. If you are using simulated data and so your connection token is NULL, closing the connection is optional. Anyway running <code>br.close(con)</code>, even if <code>con==NULL</code> avoids adding this line when you switch to a actual data download.</p>
+<p><code>br.open</code> returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to <code>br.close</code>. If you have run <code>br.simulate(is=TRUE)</code>, data are simulated (and your connection token is <code>NULL</code>). <code>br.is.sim()</code> tests if the connection is simulated.<br />
+If <code>br.is.sim()</code>, closing the connection is optional. Anyway running <code>br.close(con)</code>, even if <code>con==NULL</code> avoids adding this line when you switch to a actual data download.</p>
 </div>
 <div id="example-1" class="section level2">
 <h2>Example</h2>
 <pre class="r"><code>con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
+br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
 br.close(con) # Use the token to release the connection</code></pre>
 </div>
 </div>

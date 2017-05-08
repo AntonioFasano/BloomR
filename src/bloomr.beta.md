@@ -22,9 +22,15 @@ Complete help for functions br.try.date, br.is.same.class, br.bdh
 When in br.desc 'CIE_DES_BULK' is not availbale use NA
 allow br.desc/br.bulk.desc to use simulated
 Find a better place for  br.beta(): here it does not make sense. In bloomr.Rmd prevents a replacement with the beta when it is ready for shipping. 
-
-
+Use safer way to get internal variables `get(".br.types", pos = "bloomr")`
 Fix XXXX paragraphs
+For final tests (when beta is release candidate), do not use source('bloomr.R')
+
+### Terminal tests  
+copy of br.desc for simulations
+always.display.tickers, dates.as.row.names 
+
+
 
 
 
@@ -303,6 +309,17 @@ data=br.hist.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```
+## 
+## Attaching package: 'zoo'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+```
+
+```
 ## Loading 3988 HK Equity
 ```
 
@@ -374,22 +391,22 @@ data
 
 ```
 ## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2017-05-03   8.041 11.500        NA     NA   9.786
-## 2017-05-04   9.697     NA    12.130     NA  11.901
-## 2017-05-05  10.163 11.847     9.324     NA      NA
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2017-05-03  10.290    NA     8.745     NA   9.645
+## 2017-05-04      NA 9.243     9.082     NA  10.516
+## 2017-05-05   9.844 9.317     9.923     NA      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2017-05-03   8.847   8.324 10.472  9.979      NA
-## 2017-05-04   9.316      NA     NA  9.349   8.538
-## 2017-05-05   8.452  10.550     NA     NA  10.282
+## 2017-05-03      NA      NA 10.067     NA  11.637
+## 2017-05-04   7.750      NA  7.894     NA   9.445
+## 2017-05-05   9.067      NA     NA  9.074  10.752
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2017-05-03 11.542     NA  9.713
-## 2017-05-04     NA 11.134 11.367
-## 2017-05-05  9.077     NA 11.048
+## 2017-05-03     NA  8.203     NA
+## 2017-05-04 11.991 11.288  9.706
+## 2017-05-05  8.618  9.657 10.009
 ```
 
 Note:
@@ -482,7 +499,7 @@ class(data$Financial$`BAC US`)
 ```
 
 ```
-## [1] "matrix"
+## [1] "NULL"
 ```
 
 By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
@@ -767,8 +784,10 @@ br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2017-05-02  10.577   9.335
-## 2017-05-04   8.775      NA
+## 2017-05-02  10.770      NA
+## 2017-05-03   9.970      NA
+## 2017-05-04   9.472   9.077
+## 2017-05-05   9.486      NA
 ```
 
 ```r
@@ -941,10 +960,11 @@ type
 Details
 -------
 `.br.is.con` checks for the validity of a connection token.
-`.br.types` is a character vector with security types suitable as an argument for `br.bulk*` functions.
+`.br.types` is a character vector with security types suitable as an argument for BloomR multi-ticker  functions.
 `.br.check.type` checks if a type matches `.br.types`.
 `.br.cuttype` cuts trailing security type from character vector.
 `.br.jar()` returns the path to the blpapi*.jar
+`.br.session` object storing BloomR session information. 
 
 
 
@@ -955,23 +975,31 @@ Manage connections{#connections}
 
 Description
 ------------
-Open and close the connection to the Bloomberg service.   
+Open,close and test the connection to the Bloomberg service.   
 
 
 Usage
 -----
     br.open()
     br.close(con)
-	
+    br.simulate(is=TRUE)
+    br.is.sim()
+
+
 Arguments
 ---------
 con
 :   the connection token returned from br.open()
 
+is
+:   if TRUE (default), simulate connection. 
+
+
 Details
 -------
 
-`br.open` returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to `br.close`. If you are using simulated data and so your connection token is NULL, closing the connection is optional. Anyway running `br.close(con)`, even if `con==NULL` avoids adding this line when you switch to a actual data download.
+`br.open` returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to `br.close`. If you have run `br.simulate(is=TRUE)`, data are simulated (and your connection token is `NULL`). ` br.is.sim()` tests if the connection is simulated.   
+If ` br.is.sim()`, closing the connection is optional. Anyway running `br.close(con)`, even if `con==NULL` avoids adding this line when you switch to a actual data download.
 
 
 Example
@@ -980,7 +1008,7 @@ Example
 
 ```r
 con=br.open() # Open the connection and get the token and load some data
-br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 br.close(con) # Use the token to release the connection
 ```
 
