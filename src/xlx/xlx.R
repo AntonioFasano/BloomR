@@ -2,6 +2,13 @@
 ##  Manage name conflicts between sheets and ranges and perhaps among ranges
 ##  Set custom warnings when prevailing style cannot be applied, advertising column position
 
+## News
+## Convert sheet names in paths: new method based on workbook.xml.rels
+##                               XXX-comments to be removed
+## Reshape xml sheet values style ID table: tapply workaround, look for  XXX-comments and
+##       sheet.styles <- as.data.frame(tapply(x$s, list(x$rows, x$cols), identity)...
+##       Consider fixing vals too: sheet.vals <- as.data.frame(tapply(x$v, list(x$rows, x$cols), identity),
+  
 
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
@@ -195,7 +202,7 @@ read.xlx= function(
     actsheets= xmlToList(xmlParse(file.path(tdir, "xl/workbook.xml")))
     actsheets=data.frame(t(data.frame(actsheets$sheets)), stringsAsFactors = FALSE )
     rownames(actsheets) <- NULL
-    #XXXXXXXXXXXXXXXXX actsheets$id <- gsub("\\D", "", actsheets$id)
+    #actsheets$id=gsub("\\D", "", actsheets$id) #<-XXX To be removed: Used in old meth. to detect sheet paths
     wbsheets=actsheets$name
     
     ## Check sheet header length 
@@ -256,12 +263,13 @@ read.xlx= function(
     ## -------------------
     
     #XXXX Convert sheet names in paths (OLD method to be removed)
-    x <- gsub("\\D", "", actsheets$id)
-    worksheet_paths=sapply(x, function(x) list.files(
-        paste0(tdir, "/xl/worksheets"),
-        full.name = TRUE,
-        pattern = paste0("sheet", x, "\\.xml$")))
+    # x <- gsub("\\D", "", actsheets$id)
+    # worksheet_paths=sapply(x, function(x) list.files(
+    #     paste0(tdir, "/xl/worksheets"),
+    #     full.name = TRUE,
+    #     pattern = paste0("sheet", x, "\\.xml$")))
 
+    #XXXX NEW method based on workbook.xml.rels
     ## Convert sheet IDs in paths via _rels/workbook.xml.rels
     rels=xmlToList(xmlParse(file.path(tdir, "xl/_rels/workbook.xml.rels")))
     rels.id=sapply(rels, `[`, "Id")
@@ -407,8 +415,15 @@ read.xlx= function(
                                     stringsAsFactors = FALSE)
         
         ## Reshape xml sheet values style ID table
-        sheet.styles <- as.data.frame(tapply(x$s, list(x$rows, x$cols), identity),
-                                      stringsAsFactors = FALSE)
+        ###XXXXX original code
+        # sheet.styles <- as.data.frame(tapply(x$s, list(x$rows, x$cols), identity),
+        #                               stringsAsFactors = FALSE)
+
+        ###XXXXX New Code 
+        m=tapply(x$s, list(x$rows, x$cols), identity)
+        m[!nzchar(m)]=NA
+        sheet.styles <- as.data.frame(m, identity, stringsAsFactors = FALSE)
+        
         
         list(vals=sheet.vals, styles=sheet.styles)
     })   
