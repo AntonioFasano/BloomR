@@ -8,7 +8,7 @@
 ## Reshape xml sheet values style ID table: tapply workaround, look for  XXX-comments and
 ##       sheet.styles <- as.data.frame(tapply(x$s, list(x$rows, x$cols), identity)...
 ##       Consider fixing vals too: sheet.vals <- as.data.frame(tapply(x$v, list(x$rows, x$cols), identity),
-  
+## Newer newer based on rc2df() which replaces tapply. XXX-comments to be removed  
 
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
@@ -404,15 +404,34 @@ read.xlx= function(
 
     ## Convert cellstack in a tabular form (1 DF-table per sheet)
     ## -----------------------------------------------------------
-       
+
+    rc2df=function(vec, rowpos, colpos){
+        ## If v is matrix m vectorized, then v[i + I(j-1)]=m[j,j], I=nrow(m). So,
+        ## given a vector val and the vectors r,c representing the row/col positions of val elments in m,
+        ## one can can build an empty IxJ matrix m, with I=max(r), J=max(c), and put values in place with:
+        ## m[r + I (c-1)] = val                
+        ## If r,c do not list all possible pairs, one can rescale r,c with as.integer(as.factor(x)), x=r,c
+        ## unique(x) can still be used for margin names.
+        
+        rscaled=as.integer(as.factor(rowpos))
+        cscaled=as.integer(as.factor(colpos))
+        m=array(dim=c(max(rscaled), max(cscaled)))
+        dimnames(m) =list(unique(rowpos), unique(colpos))
+        m[rscaled + nrow(m) * (cscaled-1)] =  vec
+        as.data.frame(m, stringsAsFactors = FALSE)
+    }
+
     message("Formatting sheet(s) as data frames")
     databook <- lapply(unique(cellstack$sheet), function(name) {
 
         x=cellstack[cellstack$sheet == name,, drop=FALSE]
 
         ## Reshape xml sheet values 
-        sheet.vals <- as.data.frame(tapply(x$v, list(x$rows, x$cols), identity),
-                                    stringsAsFactors = FALSE)
+        #sheet.vals <- as.data.frame(tapply(x$v, list(x$rows, x$cols), identity),
+        #                            stringsAsFactors = FALSE)
+
+        ###XXXXX even Newer Code 
+        sheet.vals=rc2df(x$v, x$rows, x$cols)
         
         ## Reshape xml sheet values style ID table
         ###XXXXX original code
@@ -420,10 +439,12 @@ read.xlx= function(
         #                               stringsAsFactors = FALSE)
 
         ###XXXXX New Code 
-        m=tapply(x$s, list(x$rows, x$cols), identity)
-        m[!nzchar(m)]=NA
-        sheet.styles <- as.data.frame(m, identity, stringsAsFactors = FALSE)
+        # m=tapply(x$s, list(x$rows, x$cols), identity)
+        # m[!nzchar(m)]=NA
+        # sheet.styles <- as.data.frame(m, identity, stringsAsFactors = FALSE)
         
+        ###XXXXX even Newer Code 
+        sheet.styles=rc2df(x$s, x$rows, x$cols)
         
         list(vals=sheet.vals, styles=sheet.styles)
     })   
