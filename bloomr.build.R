@@ -120,10 +120,10 @@ G$bmzip='bmmode'
 ## Local paths
 G$work=""
 G$appname="main" # BloomR application folder name. Used by app.pt() 
-G$branch="brCore"
+G$branch=NULL #"brCore"
 
 ## Arguments
-G$bremacs=FALSE
+G$bremacs=NULL
 G$ndown=0
 
 
@@ -137,7 +137,8 @@ makeBloomR=function( # Build BloomR
                     ndown=2,      # num of download attempts
                     zip=FALSE,    # if TRUE zip the BloomR output dir
                     ask=TRUE,     # asks if to overwrite existent workdir and BloomR installer
-                    bremacs=FALSE,# add bremacs
+                    what='all',   # core/bremacs/all; build BloomR core, BRemacs or all of them 
+                                  # if deb!=1:6, despite all only executes first branch (core)
                     ## For debug/test:
                     deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug.
                     gitsim=FALSE  # local path (abs. or relative)to simulate github downloads.  
@@ -163,7 +164,8 @@ makeBloomR=function( # Build BloomR
     if(!loadLib("XML")) return(1)
 
     ## Parse Arguments
-    G$bremacs=bremacs
+    G$bremacs=FALSE
+    if(what=="bremacs") G$bremacs=TRUE
     G$ndown=ndown
     
     ## Step 1
@@ -183,6 +185,14 @@ makeBloomR=function( # Build BloomR
 
     ## Step 6
     if(6 %in% deb) {makeInst(ask); if(zip) makeZip(ask)}
+
+    if(what=='all' && deb==1:6) 
+        makeBloomR(work=work, tight=TRUE,  
+                   ndown=ndown, zip=zip, ask=ask,     
+                   what="bremacs",
+                   deb=deb, gitsim=gitsim)
+
+    
 }
 
 ###== Main steps ==
@@ -368,8 +378,11 @@ expand=function(){
 
 bloomrTree=function(){
 ### Make BloomR directory tree
+
+    G$branch="brCore"
+    if(G$bremacs) G$branch="brEmacs"
     
-    message("\nCreating BloomR tree")
+    message("\nCreating BloomR tree")   
     existMake(G$branch, TRUE, FALSE, "BloomR root dir:")
     makeDir(app.pt(), "BloomR app dir:")
 
