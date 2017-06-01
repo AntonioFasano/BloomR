@@ -1,7 +1,6 @@
 ###  BloomR source
 
 ##  TODO
-##  Remove internet2: see https://cran.r-project.org/bin/windows/base/old/3.3.0/NEWS.R-3.3.0.html
 ##  Compile BRemacs packages (BM) on first run
 ##  Add  rClr, rEikon, RDatastream  in site-library?
 ##  Test BRemecs with rmd, rnw etc.
@@ -558,7 +557,7 @@ EnvSet,  BLOOMR,     %A_ScriptDir%
 EnvSet,  HOME,       %A_ScriptDir%\\mybloomr
 EnvSet,  JAVA_HOME,  %A_ScriptDir%\\%AppDir%\\openjdk/jre
 ;EnvSet, PATH,       %A_ScriptDir%\\%AppDir%\\openjdk/bin;%path%
-Run, %AppDir%\\R\\bin\\x64\\Rgui.exe --internet2 LANGUAGE=en
+Run, %AppDir%\\R\\bin\\x64\\Rgui.exe LANGUAGE=en
 "
     bloomr.run=gsub("%AppDir%", G$appname, bloomr.run)
     makeBoot_(bloomr.run, "bloomr")
