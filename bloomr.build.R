@@ -120,6 +120,7 @@ G$bmzip='bmmode'
 ## Local paths
 G$work=""
 G$appname="main" # BloomR application folder name. Used by app.pt() 
+G$branch="brCore"
 
 ## Arguments
 G$bremacs=FALSE
@@ -369,7 +370,7 @@ bloomrTree=function(){
 ### Make BloomR directory tree
 
     message("\nCreating BloomR tree")
-    existMake('bloomR', TRUE, FALSE, "BloomR root dir:")
+    existMake(G$branch, TRUE, FALSE, "BloomR root dir:")
     makeDir(app.pt(), "BloomR app dir:")
 
 
@@ -407,9 +408,9 @@ bloomrTree=function(){
     
     ## Download manuals
     message("\nDownloading BloomR help resources")
-    download.git("README.html",           root.pt("README.html"))
-    download.git("LICENSE",               root.pt("LICENSE.txt"))
-    makeDir("bloomR/help", "BloomR help directory:")    
+    download.git("README.html",               root.pt("README.html"))
+    download.git("LICENSE",                   root.pt("LICENSE.txt"))
+    makeDir(root.pt("help"), "BloomR help directory:")
     download.git("src/bloomr.html",           root.pt("help/bloomr.html")) 
     download.git("src/bloomr.pdf",            root.pt("help/bloomr.pdf"))
     download.git("src/xlx/xlx.help.html",     root.pt("help/xlx.help.html"))     
@@ -585,7 +586,7 @@ makeBoot_=function(script.cont, stem){
 
     ## Move exe
     from=makePath(ahkdir, paste0(stem, ".exe"))
-    to=work.pt(paste0("bloomr/", stem, ".exe"))
+    to=work.pt(paste0(G$branch, stem, ".exe"))
     file.rename(from, to)    
     
 }
@@ -622,7 +623,8 @@ makeInst=function(ask){
     message('Creating green installer ', to, '\nThis may take a bit...')
     nsi='bloomr.nsi'
     nexe=paste0(G$nsiszip,'.d/App/NSIS/makensis.exe')
-    cmd=paste(win.pt(nexe), "/v2", win.pt(nsi))
+    nsrc=paste0("/dSRCDIR=", G$branch)
+    cmd=paste(win.pt(nexe), "/v2", nsrc, win.pt(nsi))
     ret=system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
     file.rename(work.pt("BRsetup.exe"), work.pt(to))
@@ -932,7 +934,7 @@ root.pt=function(dir=""){
 ### Prefix dir path with BloomR root path relative to workdir.
 ### Currently Bloomr root name is "bloomR"
 
-    makePath("bloomR", dir)
+    makePath(G$branch, dir)
 }
 
 
