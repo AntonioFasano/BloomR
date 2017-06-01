@@ -368,7 +368,7 @@ expand=function(){
 
 bloomrTree=function(){
 ### Make BloomR directory tree
-
+    
     message("\nCreating BloomR tree")
     existMake(G$branch, TRUE, FALSE, "BloomR root dir:")
     makeDir(app.pt(), "BloomR app dir:")
@@ -586,7 +586,7 @@ makeBoot_=function(script.cont, stem){
 
     ## Move exe
     from=makePath(ahkdir, paste0(stem, ".exe"))
-    to=work.pt(paste0(G$branch, stem, ".exe"))
+    to=work.pt(paste0(G$branch, "/", stem, ".exe"))
     file.rename(from, to)    
     
 }
@@ -635,11 +635,11 @@ makeInst=function(ask){
 makeZip=function(ask){
 
     message('\nCreating BloomR.zip')
-    to=work.pt("BloomR.zip")
+    to="BloomR_setup_.zip"
+    if(G$bremacs) to="BloomR+BRemacs_setup_.zip"
     if(is.path(to)) del.ask(to, ask, "already exists")    
-    del.path(to)
-    
-    from=work.pt('bloomR/.././bloomR/*')   # In 7z ./ removes dir prefix from archive     
+    del.path(to)    
+    from=paste0('./', G$branch, '/*')  # In 7z ./ removes dir prefix from archive files
     zexe=get7zbin()
     #cmd=paste("cmd.exe /c cd /D", win.pt(G$work) , "&")
     cmd=paste(win.pt(zexe), "a", win.pt(to), win.pt(from))
@@ -956,12 +956,12 @@ slisp.pt=function(dir=""){
 
 
 win.pt=function(path){
-### Quote and Windows-ize and make relative to currpath
+### Quote Windows-ize and make relative to currpath
 ### E.g. "rel path/to/sub dir" -> "\"abs path\\to\\/sub dir\""
 ### This function is used to send path to the shell therefore output is relative to currpath
     
-    op <- options("useFancyQuotes")
-    options(useFancyQuotes = FALSE)
+    #op <- options("useFancyQuotes")
+    op=options(useFancyQuotes = FALSE)
     path=work.pt(path)
     path=dQuote(path)
     options(op)
