@@ -43,7 +43,6 @@ knit.twice("bloomr.beta.Rmd")
 
 ```
 
-# BloomR main functions
 
 ## TODO
 Complete help for functions br.try.date, br.is.same.class, br.bdh
@@ -134,61 +133,18 @@ store=function(sym){
 
 ```
 
+# BloomR main functions
 
-br.bdh{#br.bdh}
-===============
-*Historical data*
-
-XXXXRemove always.display.ticker, dates.as.row.names?
-XXXXCheck only.trading.days description
-XXXXMove staff in auto args
+br.hist* function options {#histoptions}
+========================================
+*Historical data options*
 
 Description
 -----------
-Download historical Bloomberg data 
-
-Usage
------
-    br.bdh(con, security, fields="PX_LAST", start.date=Sys.Date() - 7, end.date=Sys.Date(), 
-    override_fields= NULL, override_values=NULL, 
-    option.names = NULL, option.values = NULL,
-    only.trading.days = TRUE
-    )     
-
-Arguments
----------
-con
-:   the connection token returned from br.open()
-
-securities
-:   character vector of the tickers queried for data  
-
-field
-:   case insensitive character vector of the Bloomberg field queried. Defaults to "PX_LAST". 
-
-start.date
-:   Time series start date as a Date object or an ISO string without separators (YYYYMMDD). Time series will actually begin at `start.date` if there is data available; otherwise it will start at the first significant date. 
-
-end.date
-:   Time series end  date as a Date object or an ISO string without separators (YYYYMMDD). If NULL or missing, it defaults to the last available date. 
-
-option.names, option.values
-:   See details
-
-always.display.tickers 
-:   (removed) Displays tickers in first column even if a single one is requested. Defaults to FALSE
-
-dates.as.row.names  
-:   (removed) Displays dates _also_ as row names. Defaults to TRUE for single ticker query, FALSE otherwise. 
-
-only.trading.days
-:   If FALSE, rows are returned for all requested dates, even when no markets data is available.  
-XXXXCheck! It defaults to FALSE for a single security or and TRUE for multiple securities. In the latter case, use `na.omit`  or `na.exclude` to remove these rows.
-
+Key/Values for `option.names`, `option.values` used by `br.hist*` function family. 
 
 Details
 -------
-For multi-ticker queries you might consider to use `br.hist()` which features also a simulated mode.
 
 `option.names` and `option.values` are options vectors affecting the returned data. Options are set pairwise, for example to set `opt1` and `opt2`  respectively to `val1` and `val2`, you would pass the arguments:
 
@@ -899,8 +855,8 @@ br.hist=function(con,
     ## Check empty.sec is a ratio
     if(empty.sec<0 || empty.sec>1) stop("'empty.sec' must be between 0 and 1")
     
-    ## br.bdh() and sample() pars
-    bdhpars=list(
+    ## br.raw() and sample() pars
+    rawpars=list(
         #con=con,
         field=field, start.date=start, end.date=end.date, 
         optnams=option.names, optvals=option.values,
@@ -923,8 +879,7 @@ br.hist=function(con,
     LL=lapply(tiks, function(tik){
         message('Loading ', tik)
         if(usesample) do.call("br.sample", sampars)
-          #else do.call("br.bdh", c(security=tik, bdhpars)) 
-          else do.call(".br.raw", c(security=tik, bdhpars))
+          else do.call(".br.raw", c(security=tik, rawpars))
     })
 
     ## Randomly identify empty.sec
@@ -961,7 +916,7 @@ br.hist=function(con,
 }
 
 
-.br.raw=function( # Get low level data historical data. For internal use
+.br.raw=function( # Get low level  historical data. For internal use
                  security, field="PX_LAST",
                  ## Start/End date can be a POSIXlt/ct, Date, ISO string, UK string with slashes or dashes.
                  start.date, end.date=Sys.Date(),
@@ -1088,10 +1043,8 @@ br.hist=function(con,
     optnams=NULL, optvals=NULL,
     ovrnams=NULL, ovrvals=NULL){
 
-
-
-## To get local available labels
-## local({load("testdata/testdata.low.Rdata"); names(D)})
+### To get local available labels
+### local({load("testdata/testdata.low.Rdata"); names(D)})
 
     
     ## Standard call
@@ -1390,6 +1343,13 @@ store(br.sample)
 Internal BloomR functions{#Internal}
 =====================================
 
+
+
+
+Usage
+-----
+
+
 Description:
 ------------
 Internal functions not to be used by the end user
@@ -1402,6 +1362,22 @@ Usage:
     .br.check.type(type) 
     .br.cuttype(type)
     .br.jar()
+    .br.test.dates(start, end, holidays=NULL, asChar=FALSE)
+	
+    .br.raw(security, field="PX_LAST",
+        ## Start/End date can be a POSIXlt/ct, Date, ISO string, UK string with slashes or dashes.
+        start.date, end.date=Sys.Date(),
+        alldays=FALSE, optnams=NULL, optvals=NULL, ovrnams=NULL, ovrvals=NULL)
+
+    .br.choose.testdata(security, field="PX_LAST",
+        startDate, endDate,    # ISO string
+        alldays=FALSE, optnams=NULL, optvals=NULL, ovrnams=NULL, ovrvals=NULL)
+    .br.developer(mode=TRUE) 
+    .br.is.dev()
+	
+	.br.wpath(path) TODO XXX
+
+
 
 Arguments:
 ----------
@@ -1411,6 +1387,17 @@ con
 type
 :   a string representing the security type  
 
+mode
+:   TRUE if in developer mode   
+
+alldays
+:   equivalent to `!only.trading.days` in `br.hist`  
+
+optnams, optvals, ovrnams, ovrvals
+:   equivalent to `option.names`, `option.values`, `override.names`, `override.values` in `br.hist`  
+
+See `br.hist`, for other `.br.raw` arguemnts 
+
 Details
 -------
 `.br.is.con` checks for the validity of a connection token.
@@ -1419,6 +1406,11 @@ Details
 `.br.cuttype` cuts trailing security type from character vector.
 `.br.jar()` returns the path to the blpapi*.jar
 `.br.session` object storing BloomR session information. 
+`.br.test.dates` tests the validity of given start, end date, possibly against a holiday vector.  
+
+`.br.developer` sets developer which modifies the behaviour of some functions for debugging. `.br.is.dev` tests if in developer mode
+
+`.br.raw` gets low level historical data. It might use stored local data in developer mode or call  `.br.raw_` for actual low level download. `.br.choose.testdata` chooses what test data to use, when in developer mode, based on arguments or `TNAMS` character vector if found in the global environment. 
 
 
 ```{r bbg-internal, opts.label='brfuncs'}
@@ -1451,7 +1443,42 @@ Details
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 
-## Legal security types
+
+
+.br.test.dates=function( # Test if start, end, holidays dates and have coherent formats and values.
+                        ## Return list(start, end, holidays) converted to ISO if asChar=T.
+                        ## See br.try.date() for valid formats
+                        start, end, holidays=NULL, asChar=FALSE){
+
+    if(is.null(start <- br.try.date(start)))
+        stop(paste('Invalid date', start)) 
+
+    if(is.null(end <- br.try.date(end)))
+        stop(paste('Invalid date', end))
+
+    if(!is.null(holidays) &  is.null(holidays <- br.try.date(holidays)))
+        stop("Some dates are not recognised: ", paste(holidays, collapse=" "))
+
+    if(!br.is.same.class(c(list(start, end), holidays))){
+        message("Start date: ", paste(class(start), collapse=" "))
+        message("End date: ", paste(class(end), collapse=" "))
+        if(!is.null(holidays))
+            message("holidays: ", paste(class(holidays), collapse=" "))
+        stop("Not all date variable have the same class")        
+    }
+    
+    if(start>=end) stop("Start date should be set before end date!")
+
+    if(asChar){
+        start=format(start, format="%Y%m%d")
+        end=format(end, format="%Y%m%d")
+    }
+    list(start=start, end=end, holidays=holidays)    
+
+}
+
+
+## Session variable. To be modified by .br.session$set()
 .br.session=list()
 .br.session$simulated=FALSE 
 .br.session$usetest=FALSE 
@@ -1460,12 +1487,29 @@ Details
 .br.session$set=function(lab, val) assign(".br.session",
                                           `[[<-`(.br.session, lab, val), pos = "bloomr")
 
+.br.developer=function(mode=TRUE) { # Set developer, modifying some function behaviour for debugging
+    .br.session$set("usetest", mode)
+    if(mode)
+        warning("You are in developer mode.\nUse\n .br.developer(mode=FALSE)\n to go back to normal use.")
+}
+
+.br.is.dev=function() { # Test if in developer mode
+    get(".br.session", pos = "bloomr")$usetest
+}
+
+
+## .br.raw, .br.raw_, .br.choose.testdata, 
+## are under br.hist chunk
+
 store(.br.is.con)
 store(".br.types")
 store(.br.check.type) 
 store(.br.cuttype)
 store(.br.jar)
 store(".br.session")
+store(.br.test.dates)
+store(.br.developer)
+store(.br.is.dev)
 
 ```
 
@@ -1537,23 +1581,11 @@ br.is.sim=function() {
     get(".br.session", pos = "bloomr")$simulated
 }
 
-.br.developer=function(mode=TRUE) { # set debug mode
-    .br.session$set("usetest", mode)
-    if(mode)
-        warning("You are in developer mode.\nUse\n .br.developer(mode=FALSE)\n to go back to normal use.")
-}
-
-.br.is.dev=function() {
-    get(".br.session", pos = "bloomr")$usetest
-}
-
 
 store(br.open)
 store(br.close)
 store(br.simulate)
 store(br.is.sim)
-store(.br.developer)
-store(.br.is.dev)
 
 ```
 
@@ -1618,17 +1650,27 @@ Beta misc functions{#beta.misc.functions}
 Description
 ------------
 
-`br.try.date` converts a vector to a date vector if possible or return null. Any vector element should be POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d"
+Miscellaneous functions dealing with dates. 
 
-`br.is.same.class` check if all supplied argumets have the same class. It is mostly intended to check if dates are homogeneous. 
-
-`.br.test.dates` tests the validity of given start, end date, possibly against a holiday vector.
 
 Usage
 -----
     br.try.date(d)
     br.is.same.class(...)
-    .br.test.dates(start, end, holidays=NULL, asChar=FALSE)
+
+
+Arguments
+---------
+d
+:   a POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d" vector
+
+Details
+-------
+
+`br.try.date` converts a vector to a date vector if possible or return `NULL`. Any vector element should be POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d"
+
+`br.is.same.class` check if all supplied argumets have the same class. It is mostly intended to check if dates are homogeneous. 
+
 
 ```{r MISCFUNC, opts.label='brfuncs'}
 
@@ -1662,41 +1704,8 @@ br.is.same.class=function(...){ # Check if all argumets have the same class
 }
 
 
-.br.test.dates=function( # Test if start, end, holidays dates and have coherent formats and values.
-                        ## Return list(start, end, holidays) converted to ISO if asChar=T.
-                        ## See br.try.date() for valid formats
-                        start, end, holidays=NULL, asChar=FALSE){
-
-    if(is.null(start <- br.try.date(start)))
-        stop(paste('Invalid date', start)) 
-
-    if(is.null(end <- br.try.date(end)))
-        stop(paste('Invalid date', end))
-
-    if(!is.null(holidays) &  is.null(holidays <- br.try.date(holidays)))
-        stop("Some dates are not recognised: ", paste(holidays, collapse=" "))
-
-    if(!br.is.same.class(c(list(start, end), holidays))){
-        message("Start date: ", paste(class(start), collapse=" "))
-        message("End date: ", paste(class(end), collapse=" "))
-        if(!is.null(holidays))
-            message("holidays: ", paste(class(holidays), collapse=" "))
-        stop("Not all date variable have the same class")        
-    }
-    
-    if(start>=end) stop("Start date should be set before end date!")
-
-    if(asChar){
-        start=format(start, format="%Y%m%d")
-        end=format(end, format="%Y%m%d")
-    }
-    list(start=start, end=end, holidays=holidays)    
-
-}
-
 store(br.try.date)
 store(br.is.same.class)
-store(.br.test.dates)
 
 
 ```
@@ -2019,20 +2028,15 @@ br.close(con)
 
 
 ```{r moretests, purl=FALSE, eval=FALSE, include=FALSE}
+# change to br.bdh -> br.hist
 # br.bdh(con, "MSFT US EQUITY", "PX_LAST", "20170202", "20170210", override_fields="PRICING_SOURCE", override_values="CG")
 # br.bdh(con, "MSFT US EQUITY", "PX_LAST", "20170202", "20170210")
-
-###=============
-  
-
 
 ####
 # debug(br.hist) ; br.hist(con, c("MSFT US Equity", "AMZN US Equity"), start="20170225")
 #debug(br.hist.csv)
 #debug(br.hist)
 # br.hist.csv(NULL, "wei.csv", same.dates=TRUE, empty.sec=.2)
-# br.bdh(con, "MSFT US Equity", start="20170225")
-# source("newbulk3.R")
 
 ```
 
