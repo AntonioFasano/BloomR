@@ -1,7 +1,8 @@
-## ----store, opts.label='purlme'------------------------------------------
+## ----store, opts.label='brfuncs'-----------------------------------------
 ## Purl this first
 ## Store br.* objects in bloomr env in base namespace
-assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
+if( ! grepl("^bloomr\\.beta\\.", current_input()))
+    assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
 
 ## func: store(func);  var: store("var")
 store=function(sym){
@@ -18,7 +19,7 @@ store=function(sym){
 }
 
 
-## ----br.bdh, opts.label='purlme'-----------------------------------------
+## ----br.bdh, opts.label='brfuncs'----------------------------------------
 br.bdh=function(
                 con, security, fields="PX_LAST",
                 start.date=Sys.Date() - 7, end.date=Sys.Date(), 
@@ -68,7 +69,7 @@ br.bdh=function(
 }
 store(br.bdh)
 
-## ----br.hist.csv, opts.label='purlme'------------------------------------
+## ----br.hist.csv, opts.label='brfuncs'-----------------------------------
 br.hist.csv=function(
                      #' the connection token returned from br.open().
                      #' If `NULL` simulated values are generated.   
@@ -175,7 +176,7 @@ br.hist.csv=function(
 store(br.hist.csv)
 
 
-## ----br.bulk.desc, opts.label='purlme'-----------------------------------
+## ----br.bulk.desc, opts.label='brfuncs'----------------------------------
 br.bulk.desc=function(con, tiks) {
 
     LL = lapply(tiks, function(tik){
@@ -187,7 +188,7 @@ br.bulk.desc=function(con, tiks) {
 }
 store(br.bulk.desc)
 
-## ----br.idx, opts.label='purlme'-----------------------------------------
+## ----br.idx, opts.label='brfuncs'----------------------------------------
 br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
 
                 include.idx=TRUE, showtype=FALSE,
@@ -248,7 +249,7 @@ br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Da
 store(br.idx)
 
 
-## ----br.hist, opts.label='purlme'----------------------------------------
+## ----br.hist, opts.label='brfuncs'---------------------------------------
 br.hist=function(con,
                  
                  #' character vector of the tickers queried for data
@@ -273,10 +274,18 @@ br.hist=function(con,
                  same.dates=FALSE, empty.sec=0,
                  weekend=TRUE, holidays=NULL )
 {
-    
 
+
+### Uncomment to debug
+    #assign(".br.session$usetest", TRUE, pos = "bloomr")
+
+    
+    assign(".br.session$staten", 0, pos = "bloomr")
+    
     ## Check connection
-    if(!is.null(con) && !.br.is.con(con)) stop('Invalid connection parameter') 
+    usesample=is.null(con)
+    if(!usesample && !.br.is.con(con)) stop('Invalid connection parameter') 
+#    if(get(".br.session", pos = "bloomr")$usetest) usesample=FALSE
     
     ## Check tickers (skip possible empty CSV cells)
     if(!is.character(tiks)) stop('Tickers should be in the form of a character vector')
@@ -317,12 +326,13 @@ br.hist=function(con,
     ## Get data as list of matrices
     LL=lapply(tiks, function(tik){
         message('Loading ', tik)
-        if(is.null(con)) do.call("br.sample", sampars)
-          else do.call("br.bdh", c(security=tik, bdhpars))        
+        if(usesample) do.call("br.sample", sampars)
+          #else do.call("br.bdh", c(security=tik, bdhpars)) 
+          else do.call(".br.raw", c(security=tik, bdhpars)) 
     })
 
     ## Randomly identify empty.sec
-    if(is.null(con)){        
+    if(usesample){        
         x=round(length(tiks.show) * empty.sec)
         empty=sample(length(tiks.show), x)
         LL[empty]=rep(list(NULL), x)
@@ -354,10 +364,126 @@ br.hist=function(con,
   
 }
 
+
+.br.raw=function( # Get low level data historical data. For internal use
+                sec, field="PX_LAST",
+                start, end=Sys.Date(), # can be Date or ISO char class
+                alldays=FALSE, # shortcut for BBG nonTradingDayFillOption 
+                optnams=NULL, optvals=NULL,
+                ovrnams=NULL, ovrvals=NULL,
+                state # envir to keep state
+                ){
+
+
+.br.session$testsecs=c("msft_daily", "amzn_daily", "liq_daily")  # list of test secs to use
+
+    ## Use test data if state$num>0
+    if(get(".br.session", pos = "bloomr")$usetest) {
+        D=local({
+            load("testdata/testdata.low.Rdata")
+            D
+        })        
+        n=get(".br.session", pos = "bloomr")$staten+1
+        tsecs=get(".br.session", pos = "bloomr")$testsecs
+        if(is.null(tsecs)) tsecs=names(D)[1]
+        l=length(tsecs)
+        s = if(n <=l) tsecs[n] else tsecs[n - ((n -1) %/% l) * l]
+        assign(".br.session$staten", n, pos = "bloomr")
+        d=D[s]
+
+    } else {
+
+        d=br.raw_(sec=sec, field=field,
+                start=start, end=end, 
+                alldays=alldays,
+                optnams=optnams, optvals=optvals,
+                ovrnams=ovrnams, ovrvals=ovrvals)
+    }
+    convert.to.type(d$vals, d$types) 
+}
+
+
+.br.raw_=function( # br.raw work horse 
+                  sec, field="PX_LAST",
+                  start, end=Sys.Date(), # can be Date or ISO char class
+                  alldays=FALSE, # shortcut for BBG nonTradingDayFillOption 
+                  optnams=NULL, optvals=NULL,
+                  ovrnams=NULL, ovrvals=NULL){
+
+    if(is.null(ovrnams)) {
+        za=.jarray(character(0), "java/lang/String")
+        ovrnams=za
+        ovrvals=za        
+    } else {
+        ovrnams=.jarray(ovrnams)
+        ovrvals=.jarray(ovrvals)
+    }
+
+    start=ifelse(is.character(start), start, format(start, "%Y%m%d"))
+    end=ifelse(is.character(end), end, format(end, "%Y%m%d"))
+            
+    optnams=c(optnams, "startDate", "endDate")
+    optvals=c(optvals, start, end)
+
+    if(alldays) {
+        optnams=c(optnams, "nonTradingDayFillOption", "nonTradingDayFillMethod")
+        optvals=c(optvals, "ALL_CALENDAR_DAYS", "NIL_VALUE")
+    }
+
+    ref=.jnew("org/findata/blpwrapper/Connection") 
+
+    r=.jcall(ref, "Lorg/findata/blpwrapper/DataResult;", "blh",
+                sec, .jarray(field),
+                ovrnams,          # override fields
+                ovrvals,          # override values
+                .jarray(optnams), # option names
+                .jarray(optvals)  # option values
+                )                
+    matrix.data  = r$getData()
+    column.names = r$getColumnNames()
+    data.types   = r$getDataTypes()
+
+    if (is.null(matrix.data)) {
+        matrix.data <- matrix(, nrow = 0, ncol = length(column.names))
+    } else {
+        matrix.data <- .jevalArray(matrix.data, simplify = TRUE)
+    }
+    colnames(matrix.data)= column.names
+
+    list(symb=sec, vals=matrix.data, types=data.types)
+
+}
+
+convert.to.type <- function( # Convert br.raw_ string data to proper format. Internal
+                    df.data, data_types) {
+  for (i in 1:(dim(df.data)[2])) {
+    string_values = as.vector(df.data[,i])
+
+    new_values <- switch(data_types[i],
+        FLOAT64 = as.numeric(string_values),
+        INT32 = as.numeric(string_values),
+        INT64 = as.numeric(string_values),
+        STRING = string_values,
+        DATE = string_values,
+        DATETIME = string_values,
+        NOT_APPLICABLE = string_values,
+        CHAR = string_values == 'Y', # Assumes CHAR is only used for Boolean values and can be trusted to return 'Y' or 'N'.
+        stop(paste("unknown type", data_types[i]))
+        )
+    df.data[,i] <- new_values
+  }
+
+  return(df.data)
+}
+
+
 store(br.hist)
+store(.br.raw)
+store(.br.raw_)
+store(convert.to.type)
 
 
-## ----br.desc, opts.label='purlme'----------------------------------------
+## ----br.desc, opts.label='brfuncs'---------------------------------------
 br.desc=function(con, tik)
 {
 
@@ -378,7 +504,8 @@ br.desc=function(con, tik)
     xx=bds(con, tik, 'CIE_DES_BULK')
 
     ## Merge fields add long desc to DF
-    if(!is.null(xx)) colnames(xx) = colnames(x)
+    if(is.null(xx)) xx=data.frame(NA)
+    colnames(xx) = colnames(x)
     rnams=c(rownames(x), rownames(xx))
     x=rbind(x,xx)
     rownames(x)=rnams
@@ -386,7 +513,7 @@ br.desc=function(con, tik)
 }
 store(br.desc)
 
-## ----br.md2pdf, opts.label='purlme'--------------------------------------
+## ----br.md2pdf, opts.label='brfuncs'-------------------------------------
 
 br.md2pdf=function(md.file, pdf.file){
 ### Make a markdown file into a PDF
@@ -422,7 +549,7 @@ br.md2pdf=function(md.file, pdf.file){
 }
 store(br.md2pdf)
 
-## ----br.sample, opts.label='purlme'--------------------------------------
+## ----br.sample, opts.label='brfuncs'-------------------------------------
 br.sample=function(nrow=NULL,  price=TRUE,
                    start=Sys.Date() - 7, end.date=Sys.Date(), 
                    field="FIELD",
@@ -481,7 +608,7 @@ br.sample=function(nrow=NULL,  price=TRUE,
 store(br.sample)
 
 
-## ----bbg-internal, opts.label='purlme'-----------------------------------
+## ----bbg-internal, opts.label='brfuncs'----------------------------------
 
 ## Check connection token
 .br.is.con=function(con) identical(attr(con, 'jclass'), "org/findata/blpwrapper/Connection")
@@ -525,14 +652,14 @@ store(.br.jar)
 store(".br.session")
 
 
-## ----connections, opts.label='purlme'------------------------------------
+## ----connections, opts.label='brfuncs'-----------------------------------
 br.open=function() {
-
     if(br.is.sim()) return(NULL)
 
     assign(".br.session$tokenasked", TRUE, pos = "bloomr")
-    blpConnect(blpapi.jar.file=.br.jar())
+    out=blpConnect(blpapi.jar.file=.br.jar())
     assign(".br.session$tokensuccess", TRUE, pos = "bloomr")
+    out
 }
 
 br.close=function(conn) {
@@ -546,7 +673,7 @@ br.simulate=function(is=TRUE) {
 }
 
 br.is.sim=function() {
-    get(".br.session$simulated", pos = "bloomr")
+    get(".br.session", pos = "bloomr")$simulated
 }
 
 store(br.open)
@@ -555,7 +682,7 @@ store(br.simulate)
 store(br.is.sim)
 
 
-## ----miscfunc, opts.label='purlme'---------------------------------------
+## ----miscfunc, opts.label='brfuncs'--------------------------------------
 
 #Clean up
 ## Remove visible and invisible objects
@@ -569,7 +696,7 @@ rm.var=function()
 store(rm.all)
 store(rm.var)
 
-## ----betafun, opts.label='purlme'----------------------------------------
+## ----betafun, opts.label='brfuncs'---------------------------------------
 
 br.beta=function(){
     f=paste0(R.home("share"), "/bloomr/bloomr.beta.R")    
@@ -579,7 +706,7 @@ br.beta=function(){
 store(br.beta)
 
 
-## ----MISCFUNC, opts.label='purlme'---------------------------------------
+## ----MISCFUNC, opts.label='brfuncs'--------------------------------------
 
 br.try.date=function(d){ # convert vector d to a date vector if possible or return null
 ### Any element should be POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d"
@@ -644,7 +771,7 @@ store(br.try.date)
 store(br.is.same.class) 
 
 
-## ----deprecated, opts.label='purlme'-------------------------------------
+## ----deprecated, opts.label='brfuncs'------------------------------------
 
 .br.sample.deprecated=function(nsec=NULL, no.na=NULL, df=NULL,
                                sec.names=NULL, empty.sec=NULL, same.dates=NULL){
@@ -672,7 +799,7 @@ store(br.is.same.class)
 }
 
 
-## ----time, opts.label='purlme'-------------------------------------------
+## ----time, opts.label='brfuncs'------------------------------------------
 `%+%` <- function(x,y) UseMethod("%+%")
 `%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
 `%-%` <- function(x,y) UseMethod("%-%")
@@ -728,7 +855,7 @@ store(last.day)
 store(day.us)
 
 
-## ----attach, opts.label='purlme'-----------------------------------------
+## ----attach, opts.label='brfuncs'----------------------------------------
 ### Make visible br.* in bloomr env and base ns
 attach(bloomr)
 rm(store)

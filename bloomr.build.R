@@ -3,11 +3,14 @@
 ##  TODO
 ##  Compile BRemacs packages (BM) on first run
 ##  Add  rClr, rEikon, RDatastream  in site-library?
+##  NSIS does not delete an existing dir, but silently overwrites it
 ##  Test BRemecs with rmd, rnw etc.
 ##  Fix getURL("https://www.google.com", cainfo="cacert.pem"), using http://curl.haxx.se/ca/cacert.pem which
 ##    causes:
 ##    Fix download error in: download.nice(G$apiurl, G$apizip, ..., cert=F), if cert is T
-##    Fix download error in: download.nice(G$ahkurl, G$ahkzip ...) 
+##    Fix download error in: download.nice(G$ahkurl, G$ahkzip ...)
+##
+##
 ##  Create a java bin to test java directory variables
 ##  Finish help in src\bloomr.beta.Rmd
 ##
@@ -384,7 +387,6 @@ bloomrTree=function(){
     message("\nCreating BloomR tree")   
     existMake(G$branch, TRUE, FALSE, "BloomR root dir:")
     makeDir(app.pt(), "BloomR app dir:")
-
 
     ## Copy R and make site direcory
     from=paste0(G$rzip , '.d/app')
@@ -769,7 +771,8 @@ url.exists.cert=function(url, cert=TRUE){
     
     if(cert==FALSE) return(url.exists(url, ssl.verifypeer=FALSE))
     if(!file.exists(cert.abs_())) stop('\nCan\'t find certificate\n', cert.abs_())
-    return(url.exists(url, ssl.verifypeer=TRUE, cainfo=cert.abs_()))
+    return(url.exists(url, ssl.verifypeer=TRUE))
+
 }
 
 download.nice=function(from, to, overwrite, desc="", cert=TRUE){
@@ -1068,7 +1071,8 @@ del.path_=function(path){ # del.path workhorse
 
 del.ask=function(path, ask, desc){
 ### Warn on relative to workdir path existence.
-### if ASK flag is et, ask for delete confirmation, else just notify
+### if ASK flag is set, ask for delete confirmation, else just notify
+### Actual delete is not peformed here    
 
     del.ask_(path, ask, desc)
 }
@@ -1133,6 +1137,7 @@ existMake=function(dir, overwrite, ask, desc){
     ## Dirty, but overwritable 
     else {
         del.ask(dir, ask, "exists non-empty")
+        del.path(dir)
         makeDir(dir)
     }             
 }
