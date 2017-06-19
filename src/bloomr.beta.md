@@ -1,83 +1,47 @@
+## TODO
+R topics documented:
+-----------
+[br.hist* function options ](#histoptions)   
+[br.hist.csv](#br.hist.csv)   
+[br.bulk.desc](#br.bulk.desc)   
+[br.idx](#br.idx)   
+[br.hist](#br.hist)   
+[br.desc](#br.desc)   
+[br.md2pdf](#br.md2pdf)    
+[br.sample](#br.sample)   
+[Internal BloomR functions](#Internal)   
+[Manage connections](#connections)   
+[Misc functions](#misc.functions)   
+[Beta functionalities](#beta.functions)   
+[Beta misc functions](#beta.misc.functions)   
+[Deprecated functions](#deprecated.functions)   
+[Time extension functions](#time.functions)   
+Simulated mode now returns NULL for empty sec, br.raw an zero rows DF, choose what is better and
+modify docs and code accordingly, that is br.sample, _br.raw, br.hist
+
+When in br.desc 'CIE_DES_BULK' is not availbale use NA done set it in log
+allow br.desc/br.bulk.desc to use simulated mode
+Fix XXXX paragraphs
+
+
+
+
+
 
 
 
 # BloomR main functions
 
-## TODO
-Complete help for functions br.try.date, br.is.same.class, br.bdh
-When in br.desc 'CIE_DES_BULK' is not availbale use NA done set it in log
-allow br.desc/br.bulk.desc to use simulated
-Find a better place for  br.beta(): here it does not make sense. In bloomr.Rmd prevents a replacement with the beta when it is ready for shipping. 
-Use safer way to get internal variables `get(".br.types", pos = "bloomr")`
-Fix XXXX paragraphs
-For final tests (when beta is release candidate), do not use source('bloomr.R')
-
-### Terminal tests  
-always.display.tickers, dates.as.row.names 
-only.trading.days
-
-
-
-
-
-
-
-
-
-br.bdh{#br.bdh}
-===============
-*Historical data*
-
-XXXXRemove always.display.ticker, dates.as.row.names?
-XXXXCheck only.trading.days description
-XXXXMove staff in auto args
+br.hist* function options {#histoptions}
+========================================
+*Historical data options*
 
 Description
 -----------
-Download historical Bloomberg data 
-
-Usage
------
-    br.bdh(con, security, fields="PX_LAST", start.date=Sys.Date() - 7, end.date=Sys.Date(), 
-    override_fields= NULL, override_values=NULL, 
-    option.names = NULL, option.values = NULL,
-    only.trading.days = TRUE
-    )     
-
-Arguments
----------
-con
-:   the connection token returned from br.open()
-
-securities
-:   character vector of the tickers queried for data  
-
-field
-:   case insensitive character vector of the Bloomberg field queried. Defaults to "PX_LAST". 
-
-start.date
-:   Time series start date as a Date object or an ISO string without separators (YYYYMMDD). Time series will actually begin at `start.date` if there is data available; otherwise it will start at the first significant date. 
-
-end.date
-:   Time series end  date as a Date object or an ISO string without separators (YYYYMMDD). If NULL or missing, it defaults to the last available date. 
-
-option.names, option.values
-:   See details
-
-always.display.tickers 
-:   (removed) Displays tickers in first column even if a single one is requested. Defaults to FALSE
-
-dates.as.row.names  
-:   (removed) Displays dates _also_ as row names. Defaults to TRUE for single ticker query, FALSE otherwise. 
-
-only.trading.days
-:   If FALSE, rows are returned for all requested dates, even when no markets data is available.  
-XXXXCheck! It defaults to FALSE for a single security or and TRUE for multiple securities. In the latter case, use `na.omit`  or `na.exclude` to remove these rows.
-
+Key/Values for `option.names`, `option.values` used by `br.hist*` function family. 
 
 Details
 -------
-For multi-ticker queries you might consider to use `br.hist()` which features also a simulated mode.
 
 `option.names` and `option.values` are options vectors affecting the returned data. Options are set pairwise, for example to set `opt1` and `opt2`  respectively to `val1` and `val2`, you would pass the arguments:
 
@@ -281,7 +245,7 @@ We can now download data:
 
 
 ```r
-con=NULL  #Simulated mode: replace with con=br.open() on terminal
+br.simulate(is=TRUE) # Simulated mode: replace TRUE with FALSE on terminal
 ```
 
 
@@ -295,7 +259,63 @@ data=br.hist.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```
-## Error in br.hist(con = con, tiks = csv[[g]], field = field, start = start, : Invalid connection parameter
+## Loading 3988 HK Equity
+```
+
+```
+## Loading C US Equity
+```
+
+```
+## Loading 601288 CH Equity
+```
+
+```
+## Loading BAC US Equity
+```
+
+```
+## Loading HSBA LN Equity
+```
+
+```
+## Processing Technology ...
+```
+
+```
+## Loading QCOM US Equity
+```
+
+```
+## Loading CSCO US Equity
+```
+
+```
+## Loading 700 HK Equity
+```
+
+```
+## Loading IBM US Equity
+```
+
+```
+## Loading INTC US Equity
+```
+
+```
+## Processing Indices ...
+```
+
+```
+## Loading DJI Index
+```
+
+```
+## Loading DJUSFN Index
+```
+
+```
+## Loading W1TEC Index
 ```
 
 
@@ -309,173 +329,23 @@ data
 ```
 
 ```
-## function (..., list = character(), package = NULL, lib.loc = NULL, 
-##     verbose = getOption("verbose"), envir = .GlobalEnv) 
-## {
-##     fileExt <- function(x) {
-##         db <- grepl("\\.[^.]+\\.(gz|bz2|xz)$", x)
-##         ans <- sub(".*\\.", "", x)
-##         ans[db] <- sub(".*\\.([^.]+\\.)(gz|bz2|xz)$", "\\1\\2", 
-##             x[db])
-##         ans
-##     }
-##     names <- c(as.character(substitute(list(...))[-1L]), list)
-##     if (!is.null(package)) {
-##         if (!is.character(package)) 
-##             stop("'package' must be a character string or NULL")
-##         if (any(package %in% "base")) 
-##             warning("datasets have been moved from package 'base' to package 'datasets'")
-##         if (any(package %in% "stats")) 
-##             warning("datasets have been moved from package 'stats' to package 'datasets'")
-##         package[package %in% c("base", "stats")] <- "datasets"
-##     }
-##     paths <- find.package(package, lib.loc, verbose = verbose)
-##     if (is.null(lib.loc)) 
-##         paths <- c(path.package(package, TRUE), if (!length(package)) getwd(), 
-##             paths)
-##     paths <- unique(normalizePath(paths[file.exists(paths)]))
-##     paths <- paths[dir.exists(file.path(paths, "data"))]
-##     dataExts <- tools:::.make_file_exts("data")
-##     if (length(names) == 0L) {
-##         db <- matrix(character(), nrow = 0L, ncol = 4L)
-##         for (path in paths) {
-##             entries <- NULL
-##             packageName <- if (file_test("-f", file.path(path, 
-##                 "DESCRIPTION"))) 
-##                 basename(path)
-##             else "."
-##             if (file_test("-f", INDEX <- file.path(path, "Meta", 
-##                 "data.rds"))) {
-##                 entries <- readRDS(INDEX)
-##             }
-##             else {
-##                 dataDir <- file.path(path, "data")
-##                 entries <- tools::list_files_with_type(dataDir, 
-##                   "data")
-##                 if (length(entries)) {
-##                   entries <- unique(tools::file_path_sans_ext(basename(entries)))
-##                   entries <- cbind(entries, "")
-##                 }
-##             }
-##             if (NROW(entries)) {
-##                 if (is.matrix(entries) && ncol(entries) == 2L) 
-##                   db <- rbind(db, cbind(packageName, dirname(path), 
-##                     entries))
-##                 else warning(gettextf("data index for package %s is invalid and will be ignored", 
-##                   sQuote(packageName)), domain = NA, call. = FALSE)
-##             }
-##         }
-##         colnames(db) <- c("Package", "LibPath", "Item", "Title")
-##         footer <- if (missing(package)) 
-##             paste0("Use ", sQuote(paste("data(package =", ".packages(all.available = TRUE))")), 
-##                 "\n", "to list the data sets in all *available* packages.")
-##         else NULL
-##         y <- list(title = "Data sets", header = NULL, results = db, 
-##             footer = footer)
-##         class(y) <- "packageIQR"
-##         return(y)
-##     }
-##     paths <- file.path(paths, "data")
-##     for (name in names) {
-##         found <- FALSE
-##         for (p in paths) {
-##             if (file_test("-f", file.path(p, "Rdata.rds"))) {
-##                 rds <- readRDS(file.path(p, "Rdata.rds"))
-##                 if (name %in% names(rds)) {
-##                   found <- TRUE
-##                   if (verbose) 
-##                     message(sprintf("name=%s:\t found in Rdata.rds", 
-##                       name), domain = NA)
-##                   thispkg <- sub(".*/([^/]*)/data$", "\\1", p)
-##                   thispkg <- sub("_.*$", "", thispkg)
-##                   thispkg <- paste0("package:", thispkg)
-##                   objs <- rds[[name]]
-##                   lazyLoad(file.path(p, "Rdata"), envir = envir, 
-##                     filter = function(x) x %in% objs)
-##                   break
-##                 }
-##                 else if (verbose) 
-##                   message(sprintf("name=%s:\t NOT found in names() of Rdata.rds, i.e.,\n\t%s\n", 
-##                     name, paste(names(rds), collapse = ",")), 
-##                     domain = NA)
-##             }
-##             if (file_test("-f", file.path(p, "Rdata.zip"))) {
-##                 warning("zipped data found for package ", sQuote(basename(dirname(p))), 
-##                   ".\nThat is defunct, so please re-install the package.", 
-##                   domain = NA)
-##                 if (file_test("-f", fp <- file.path(p, "filelist"))) 
-##                   files <- file.path(p, scan(fp, what = "", quiet = TRUE))
-##                 else {
-##                   warning(gettextf("file 'filelist' is missing for directory %s", 
-##                     sQuote(p)), domain = NA)
-##                   next
-##                 }
-##             }
-##             else {
-##                 files <- list.files(p, full.names = TRUE)
-##             }
-##             files <- files[grep(name, files, fixed = TRUE)]
-##             if (length(files) > 1L) {
-##                 o <- match(fileExt(files), dataExts, nomatch = 100L)
-##                 paths0 <- dirname(files)
-##                 paths0 <- factor(paths0, levels = unique(paths0))
-##                 files <- files[order(paths0, o)]
-##             }
-##             if (length(files)) {
-##                 for (file in files) {
-##                   if (verbose) 
-##                     message("name=", name, ":\t file= ...", .Platform$file.sep, 
-##                       basename(file), "::\t", appendLF = FALSE, 
-##                       domain = NA)
-##                   ext <- fileExt(file)
-##                   if (basename(file) != paste0(name, ".", ext)) 
-##                     found <- FALSE
-##                   else {
-##                     found <- TRUE
-##                     zfile <- file
-##                     zipname <- file.path(dirname(file), "Rdata.zip")
-##                     if (file.exists(zipname)) {
-##                       Rdatadir <- tempfile("Rdata")
-##                       dir.create(Rdatadir, showWarnings = FALSE)
-##                       topic <- basename(file)
-##                       rc <- .External(C_unzip, zipname, topic, 
-##                         Rdatadir, FALSE, TRUE, FALSE, FALSE)
-##                       if (rc == 0L) 
-##                         zfile <- file.path(Rdatadir, topic)
-##                     }
-##                     if (zfile != file) 
-##                       on.exit(unlink(zfile))
-##                     switch(ext, R = , r = {
-##                       library("utils")
-##                       sys.source(zfile, chdir = TRUE, envir = envir)
-##                     }, RData = , rdata = , rda = load(zfile, 
-##                       envir = envir), TXT = , txt = , tab = , 
-##                       tab.gz = , tab.bz2 = , tab.xz = , txt.gz = , 
-##                       txt.bz2 = , txt.xz = assign(name, read.table(zfile, 
-##                         header = TRUE, as.is = FALSE), envir = envir), 
-##                       CSV = , csv = , csv.gz = , csv.bz2 = , 
-##                       csv.xz = assign(name, read.table(zfile, 
-##                         header = TRUE, sep = ";", as.is = FALSE), 
-##                         envir = envir), found <- FALSE)
-##                   }
-##                   if (found) 
-##                     break
-##                 }
-##                 if (verbose) 
-##                   message(if (!found) 
-##                     "*NOT* ", "found", domain = NA)
-##             }
-##             if (found) 
-##                 break
-##         }
-##         if (!found) 
-##             warning(gettextf("data set %s not found", sQuote(name)), 
-##                 domain = NA)
-##     }
-##     invisible(names)
-## }
-## <bytecode: 0x000000001965a048>
-## <environment: namespace:utils>
+## $Financial
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2017-06-14  10.353  8.882        NA     NA      NA
+## 2017-06-15   9.847  8.946    10.914  8.466      NA
+## 2017-06-16  10.091 10.546        NA 11.344   9.867
+## 
+## $Technology
+##            QCOM US CSCO US 700 HK IBM US INTC US
+## 2017-06-14      NA   9.112 10.312  8.607      NA
+## 2017-06-15  10.796  10.476  9.419     NA      NA
+## 2017-06-16  11.201      NA 10.319  8.664      NA
+## 
+## $Indices
+##               DJI DJUSFN  W1TEC
+## 2017-06-14 10.967     NA 10.911
+## 2017-06-15  8.672     NA     NA
+## 2017-06-16 11.051 11.659  8.575
 ```
 
 Note:
@@ -495,7 +365,7 @@ length(data)
 ```
 
 ```
-## [1] 1
+## [1] 3
 ```
 
 ```r
@@ -503,7 +373,7 @@ names(data)
 ```
 
 ```
-## NULL
+## [1] "Financial"  "Technology" "Indices"
 ```
 
 ```r
@@ -511,13 +381,749 @@ class(data$Financial)
 ```
 
 ```
-## Error in data$Financial: object of type 'closure' is not subsettable
+## [1] "xts" "zoo"
 ```
 
 If you prefer you may get time series as data frames, and precisely as a list representing the ticker groups, where each group is in turn a list containing a data frame for each security:
 
 
 
+```r
+data=br.hist.csv(con, "mybloomr/tickers.csv", use.xts=FALSE) 
+```
+
+
+```r
+length(data)
+```
+
+```
+## [1] 3
+```
+
+```r
+names(data)
+```
+
+```
+## [1] "Financial"  "Technology" "Indices"
+```
+
+```r
+class(data$Financial)
+```
+
+```
+## [1] "list"
+```
+
+```r
+length(data$Financial)
+```
+
+```
+## [1] 5
+```
+
+```r
+names(data$Financial)
+```
+
+```
+## [1] "3988 HK"   "C US"      "601288 CH" "BAC US"    "HSBA LN"
+```
+
+```r
+class(data$Financial$`BAC US`)
+```
+
+```
+## [1] "matrix"
+```
+
+By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
+
+
+```r
+data=br.hist.csv(con, "mybloomr/tickers.csv", field = "PX_OPEN") 
+```
+
+
+You can choose to import only some of the CSV groups 
+
+
+```
+## Processing Financial ...
+```
+
+```
+## Loading 3988 HK Equity
+```
+
+```
+## Loading C US Equity
+```
+
+```
+## Loading 601288 CH Equity
+```
+
+```
+## Loading BAC US Equity
+```
+
+```
+## Loading HSBA LN Equity
+```
+
+```
+## Processing Indices ...
+```
+
+```
+## Loading DJI Index
+```
+
+```
+## Loading DJUSFN Index
+```
+
+```
+## Loading W1TEC Index
+```
+
+
+```r
+data=br.hist.csv(con, "mybloomr/tickers.csv", cols=c(1,3))
+## or equivalently:
+data=br.hist.csv(con, "mybloomr/tickers.csv", cols=c(TRUE, FALSE, TRUE))
+```
+
+
+```r
+names(data)
+```
+
+```
+## [1] "Financial" "Indices"
+```
+ 
+In the CSV file, if your tickers represent all equities, you can omit the type.   
+
+Consider this CSV:
+
+
+```r
+read.csv("mybloomr/tickers.eqt.csv")
+## This file is part of BloomR and anyway available here:
+## https://github.com/AntonioFasano/BloomR/blob/master/res/tickers.eqt.csv
+```
+
+
+```
+##   Financial Technology
+## 1   3988 HK    QCOM US
+## 2      C US    CSCO US
+## 3 601288 CH     700 HK
+## 4    BAC US     IBM US
+## 5   HSBA LN    INTC US
+```
+
+Note how the "Equity" type is missing! But you can use this CSV file with `addtype`:
+
+
+
+
+```r
+data=br.hist.csv(con, "mybloomr/tickers.eqt.csv", addtype=TRUE)
+```
+
+Before _going home_, don't forget to:
+
+
+```r
+br.close(con)
+```
+
+```
+## Error in br.close(con): object 'con' not found
+```
+
+
+br.bulk.desc{#br.bulk.desc}
+===========================
+
+Description
+-----------
+Get security descriptions for a vector of tickers.
+
+Usage
+-----
+    br.bulk.desc(con, tiks) 
+
+Arguments
+---------
+con
+:    the connection token returned from br.open()  
+
+tiks
+:    character vector of the tickers queried for data  
+
+Value
+-----
+A list of data frames, each representing the description of a security. For the format of data frames see the function `br.desc`.
+
+
+
+
+Example{#br.bulk.desc.exam}
+----------------------------
+
+
+```r
+con=br.open()
+data=read.csv("mybloomr/tickers.csv", as.is=TRUE)
+br.bulk.desc(con, as.vector(as.matrix(data[1:2,])))
+br.close(con)
+```
+
+
+br.idx{#br.idx}
+===============
+
+Description
+-----------
+Returns the historical data for the constituents of an index in xts or list format.
+It replaces `br.bulk.idx`.
+
+Usage
+-----
+    br.idx(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+
+                include.idx=TRUE, showtype=FALSE,
+                use.xts=TRUE, merge.xts=TRUE,
+
+                option.names = NULL, option.values = NULL,
+                only.trading.days = TRUE,
+
+                nsec=10, sec.names = NULL,
+                
+                price=TRUE,
+                mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                same.dates=FALSE, empty.sec=0,
+                weekend=TRUE, holidays=NULL)
+				
+
+Arguments
+---------
+con
+:   the connection token returned from br.open(). If `NULL` simulated values are generated.   
+
+index
+:   string denoting the index ticker with or without the final security type label ('Index')  
+
+include.idx
+:   if TRUE (default) returns also historical data for the index.  
+
+nsec
+:   number of simulated index constituents. Ignored if `con!=NULL`, it defaults to 10.  
+
+sec.names
+:   character vector with names of sampled index constituents. Ignored if `con!=NULL`. By default security names are like 'memb1', 'memb2', etc.
+
+For other arguments see the function `br.hist`.
+
+Details
+-------
+If `con=NULL`,  values are simulated by means of `br.sample()`. This function is used with default values, except for `nrow, nsec1, price, start, same.dates, no.na, empty.sec, sec.names`.
+
+Value
+-----
+
+If `use.xts=FALSE`, a list where each element is the historical data of a constituent as a data frame.  
+If `use.xts=TRUE` and `merge.xts=FAlSE`, a list where each element is the historical data of a constituent  as an xts object.  
+If `use.xts=TRUE` and `merge.xts=TRUE`, an xts oject where where each column is the historical data of a constituent .   
+If `include.idx=TRUE`, the last column or element will be the historical data of the index.  
+
+
+
+
+
+
+br.hist{#br.hist}
+==================
+*Historical data for vector of tickers*  
+Returns the historical data for a vector of tickers in xts or list format.
+It replaces `br.bulk.tiks``
+
+Usage
+------
+    br.hist(con, tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+                                            
+                 addtype=FALSE, showtype=FALSE,                      
+                 use.xts=TRUE, merge.xts=TRUE,
+                 
+                 option.names = NULL, option.values = NULL,
+                 only.trading.days = TRUE,
+
+                 price=TRUE,
+                 mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                 same.dates=FALSE, empty.sec=0,
+                 weekend=TRUE, holidays=NULL)
+
+  
+Arguments
+----------
+
+tiks
+:   Character vector of the tickers queried for data
+
+start
+:   Start date can be a POSIXlt/ct, Date, ISO string, UK string with slashes or dashes
+
+start
+:   same format of start
+
+use.xts
+:   if TRUE (the default) time series are formatted as xts objects else as a data frame.  
+
+merge.xts
+:   if TRUE (the default) xts objects are merged using all rows and using NAs for missing observations.
+
+For other arguments see the function `br.hist.csv`.
+
+
+
+Details
+-------
+
+If an element of `tiks` is `NA` or empty (`""`) it is ignored. This is intended to avoid errors when the character vector are read from a CSV file with empty cells.  
+If `con=NULL`, values are simulated by means of `br.sample()`. Sampled values are based on default values of `br.sample()`, but it is possible to set explicitly  `start, end.date, price, mean, sd, jitter, same.dates, empty.sec, weekend, holidays`; `sec.names` depends on `tiks` argument. These arguments are ignored if `con!=NULL`. See `br.sample()` help for more.
+
+
+Value
+-----
+If `use.xts=FALSE`, a list of character matrices, where the first column, named "date", has the observation dates, the second column, named after the field, has field values. The list names are the tickers. 
+Empty time series are returned as NULL. If all time series are empty a list of NULLs is returned.
+
+If `use.xts=TRUE` and `merge.xts=FAlSE`, a list of xts objects, where the xts index has the observation dates and its data column, named after the field, has field values. The list names are the tickers. 
+Empty time series are returned as NA. If all time series are empty a list of NAs is returned.
+
+If `use.xts=TRUE` and `merge.xts=TRUE`, then when:  
+A) There is at least one non-empty TS, an xts object is returned, where the index has the observation dates and columns, named after the tickers, have field values. Empty time series are returned as a NA column for the related xts ticker.
+B) All time series are empty a vectors of NAs of the same length as the queries tickers is returned. 
+
+
+Example
+-------
+
+
+```r
+con=NULL # Open simulated connection and  load some data
+br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+```
+
+```
+## Loading MSFT US Equity
+```
+
+```
+## Loading AMZN US Equity
+```
+
+```
+##            MSFT US AMZN US
+## 2017-06-13      NA   9.078
+```
+
+```r
+br.close(con) # Use the token to release the connection
+```
+
+See Also
+--------
+
+[br.hist.csv](#br.hist.csv)
+
+
+
+
+br.desc{#br.desc}
+================
+
+Description
+-----------
+Get security descriptions.
+
+Usage
+-----
+    br.desc(con, tik)
+
+Arguments
+---------
+con
+:   the connection token returned from br.open()  
+
+tik
+:   string denoting the ticker queried for data  
+
+Value
+-----
+A data frame containing the value of the Bloomberg fields form `ds001` to `ds009` and the long field `CIE_DES_BULK`.
+
+
+
+
+br.md2pdf{#br.md2pdf} 
+=====================
+
+Description
+-----------
+Make a markdown file into a PDF
+It assumes that you have installed the BloomR LaTeX addons
+
+Usage
+-----
+    br.md2pdf(md.file, pdf.file)
+
+Arguments
+---------
+md.file
+:   path to the markdown file to be converted.  
+
+pdf.file
+:   path to the PDF file to be generated.  
+
+Details
+-------
+The function will stop with an error if you have not installed BloomR LaTeX addons. To install them use `br.getLatexAddons()`.
+
+Value
+-----
+If there are no errors, it returns zero invisibly, otherwise it prints an error message and returns the related error code.
+
+
+
+
+
+br.sample{#br.sample}
+====================
+
+Description
+------------
+Return simulated historical data for n securities in xts or df format.
+
+Usage
+-----
+    br.sample(nrow=NULL,  price=TRUE,
+                   start=Sys.Date() - 7, end.date=Sys.Date(), 
+                   field="FIELD",
+                   use.xts=TRUE, 
+                   mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
+                   rand.dates=TRUE, weekend=TRUE, holidays=NULL)
+             
+
+
+Arguments
+---------
+nrow
+:   number of simulated data points for each security; if `same.dates=FALSE`, the number of rows for each sampled security will be a random number not exceeding nrow, else it will be nrow for all securities. Actual number of rows depends on the value of `rand.dates`, `weekend`, `holidays`. 
+
+price
+:   if TRUE (default), simulated values are non-negative.  
+
+start
+:   start date. Can be a Date object or an ISO string without separators (YYYYMMDD). Defaults to current date.  
+
+end.date
+:   end date. Same format as `start`. Defaults to current date.  
+
+field
+:   case insensitive string denoting the Bloomberg field queried. Defaults to "FIELD". 
+
+use.xts
+:   if TRUE (the default) time series are formatted as xts objects else as a data frame.  
+
+mean
+:   mean of security generated values. If `price=TRUE`, default to 10 else defaults to 0.1.  
+
+sd
+:   sd of security generated values. It defaults to 1.  
+
+jitter
+:   modifies each security mean by adding adding a random value in [-jitter, jitter]. Defaults to 0.  
+
+rand.dates
+:   if TRUE, all sampled securities will refer to the same dates and for each security the number will equal nrow. If FALSE (default), date values and number will randomly differ. For each security the random number will not exceed `nrow`.  
+
+weekend
+:   if TRUE (default), weekend dates are removed.
+
+holidays
+:   list of dates to be removed,
+
+
+Details 
+-------
+
+`br.sample()` assumes by default that data for some securities might not be available on certain days and time series might be misaligned (see "Missing observations and misalignment" in  `br.hist()`), therefore 
+the date values and count for each time series generated will randomly differ,  with `nrow` as the maximum number of days. If you want all time series to share tha same dates, set `rand.dates=FALSE`. In this case, time series produced are aligned and you don't see any merge NA, the acutal dates generated depends on the value of `weekend` and `holidays`. If there are no holidays falling in time windows queried and `weekend=FALSE` the number of generated dates equals `nrow`.
+
+
+Value
+-----
+If `use.xts=FALSE`, a data frame object, where the first column is the vector with all generated dates merged and each subsequent column contains the sampled data of a security. If `use.xts=TRUE`, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if `rand.dates=TRUE` generated data points might likely have different length 
+
+XXXX and the the date gaps will be filled with NAs, except if `no.na=TRUE`. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with `dimnames(*)[[2]]`. 
+
+
+
+
+Internal BloomR functions{#Internal}
+=====================================
+
+
+
+
+Usage
+-----
+
+
+Description:
+------------
+Internal functions not to be used by the end user
+
+Usage:
+------
+
+    .br.is.con(con)
+    .br.types
+    .br.check.type(type) 
+    .br.cuttype(type)
+    .br.jar()
+    .br.test.dates(start, end, holidays=NULL, asChar=FALSE)
+	
+    .br.raw(security, field="PX_LAST",
+        ## Start/End date can be a POSIXlt/ct, Date, ISO string, UK string with slashes or dashes.
+        start.date, end.date=Sys.Date(),
+        alldays=FALSE, optnams=NULL, optvals=NULL, ovrnams=NULL, ovrvals=NULL)
+
+    .br.choose.testdata(security, field="PX_LAST",
+        startDate, endDate,    # ISO string
+        alldays=FALSE, optnams=NULL, optvals=NULL, ovrnams=NULL, ovrvals=NULL)
+    .br.developer(mode=TRUE) 
+    .br.is.dev()
+	
+	.br.wpath(path) TODO XXX
+
+
+
+Arguments:
+----------
+con
+:   the connection token returned from br.open()  
+
+type
+:   a string representing the security type  
+
+mode
+:   TRUE if in developer mode   
+
+alldays
+:   equivalent to `!only.trading.days` in `br.hist`  
+
+optnams, optvals, ovrnams, ovrvals
+:   equivalent to `option.names`, `option.values`, `override.names`, `override.values` in `br.hist`  
+
+See `br.hist`, for other `.br.raw` arguemnts 
+
+Details
+-------
+`.br.is.con` checks for the validity of a connection token.
+`.br.types` is a character vector with security types suitable as an argument for BloomR multi-ticker  functions.
+`.br.check.type` checks if a type matches `.br.types`.
+`.br.cuttype` cuts trailing security type from character vector.
+`.br.jar()` returns the path to the blpapi*.jar
+`.br.session` object storing BloomR session information. 
+`.br.test.dates` tests the validity of given start, end date, possibly against a holiday vector.  
+
+`.br.developer` sets developer which modifies the behaviour of some functions for debugging. `.br.is.dev` tests if in developer mode
+
+`.br.raw` gets low level historical data. It might use stored local data in developer mode or call  `.br.raw_` for actual low level download. `.br.choose.testdata` chooses what test data to use, when in developer mode, based on arguments or `TNAMS` character vector if found in the global environment. 
+
+
+
+
+
+Manage connections{#connections}
+===============================
+
+Description
+------------
+Open, close and test the connection to the Bloomberg service.   
+
+
+Usage
+-----
+    br.open()
+    br.close(con)
+    br.simulate(is=TRUE)
+    br.is.sim()
+
+
+Arguments
+---------
+con
+:   the connection token returned from br.open()
+
+is
+:   if TRUE (default), simulate connection. 
+
+
+Details
+-------
+
+`br.open` returns the connection token needed by the BloomR function downloading data. When you finish you session, you pass it to `br.close`. If you have run `br.simulate(is=TRUE)`, data are simulated (and your connection token is `NULL`). ` br.is.sim()` tests if the connection is simulated.   
+If ` br.is.sim()`, closing the connection is optional. Anyway running `br.close(con)`, even if `con==NULL` avoids adding this line when you switch to a actual data download.
+
+
+Example
+-------
+
+
+```r
+con=br.open() # Open the connection and get the token and load some data
+br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
+br.close(con) # Use the token to release the connection
+```
+
+
+
+
+
+Misc functions{#misc.functions}
+==============================
+
+Description
+------------
+`rm.all` deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot).
+`rm.var` deletes non-function objects from memory.
+
+
+Usage
+-----
+	rm.all()
+	rm.var()
+	
+
+
+
+
+Beta functionalities{#beta.functions}
+=====================================
+
+Description
+------------
+Activate beta functionalities, if available for this release. 
+
+Usage
+-----
+    br.beta()
+
+
+
+
+Beta misc functions{#beta.misc.functions}
+=========================================
+
+Description
+------------
+
+Miscellaneous functions dealing with dates. 
+
+
+Usage
+-----
+    br.try.date(d)
+    br.is.same.class(...)
+
+
+Arguments
+---------
+d
+:   a POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d" vector
+
+Details
+-------
+
+`br.try.date` converts a vector to a date vector if possible or return `NULL`. Any vector element should be POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d"
+
+`br.is.same.class` check if all supplied argumets have the same class. It is mostly intended to check if dates are homogeneous. 
+
+
+
+
+Deprecated functions{#deprecated.functions}
+===========================================
+
+Description
+------------
+Functions (planned to be) deprecated.
+
+Usage
+-----
+    .br.sample.deprecated(nsec=NULL, no.na=NULL, df=NULL,
+                     sec.names=NULL, empty.sec=NULL, same.dates=NULL)
+
+ 
+Arguments
+---------
+See current non beta BloomR.
+
+
+
+
+
+Time extension functions{#time.functions}
+=========================================
+
+Description
+------------
+Functions to get, set dates.
+
+Usage
+-----
+    day(d)
+    month(d)
+    year(d)
+    day(d, n)
+    month(d, n)
+    year(d, n)
+    day(d)=x
+    month(d)=x
+    year(d)=x
+    d %+% n
+    d %-% n
+    last.day(d)
+    day.us(d1, d2)
+
+Arguments
+---------
+d, d1, d2
+:   objects of class date  
+
+x
+:   an integer representing the day/month/year  
+
+n
+:   an integer representing the months to add/subtract
+
+
+Details
+-------
+If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
+`%+%` and `%-%` add and subtract months to a date.  
+`last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
 
 
 
@@ -529,6 +1135,7 @@ If you prefer you may get time series as data frames, and precisely as a list re
 
 
 
+ 
 
 
 
@@ -536,48 +1143,10 @@ If you prefer you may get time series as data frames, and precisely as a list re
 
 
 
+    
+<!-- Local Variables: -->
+<!-- mode: rmd -->
+<!-- End: -->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<!--  LocalWords:  BloomR
+ -->

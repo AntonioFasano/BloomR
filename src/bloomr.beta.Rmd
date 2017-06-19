@@ -33,7 +33,9 @@ knit.twice=function(file){
     unlink(paste0(fse, '.tmp.Rmd'))
     file.rename(paste0(fse, '.tmp.R'), paste0(fse, '.R')) 
 }
+## For beta/RTM cycle see betaonly chunk and comment below as appropriate
 knit.twice("bloomr.beta.Rmd")
+#knit.twice("bloomr.Rmd")
 
 
 ## if with markdown lib, but topics needs rewrite
@@ -45,17 +47,9 @@ knit.twice("bloomr.beta.Rmd")
 
 
 ## TODO
-Complete help for functions br.try.date, br.is.same.class, br.bdh
 When in br.desc 'CIE_DES_BULK' is not availbale use NA done set it in log
-allow br.desc/br.bulk.desc to use simulated
-Find a better place for  br.beta(): here it does not make sense. In bloomr.Rmd prevents a replacement with the beta when it is ready for shipping. 
-Use safer way to get internal variables `get(".br.types", pos = "bloomr")`
+allow br.desc/br.bulk.desc to use simulated mode
 Fix XXXX paragraphs
-For final tests (when beta is release candidate), do not use source('bloomr.R')
-
-### Terminal tests  
-always.display.tickers, dates.as.row.names 
-only.trading.days
 
 
 ```{r setup, purl=FALSE, include=FALSE}
@@ -103,8 +97,14 @@ knit_hooks$set(purl = hook_purl)
 
 ```{r betaonly, purl=FALSE, eval=!step2,  include=FALSE}
 
+## For early beta, set RELEASECAND=F
+## For RC, set RELEASECAND=T
+## For shipping comment `RELEASECAND=T` and ren bloomr.beta.Rmd -> bloomr.Rmd, modify knit.twice accordingly
+
+RELEASECAND=FALSE
+
 ## Calling bloomr.R is necessary to run demos (in step 2) requiring functions not yet present here.
-if(grepl("^bloomr\\.beta\\.", current_input())){
+if(grepl("^bloomr\\.beta\\.", current_input()) && !RELEASECAND){
     source("bloomr.R") # <- if you knit twice,  assign('bloomr',...) here deletes bloomr env content
     detach(bloomr)     # "attach" chunk is run source() and here, I neutralise the first  
 }
@@ -455,7 +455,7 @@ Note:
 We can now download data:
 
 ```{r br.hist.csv.demo2, opts.label='demofull'}
-con=NULL  #Simulated mode: replace with con=br.open() on terminal
+br.simulate(is=TRUE) # Simulated mode: replace TRUE with FALSE on terminal
 ```
 
 ```{r br.hist.csv.demo3.show, opts.label='democode'}
@@ -890,9 +890,9 @@ br.hist=function(con,
     }
         
     ## Convert matrices to XTS's
-    if(use.xts){#nrow(LL[[3]])
+    if(use.xts){
         LL = lapply(LL, function(ts) {
-            if(nrow(ts)) setNames(xts(as.numeric(ts[,-1]), as.Date(ts[,1])), toupper(field)) else NA
+          if(!is.null(ts)) setNames(xts(as.numeric(ts[,-1]), as.Date(ts[,1])), toupper(field)) else NA
         })
     }
     
@@ -957,7 +957,11 @@ br.hist=function(con,
                   ovrnams=ovrnams, ovrvals=ovrvals)
 
     }
-    .br.convert.to.type(d$vals, d$types) 
+    x=.br.convert.to.type(d$vals, d$types)
+
+    ## This a design choice, as merge.xts() does not currently play well with zero-rows objects
+    ## If changed, fix br.hist() xts conversion and br.sample() NULL set and xts conversion 
+    if(nrow(x)==0) NULL else x
 }
 
 
@@ -1559,18 +1563,27 @@ br.close(con) # Use the token to release the connection
 
 ```{r connections, opts.label='brfuncs'}
 br.open=function() {
+
+    ## Simulation mode
     if(br.is.sim()) return(NULL)
 
-    assign(".br.session$tokenasked", TRUE, pos = "bloomr")
+    ## Developer mode
+    if(.br.is.dev()) {
+        out="devmode"
+        attr(out, 'jclass') = "org/findata/blpwrapper/Connection"
+        return(out)
+    }
+    
+    .br.session$set("tokenasked", TRUE)
     out=blpConnect(blpapi.jar.file=.br.jar())
-    assign(".br.session$tokensuccess", TRUE, pos = "bloomr")
+    .br.session$set("tokensuccess", TRUE)
     out
 }
 
 br.close=function(conn) {
     if(!is.null(conn)) blpDisconnect(conn)
-    assign(".br.session$tokenasked", FALSE, pos = "bloomr")
-    assign(".br.session$tokensuccess", FALSE, pos = "bloomr")
+    .br.session$set("tokenasked", FALSE)
+    .br.session$set("tokensuccess", FALSE)
 }
 
 br.simulate=function(is=TRUE) {

@@ -1,4 +1,8 @@
 
+# possible licence issues
+testdata.high.Rdata
+testdata.low.Rdata
+
 # git upload scripts
 git*.*
 

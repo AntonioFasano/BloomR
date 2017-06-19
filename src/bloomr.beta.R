@@ -252,8 +252,10 @@ store(br.idx)
 ## ----br.hist, opts.label='brfuncs'---------------------------------------
 br.hist=function(con,
                  
-                 #' character vector of the tickers queried for data
-                 tiks, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
+                 #' Character vector of the tickers queried for data
+                 tiks, field="PX_LAST",
+                 #' Start date can be a POSIXlt/ct, Date, ISO string, UK string with slashes or dashes
+                 start=Sys.Date()-7, end.date=Sys.Date(), #' same format of start
                                             
                  addtype=FALSE, showtype=FALSE,
 
@@ -266,26 +268,24 @@ br.hist=function(con,
                  
                  ## br.bdh args
                  option.names = NULL, option.values = NULL,
+                 override.names = NULL, override.values = NULL,                 
                  only.trading.days = TRUE,
 
                  ## Simulation args                      
                  price=TRUE,
                  mean=ifelse(price, 10, 0.1), sd=1, jitter=0,
                  same.dates=FALSE, empty.sec=0,
-                 weekend=TRUE, holidays=NULL )
+                 weekend=TRUE, holidays=NULL)
 {
 
 
-### Uncomment to debug
-    #assign(".br.session$usetest", TRUE, pos = "bloomr")
 
-    
-    assign(".br.session$staten", 0, pos = "bloomr")
+    .br.session$set("staten", 0)
     
     ## Check connection
-    usesample=is.null(con)
+    usesample=br.is.sim()
     if(!usesample && !.br.is.con(con)) stop('Invalid connection parameter') 
-#    if(get(".br.session", pos = "bloomr")$usetest) usesample=FALSE
+    if(.br.is.dev()) usesample=FALSE
     
     ## Check tickers (skip possible empty CSV cells)
     if(!is.character(tiks)) stop('Tickers should be in the form of a character vector')
@@ -305,11 +305,13 @@ br.hist=function(con,
     ## Check empty.sec is a ratio
     if(empty.sec<0 || empty.sec>1) stop("'empty.sec' must be between 0 and 1")
     
-    ## br.bdh() and sample() pars
-    bdhpars=list(
-        con=con, field=field, start.date=start, end.date=end.date, 
-        option.names=option.names, option.values=option.values,
-        only.trading.days=only.trading.days)
+    ## br.raw() and sample() pars
+    rawpars=list(
+        #con=con,
+        field=field, start.date=start, end.date=end.date, 
+        optnams=option.names, optvals=option.values,
+        ovrnams=override.names, ovrvals=override.values,
+        alldays=!only.trading.days)
     
     sampars=list(nrow=NULL, price=price, start=start, end.date=end.date, 
                  field=field,
@@ -327,8 +329,7 @@ br.hist=function(con,
     LL=lapply(tiks, function(tik){
         message('Loading ', tik)
         if(usesample) do.call("br.sample", sampars)
-          #else do.call("br.bdh", c(security=tik, bdhpars)) 
-          else do.call(".br.raw", c(security=tik, bdhpars)) 
+          else do.call(".br.raw", c(security=tik, rawpars))
     })
 
     ## Randomly identify empty.sec
@@ -341,7 +342,7 @@ br.hist=function(con,
     ## Convert matrices to XTS's
     if(use.xts){
         LL = lapply(LL, function(ts) {
-            if(!is.null(ts)) setNames(xts(as.numeric(ts[,-1]), as.Date(ts[,1])), toupper(field)) else NA
+          if(!is.null(ts)) setNames(xts(as.numeric(ts[,-1]), as.Date(ts[,1])), toupper(field)) else NA
         })
     }
     
@@ -365,50 +366,61 @@ br.hist=function(con,
 }
 
 
-.br.raw=function( # Get low level data historical data. For internal use
-                sec, field="PX_LAST",
-                start, end=Sys.Date(), # can be Date or ISO char class
-                alldays=FALSE, # shortcut for BBG nonTradingDayFillOption 
-                optnams=NULL, optvals=NULL,
-                ovrnams=NULL, ovrvals=NULL,
-                state # envir to keep state
-                ){
+.br.raw=function( # Get low level  historical data. For internal use
+                 security, field="PX_LAST",
+                 ## Start/End date can be a POSIXlt/ct, Date, ISO string, UK string with slashes or dashes.
+                 start.date, end.date=Sys.Date(),
+                 alldays=FALSE, # shortcut for BBG nonTradingDayFillOption 
+                 optnams=NULL, optvals=NULL,
+                 ovrnams=NULL, ovrvals=NULL
+                 ){
 
 
-.br.session$testsecs=c("msft_daily", "amzn_daily", "liq_daily")  # list of test secs to use
 
-    ## Use test data if state$num>0
-    if(get(".br.session", pos = "bloomr")$usetest) {
-        D=local({
-            load("testdata/testdata.low.Rdata")
-            D
-        })        
-        n=get(".br.session", pos = "bloomr")$staten+1
-        tsecs=get(".br.session", pos = "bloomr")$testsecs
-        if(is.null(tsecs)) tsecs=names(D)[1]
+    ## Test/set dates
+    dates=.br.test.dates(start.date, end.date, asChar=TRUE)
+    
+    ## In dev mode use stored test data 
+    if(.br.is.dev()) {
+        tsecs=.br.choose.testdata(security=security, field=field,
+                  startDate=dates$start, endDate=dates$end,  # ISO string
+                  alldays=alldays, # shortcut for BBG nonTradingDayFillOption 
+                  optnams=optnams, optvals=optvals,
+                  ovrnams=ovrnams, ovrvals=ovrvals)
+        
+
+        ## On each call take the next available test sec 
+        n=get(".br.session", pos = "bloomr")$staten+1 
         l=length(tsecs)
-        s = if(n <=l) tsecs[n] else tsecs[n - ((n -1) %/% l) * l]
-        assign(".br.session$staten", n, pos = "bloomr")
-        d=D[s]
+        pos = if(n <=l) n else n - ((n -1) %/% l) * l
+        .br.session$set("staten", n)
+        d=tsecs[[pos]]
 
     } else {
 
-        d=br.raw_(sec=sec, field=field,
-                start=start, end=end, 
-                alldays=alldays,
-                optnams=optnams, optvals=optvals,
-                ovrnams=ovrnams, ovrvals=ovrvals)
+
+
+        d=.br.raw_(security=security, field=field,
+                  startDate=dates$start, endDate=dates$end,  # ISO string
+                  alldays=alldays, # shortcut for BBG nonTradingDayFillOption 
+                  optnams=optnams, optvals=optvals,
+                  ovrnams=ovrnams, ovrvals=ovrvals)
+
     }
-    convert.to.type(d$vals, d$types) 
+    x=.br.convert.to.type(d$vals, d$types)
+
+    ## This a design choice, as merge.xts() does not currently play well with zero-rows objects
+    ## If changed, fix br.hist() xts conversion and br.sample() NULL set and xts conversion 
+    if(nrow(x)==0) NULL else x
 }
 
 
-.br.raw_=function( # br.raw work horse 
-                  sec, field="PX_LAST",
-                  start, end=Sys.Date(), # can be Date or ISO char class
-                  alldays=FALSE, # shortcut for BBG nonTradingDayFillOption 
-                  optnams=NULL, optvals=NULL,
-                  ovrnams=NULL, ovrvals=NULL){
+.br.raw_=function( # br.raw work horse
+                 security, field="PX_LAST",
+                 startDate, endDate,    # ISO string
+                 alldays=FALSE,         # shortcut for BBG nonTradingDayFillOption 
+                 optnams=NULL, optvals=NULL,
+                 ovrnams=NULL, ovrvals=NULL){
 
     if(is.null(ovrnams)) {
         za=.jarray(character(0), "java/lang/String")
@@ -419,11 +431,12 @@ br.hist=function(con,
         ovrvals=.jarray(ovrvals)
     }
 
-    start=ifelse(is.character(start), start, format(start, "%Y%m%d"))
-    end=ifelse(is.character(end), end, format(end, "%Y%m%d"))
-            
+    #start=ifelse(is.character(start), start, format(start, "%Y%m%d"))
+    #end=ifelse(is.character(end), end, format(end, "%Y%m%d"))
+
+    ## API allows to pass only start date    
     optnams=c(optnams, "startDate", "endDate")
-    optvals=c(optvals, start, end)
+    optvals=c(optvals, startDate, endDate)
 
     if(alldays) {
         optnams=c(optnams, "nonTradingDayFillOption", "nonTradingDayFillMethod")
@@ -433,12 +446,12 @@ br.hist=function(con,
     ref=.jnew("org/findata/blpwrapper/Connection") 
 
     r=.jcall(ref, "Lorg/findata/blpwrapper/DataResult;", "blh",
-                sec, .jarray(field),
-                ovrnams,          # override fields
-                ovrvals,          # override values
-                .jarray(optnams), # option names
-                .jarray(optvals)  # option values
-                )                
+             sec, .jarray(field), 
+             ovrnams,          # override fields
+             ovrvals,          # override values
+             .jarray(optnams), # option names
+             .jarray(optvals)  # option _values
+             )
     matrix.data  = r$getData()
     column.names = r$getColumnNames()
     data.types   = r$getDataTypes()
@@ -451,10 +464,11 @@ br.hist=function(con,
     colnames(matrix.data)= column.names
 
     list(symb=sec, vals=matrix.data, types=data.types)
-
+    
 }
 
-convert.to.type <- function( # Convert br.raw_ string data to proper format. Internal
+## from Rbbg:
+.br.convert.to.type <- function( # Convert br.raw_ string data to proper format. Internal 
                     df.data, data_types) {
   for (i in 1:(dim(df.data)[2])) {
     string_values = as.vector(df.data[,i])
@@ -476,11 +490,53 @@ convert.to.type <- function( # Convert br.raw_ string data to proper format. Int
   return(df.data)
 }
 
+.br.choose.testdata=function(  # Choose what test data to use for what args
+    security, field="PX_LAST",
+    startDate, endDate,    # ISO string
+    alldays=FALSE,         # shortcut for BBG nonTradingDayFillOption 
+    optnams=NULL, optvals=NULL,
+    ovrnams=NULL, ovrvals=NULL){
+
+### To get local available labels
+### local({load("testdata/testdata.low.Rdata"); names(D)})
+
+    
+    ## Standard call
+    tnams=c("msft_daily", "amzn_daily", "liq_daily")
+
+    ## All days set
+    if(alldays) 
+        tnams=c("msft_daily_all", "amzn_daily_all", "liq_daily_all")
+
+    ## Monthly freq
+    if(grepl("periodicitySelection", optnams) &&
+       optvals[grep("periodicitySelection", optnams)]=="MONTHLY")
+        tnams=c("msft_month", "amzn_month", "liq_month")
+
+
+    ## Set manually from global env
+    if(exists("TNAMS") && !is.null(TNAMS)) tnams=TNAMS
+
+    ## Get data and test labels exist
+    D=local({
+        load("testdata/testdata.low.Rdata")
+        D
+    })
+    if(!all(tnams %in% names(D)))
+        stop(sprintf("In:\n%s\nnot all of:\n%s\nare found.",
+                     paste(names(D), collapse=" "), paste(tnams, collapse=" ")))
+
+    D[tnams]
+
+    
+}
+
 
 store(br.hist)
 store(.br.raw)
 store(.br.raw_)
-store(convert.to.type)
+store(.br.convert.to.type)
+store(.br.choose.testdata)
 
 
 ## ----br.desc, opts.label='brfuncs'---------------------------------------
@@ -638,11 +694,63 @@ store(br.sample)
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 
-## Legal security types
-.br.session=NULL
+
+
+.br.test.dates=function( # Test if start, end, holidays dates and have coherent formats and values.
+                        ## Return list(start, end, holidays) converted to ISO if asChar=T.
+                        ## See br.try.date() for valid formats
+                        start, end, holidays=NULL, asChar=FALSE){
+
+    if(is.null(start <- br.try.date(start)))
+        stop(paste('Invalid date', start)) 
+
+    if(is.null(end <- br.try.date(end)))
+        stop(paste('Invalid date', end))
+
+    if(!is.null(holidays) &  is.null(holidays <- br.try.date(holidays)))
+        stop("Some dates are not recognised: ", paste(holidays, collapse=" "))
+
+    if(!br.is.same.class(c(list(start, end), holidays))){
+        message("Start date: ", paste(class(start), collapse=" "))
+        message("End date: ", paste(class(end), collapse=" "))
+        if(!is.null(holidays))
+            message("holidays: ", paste(class(holidays), collapse=" "))
+        stop("Not all date variable have the same class")        
+    }
+    
+    if(start>=end) stop("Start date should be set before end date!")
+
+    if(asChar){
+        start=format(start, format="%Y%m%d")
+        end=format(end, format="%Y%m%d")
+    }
+    list(start=start, end=end, holidays=holidays)    
+
+}
+
+
+## Session variable. To be modified by .br.session$set()
+.br.session=list()
 .br.session$simulated=FALSE 
+.br.session$usetest=FALSE 
 .br.session$tokenasked=FALSE 
-.br.session$tokensuccess=FALSE 
+.br.session$tokensuccess=FALSE
+.br.session$set=function(lab, val) assign(".br.session",
+                                          `[[<-`(.br.session, lab, val), pos = "bloomr")
+
+.br.developer=function(mode=TRUE) { # Set developer, modifying some function behaviour for debugging
+    .br.session$set("usetest", mode)
+    if(mode)
+        warning("You are in developer mode.\nUse\n .br.developer(mode=FALSE)\n to go back to normal use.")
+}
+
+.br.is.dev=function() { # Test if in developer mode
+    get(".br.session", pos = "bloomr")$usetest
+}
+
+
+## .br.raw, .br.raw_, .br.choose.testdata, 
+## are under br.hist chunk
 
 store(.br.is.con)
 store(".br.types")
@@ -650,31 +758,44 @@ store(.br.check.type)
 store(.br.cuttype)
 store(.br.jar)
 store(".br.session")
+store(.br.test.dates)
+store(.br.developer)
+store(.br.is.dev)
 
 
 ## ----connections, opts.label='brfuncs'-----------------------------------
 br.open=function() {
+
+    ## Simulation mode
     if(br.is.sim()) return(NULL)
 
-    assign(".br.session$tokenasked", TRUE, pos = "bloomr")
+    ## Developer mode
+    if(.br.is.dev()) {
+        out="devmode"
+        attr(out, 'jclass') = "org/findata/blpwrapper/Connection"
+        return(out)
+    }
+    
+    .br.session$set("tokenasked", TRUE)
     out=blpConnect(blpapi.jar.file=.br.jar())
-    assign(".br.session$tokensuccess", TRUE, pos = "bloomr")
+    .br.session$set("tokensuccess", TRUE)
     out
 }
 
 br.close=function(conn) {
     if(!is.null(conn)) blpDisconnect(conn)
-    assign(".br.session$tokenasked", FALSE, pos = "bloomr")
-    assign(".br.session$tokensuccess", FALSE, pos = "bloomr")
+    .br.session$set("tokenasked", FALSE)
+    .br.session$set("tokensuccess", FALSE)
 }
 
 br.simulate=function(is=TRUE) {
-    assign(".br.session$simulated", is, pos = "bloomr")    
+    .br.session$set("simulated", is)
 }
 
 br.is.sim=function() {
     get(".br.session", pos = "bloomr")$simulated
 }
+
 
 store(br.open)
 store(br.close)
@@ -738,37 +859,9 @@ br.is.same.class=function(...){ # Check if all argumets have the same class
 }
 
 
-.br.test.dates=function(start, end, holidays=NULL, asChar=FALSE){
-
-    if(is.null(start <- br.try.date(start)))
-        stop(paste('Invalid date', start)) 
-
-    if(is.null(end <- br.try.date(end)))
-        stop(paste('Invalid date', end))
-
-    if(!is.null(holidays) &  is.null(holidays <- br.try.date(holidays)))
-        stop("Some dates are not recognised: ", paste(holidays, collapse=" "))
-
-    if(!br.is.same.class(c(list(start, end), holidays))){
-        message("Start date: ", paste(class(start), collapse=" "))
-        message("End date: ", paste(class(end), collapse=" "))
-        if(!is.null(holidays))
-            message("holidays: ", paste(class(holidays), collapse=" "))
-        stop("Not all date variable have the same class")        
-    }
-    
-    if(start>=end) stop("Start date should be set before end date!")
-
-    if(asChar){
-        start=format(start, format="%Y%m%d")
-        end=format(end, format="%Y%m%d")
-    }
-    list(start=start, end=end, holidays=holidays)    
-
-}
-
 store(br.try.date)
-store(br.is.same.class) 
+store(br.is.same.class)
+
 
 
 ## ----deprecated, opts.label='brfuncs'------------------------------------
