@@ -388,6 +388,9 @@ bloomrTree=function(){
     existMake(G$branch, TRUE, FALSE, "BloomR root dir:")
     makeDir(app.pt(), "BloomR app dir:")
 
+    ## Id files
+    download.git("curver.txt",  app.pt("bloomr.txt")) 
+
     ## Copy R and make site direcory
     from=paste0(G$rzip , '.d/app')
     to=app.pt("R")
@@ -613,8 +616,8 @@ PROF=function(){ #Keep this on separate line
     
     source(paste0(R.home("share"), "/bloomr/bloomr.init.R"))
     
-    library("rJava")
-    library("Rbbg")
+    #library("rJava")
+    #library("Rbbg")
     
     
     ## end BloomR----------
