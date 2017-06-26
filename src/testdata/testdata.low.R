@@ -1,56 +1,4 @@
-
-br.raw_=function( # br.raw work horse
-                 security, field="PX_LAST",
-                 startDate, endDate,    # ISO string
-                 alldays=FALSE,         # shortcut for BBG nonTradingDayFillOption 
-                 optnams=NULL, optvals=NULL,
-                 ovrnams=NULL, ovrvals=NULL){
-
-    if(is.null(ovrnams)) {
-        za=.jarray(character(0), "java/lang/String")
-        ovrnams=za
-        ovrvals=za        
-    } else {
-        ovrnams=.jarray(ovrnams)
-        ovrvals=.jarray(ovrvals)
-    }
-
-    #start=ifelse(is.character(start), start, format(start, "%Y%m%d"))
-    #end=ifelse(is.character(end), end, format(end, "%Y%m%d"))
-            
-    optnams=c(optnams, "startDate", "endDate")
-    optvals=c(optvals, startDate, endDate)
-
-    if(alldays) {
-        optnams=c(optnams, "nonTradingDayFillOption", "nonTradingDayFillMethod")
-        optvals=c(optvals, "ALL_CALENDAR_DAYS", "NIL_VALUE")
-    }
-
-    ref=.jnew("org/findata/blpwrapper/Connection") 
-
-    r=.jcall(ref, "Lorg/findata/blpwrapper/DataResult;", "blh",
-             sec, .jarray(field), 
-             ovrnams,          # override fields
-             ovrvals,          # override values
-             .jarray(optnams), # option names
-             .jarray(optvals)  # option _values
-             )                
-    matrix.data  = r$getData()
-    column.names = r$getColumnNames()
-    data.types   = r$getDataTypes()
-
-    if (is.null(matrix.data)) {
-        matrix.data <- matrix(, nrow = 0, ncol = length(column.names))
-    } else {
-        matrix.data <- .jevalArray(matrix.data, simplify = TRUE)
-    }
-    colnames(matrix.data)= column.names
-
-    list(symb=sec, vals=matrix.data, types=data.types)
-    
-}
-
-
+br.beta()
 histdeb=function(sec, field="PX_LAST", start="20150101", end,
                  alldays=FALSE,
                  optnams=NULL, optvals=NULL,
@@ -59,7 +7,7 @@ histdeb=function(sec, field="PX_LAST", start="20150101", end,
     if(missing(sec)) sec=get("SEC", parent.frame())
     if(missing(end)) end=get("END", parent.frame())
     
-    dt=br.raw_(security=sec, field=field, startDate=start, endDate=end, alldays=alldays,   
+    dt=.br.raw_(security=sec, field=field, startDate=start, endDate=end, alldays=alldays,   
                 optnams=optnams, optvals=optvals, ovrnams=ovrnams, ovrvals=ovrvals)
 
     list(symb=dt$symb, vals=dt$vals, types=dt$types,

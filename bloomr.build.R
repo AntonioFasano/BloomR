@@ -538,6 +538,11 @@ initScripts=function(){
     download.git("src/bloomr.test.R", app.pt("R/site-library/bloomr.test.R"))
     download.git("src/xlx/xlx.R",     app.pt("R/share/bloomr/xlx.R"))
 
+    ## Testdata
+    to=app.pt("R/share/bloomr/testdata")
+    makeDir(to,"BloomR share directory:")  
+    download.git("src/testdata/testdata.high.R", app.pt("R/share/bloomr/testdata/testdata.high.R"))
+    download.git("src/testdata/testdata.low.R", app.pt("R/share/bloomr/testdata/testdata.low.R"))
     
     ## Make personal dir with some sample files
     makeDir(root.pt('mybloomr'), "personal directory:")

@@ -16,12 +16,13 @@ R topics documented:
 [Beta misc functions](#beta.misc.functions)   
 [Deprecated functions](#deprecated.functions)   
 [Time extension functions](#time.functions)   
-Simulated mode now returns NULL for empty sec, br.raw an zero rows DF, choose what is better and
-modify docs and code accordingly, that is br.sample, _br.raw, br.hist
-
 When in br.desc 'CIE_DES_BULK' is not availbale use NA done set it in log
 allow br.desc/br.bulk.desc to use simulated mode
 Fix XXXX paragraphs
+
+
+
+
 
 
 
@@ -331,21 +332,21 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2017-06-14  10.353  8.882        NA     NA      NA
-## 2017-06-15   9.847  8.946    10.914  8.466      NA
-## 2017-06-16  10.091 10.546        NA 11.344   9.867
+## 2017-06-21      NA     NA        NA     NA   9.856
+## 2017-06-22      NA 10.328        NA     NA  10.796
+## 2017-06-23      NA     NA    10.348     NA   9.192
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2017-06-14      NA   9.112 10.312  8.607      NA
-## 2017-06-15  10.796  10.476  9.419     NA      NA
-## 2017-06-16  11.201      NA 10.319  8.664      NA
+## 2017-06-21      NA  11.532     NA  8.804      NA
+## 2017-06-22  10.745      NA     NA     NA      NA
+## 2017-06-23      NA      NA  9.851     NA  10.392
 ## 
 ## $Indices
-##               DJI DJUSFN  W1TEC
-## 2017-06-14 10.967     NA 10.911
-## 2017-06-15  8.672     NA     NA
-## 2017-06-16 11.051 11.659  8.575
+##              DJI DJUSFN  W1TEC
+## 2017-06-21    NA  9.567 12.000
+## 2017-06-22    NA 11.391     NA
+## 2017-06-23 10.79     NA  8.729
 ```
 
 Note:
@@ -733,7 +734,10 @@ br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2017-06-13      NA   9.078
+## 2017-06-19      NA  10.108
+## 2017-06-20      NA  10.003
+## 2017-06-21   8.639  10.394
+## 2017-06-22   9.009  10.536
 ```
 
 ```r

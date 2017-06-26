@@ -1,8 +1,7 @@
 ## ----store, opts.label='brfuncs'-----------------------------------------
-## Purl this first
 ## Store br.* objects in bloomr env in base namespace
-if( ! grepl("^bloomr\\.beta\\.", current_input()))
-    assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
+#if( ! grepl("^bloomr\\.beta\\.", current_input()))
+#    assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
 
 ## func: store(func);  var: store("var")
 store=function(sym){
@@ -446,7 +445,7 @@ br.hist=function(con,
     ref=.jnew("org/findata/blpwrapper/Connection") 
 
     r=.jcall(ref, "Lorg/findata/blpwrapper/DataResult;", "blh",
-             sec, .jarray(field), 
+             security, .jarray(field), 
              ovrnams,          # override fields
              ovrvals,          # override values
              .jarray(optnams), # option names
@@ -463,7 +462,7 @@ br.hist=function(con,
     }
     colnames(matrix.data)= column.names
 
-    list(symb=sec, vals=matrix.data, types=data.types)
+    list(symb=security, vals=matrix.data, types=data.types)
     
 }
 
