@@ -48,10 +48,13 @@ ranges
 :   character vector with sheet names to read or NULL to not read use them.  
 
 skip
-:   the number of rows to skip for every sheets (and currently ranges).  If there are no headers, skip the first `skip` rows; if header are set TRUE, skipped rows depend on the value of `skipafter`  
+:   the number of rows to skip for every sheets (and currently ranges).  If there are no headers, skip the first `skip` rows; if header are set TRUE, skipped rows depend on the value of `skipafter`. It counts blank lines if `realskip==TRUE`  
 
 skipafter
 :   If TRUE skipped rows are counted after the (first used as) header row, else the rows are skipped above the headers, which will be the `skip+1`. Ignored without headers.  
+
+realskip
+:   If TRUE (default) `skip` counts blank lines, else only non-blank.  
 
 keepblanks
 :   If TRUE do not import rows or columns having only empty cells.  
@@ -159,7 +162,7 @@ A sample spreadsheet should come together with this manual, `survey.xlsx` which 
 The sample spreadsheet consists of an empty sheet and  two sheets `Survey1` and `Survey2` with  plain formatted  data  like the  following:
 
     
-![figure](res/tables.png) 
+![figure](tables.png) 
 
 
 

@@ -2,26 +2,20 @@
 ##  Manage name conflicts between sheets and ranges and perhaps among ranges
 ##  Set custom warnings when prevailing style cannot be applied, advertising column position
 
-## News
-## Convert sheet names in paths: new method based on workbook.xml.rels
-##                               XXX-comments to be removed
-## Reshape xml sheet values style ID table: tapply workaround, look for  XXX-comments and
-##       sheet.styles <- as.data.frame(tapply(x$s, list(x$rows, x$cols), identity)...
-##       Consider fixing vals too: sheet.vals <- as.data.frame(tapply(x$v, list(x$rows, x$cols), identity),
-## Newer newer based on rc2df() which replaces tapply. XXX-comments to be removed  
+## News to commit 
+## read.xlx: ~rc2df() sorts dimnames, +realskip arg skips blank lines
 
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
 
 ## Credit where credit's due:
-## Schaun Wheeler xlsxToR, while less feature rich, contains the relevant ideas
+## Schaun Wheeler xlsxToR gave the original insights. Reading MS docs allowed to build the real product.
 
 
 read.xlx= function(
     file, sheets=NULL, header.sheets=TRUE, header.ranges=FALSE, ranges=NULL, skip=0, skipafter=FALSE,
-    keepblanks=FALSE, general="numeric", morechar=FALSE, na.string="N.A.", time2str=FALSE,
+    realskip=TRUE, keepblanks=FALSE, general="numeric", morechar=FALSE, na.string="N.A.", time2str=FALSE,
     simplify=TRUE, info=FALSE) {
-
     
     ## Needed libs and stop on errors
     packs=c("XML", "parse xlsx files.",
@@ -150,7 +144,7 @@ read.xlx= function(
     ## ---------------
     
     ## Test logical arguments
-    x="header.sheets header.ranges skipafter keepblanks morechar simplify info"
+    x="header.sheets header.ranges realskip skipafter keepblanks morechar simplify info"
     x=strsplit(x, " ")[[1]]
     x=x[nzchar(x)]
     lapply(x, function(var){
@@ -202,7 +196,6 @@ read.xlx= function(
     actsheets= xmlToList(xmlParse(file.path(tdir, "xl/workbook.xml")))
     actsheets=data.frame(t(data.frame(actsheets$sheets)), stringsAsFactors = FALSE )
     rownames(actsheets) <- NULL
-    #actsheets$id=gsub("\\D", "", actsheets$id) #<-XXX To be removed: Used in old meth. to detect sheet paths
     wbsheets=actsheets$name
     
     ## Check sheet header length 
@@ -262,14 +255,6 @@ read.xlx= function(
     ## Extract sheet data
     ## -------------------
     
-    #XXXX Convert sheet names in paths (OLD method to be removed)
-    # x <- gsub("\\D", "", actsheets$id)
-    # worksheet_paths=sapply(x, function(x) list.files(
-    #     paste0(tdir, "/xl/worksheets"),
-    #     full.name = TRUE,
-    #     pattern = paste0("sheet", x, "\\.xml$")))
-
-    #XXXX NEW method based on workbook.xml.rels
     ## Convert sheet IDs in paths via _rels/workbook.xml.rels
     rels=xmlToList(xmlParse(file.path(tdir, "xl/_rels/workbook.xml.rels")))
     rels.id=sapply(rels, `[`, "Id")
@@ -416,7 +401,8 @@ read.xlx= function(
         rscaled=as.integer(as.factor(rowpos))
         cscaled=as.integer(as.factor(colpos))
         m=array(dim=c(max(rscaled), max(cscaled)))
-        dimnames(m) =list(unique(rowpos), unique(colpos))
+        #dimnames(m) =list(unique(rowpos), unique(colpos)) ## XXX old
+        dimnames(m) =list(sort(unique(rowpos)), sort(unique(colpos)))
         m[rscaled + nrow(m) * (cscaled-1)] =  vec
         as.data.frame(m, stringsAsFactors = FALSE)
     }
@@ -426,24 +412,7 @@ read.xlx= function(
 
         x=cellstack[cellstack$sheet == name,, drop=FALSE]
 
-        ## Reshape xml sheet values 
-        #sheet.vals <- as.data.frame(tapply(x$v, list(x$rows, x$cols), identity),
-        #                            stringsAsFactors = FALSE)
-
-        ###XXXXX even Newer Code 
         sheet.vals=rc2df(x$v, x$rows, x$cols)
-        
-        ## Reshape xml sheet values style ID table
-        ###XXXXX original code
-        # sheet.styles <- as.data.frame(tapply(x$s, list(x$rows, x$cols), identity),
-        #                               stringsAsFactors = FALSE)
-
-        ###XXXXX New Code 
-        # m=tapply(x$s, list(x$rows, x$cols), identity)
-        # m[!nzchar(m)]=NA
-        # sheet.styles <- as.data.frame(m, identity, stringsAsFactors = FALSE)
-        
-        ###XXXXX even Newer Code 
         sheet.styles=rc2df(x$s, x$rows, x$cols)
         
         list(vals=sheet.vals, styles=sheet.styles)
@@ -536,6 +505,7 @@ read.xlx= function(
         
         item=databook[[i]]
         if(skip>0){
+            if(realskip) skip=length(which(as.integer(rownames(item$vals))<=skip))
             x=ifelse((item$header && skipafter), 1, 0)
             item$vals  =  item$vals[-(1:skip + x),, drop=FALSE]
             item$styles=item$styles[-(1:skip + x),, drop=FALSE]

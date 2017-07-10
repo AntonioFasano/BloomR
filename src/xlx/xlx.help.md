@@ -48,10 +48,13 @@ ranges
 :   character vector with sheet names to read or NULL to not read use them.  
 
 skip
-:   the number of rows to skip for every sheets (and currently ranges).  If there are no headers, skip the first `skip` rows; if header are set TRUE, skipped rows depend on the value of `skipafter`  
+:   the number of rows to skip for every sheets (and currently ranges).  If there are no headers, skip the first `skip` rows; if header are set TRUE, skipped rows depend on the value of `skipafter`. It counts blank lines if `realskip==TRUE`  
 
 skipafter
 :   If TRUE skipped rows are counted after the (first used as) header row, else the rows are skipped above the headers, which will be the `skip+1`. Ignored without headers.  
+
+realskip
+:   If TRUE (default) `skip` counts blank lines, else only non-blank.  
 
 keepblanks
 :   If TRUE do not import rows or columns having only empty cells.  
@@ -113,7 +116,7 @@ A sample spreadsheet should come together with this manual, `survey.xlsx` which 
 The sample spreadsheet consists of an empty sheet and  two sheets `Survey1` and `Survey2` with  plain formatted  data  like the  following:
 
     
-![figure](res/tables.png) 
+![figure](tables.png) 
 
 
 
@@ -662,31 +665,31 @@ Excel Date Oddities
 
 __Automatic Date Parsing__
 
-Let us assume that the locale of your Excel is English UK.
+Let us assume that the locale of your Excel is English UK. Note that the locale is systemwide and it can be set (or identified) via the Windows Control Panel `Region and Language` dialog box, using the  Formats tab. Here you can also define custom date locales.
 
-In cell A1 you enter the string `20/10/2000`. This is a legitimate date, because in British English  day comes before month and, since Excel is set to UK locale, it will  recognise it as such. In fact, if you right-click on the cell and select `Format->Number` you will find that its category is "Date" and in the `Locale` drop-down "English (U.K.)" is selected. 
+Enter the string `20/10/2000`  in cell A1. This is a legitimate British date, because in British English  day comes before month and, since Excel is set to UK locale, it will recognise it as such. In fact, if you right-click on the cell and select `Format->Number` you will find that its category is "Date" and in the `Locale` drop-down "English (U.K.)" is selected. 
 
-Now let us write in cell A2 the string `10/20/2000`. Of course, this can't be parsed as a British date, since there is no month matching "20", while it would be OK in American English. It will be interpred therefore as a generic string.  In fact, in `Format->Number` you read that the category is "General". 
+Now write in cell A2 the string `10/20/2000`. Of course, this can't be parsed as a British date, since there is no month matching "20", while it would be OK in American English, because here day comes after month, therefore it will be interpreted therefore as a generic string. In fact, in `Format->Number` you now read that the category is "General". 
 
 
-You may be tempted to change the category to "Date" and select "English (U.S.)"  in the Locale drop-down, maybe you will also select a matching type in the Type list. Unfortunately, despite changing format, the cell keeps not being recognised as a proper date. In fact, if you type `=YEAR(A1)` in another cell, the formula correctly extracts the year part of the date and gives 2000, but writing `=YEAR(A2)` gives `#VALUE!`, which signals there is no date in cell A2. 
+You may be tempted to change the category of cell A2 to "Date" and select "English (U.S.)"  in the Locale drop-down and  maybe you will also select a matching type in the Type list. Unfortunately, despite changing format, the cell keeps not being recognised as a proper date. In fact, if you type `=YEAR(A1)` in another cell, the formula correctly extracts the year part of the date and gives 2000, but writing `=YEAR(A2)` gives `#VALUE!`, which signals that the string in cell A2 is not a date. 
 
-To understand things better, select again `Format->Number` for cell A1 and change Locale drop-down from the current  "English (U.K.)" to "English (U.S.)".  You will see that the value displayed in the cell A1 automatically changes from `20/10/2000` to `10/20/2000`, also the formula `=YEAR(A1)` keeps working and correctly displays 2000. 
+To get further insights on this issue, select again `Format->Number` for cell A1 and change the Locale drop-down from the current  "English (U.K.)" to "English (U.S.)".  You will see that the value displayed in the cell A1 automatically changes from `20/10/2000` to `10/20/2000`, also the formula `=YEAR(A1)` keeps working and correctly displays 2000. 
 
-Summing up: _a date should be entered always respecting the locale_, after entering a proper date you can change the way it is displayed by changing the locale. 
+Summing up: _a date should be entered respecting the locale_, after entering a proper date you can change the way it is displayed by changing the locale. 
 
 
 __Bugs and Limitations__
 
 
-You cannot enter dates before 1/1/1900.
+First of all you cannot enter dates before 01/01/1900.
 
-Leap years are not only those divisible by 4. This is wrong since years ending with "00" are leap only if divisible by 400. Instead, Excel considers the non-existing date `29/2/1900` as a proper date in Excel.
+Secondly, you might think that 
+leap years are those divisible by 4, but this is wrong since years ending with "00" are leap only if divisible by 400. This means that 1900 is not because it is not divisible by 400 (and ends in double 0).
+Unfortunately Excel considers the non-existing date "29/2/1900" as a proper date. 
 Some says this bug was added intentionally to keep compatibilty with Lotus 1-2-3. 
 
-
 Using VBA one can overcome some limitaitons.
-
 
 
 __Internal Storage Format__
@@ -694,7 +697,6 @@ __Internal Storage Format__
 Whatever the locales or the components displayed, internally there is only a type denoted as _serial date-time_.
 
 This is the number of days and possibly fraction of day since 31-th  December 1899, the date origin. Therefore the value 1 represents  January 1, 1900; the value 1.5 represents midday on January 1, 1900. 
-
 
 Due to the leap year bug said above, starting with the first of March, 1900 the serial numbers contain an extra day.
 
