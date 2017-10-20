@@ -61,6 +61,10 @@ G$rbbgurl="http://r.findata.org/bin/windows/contrib/"
 G$rbbgurl="http://r.findata.org/bin/windows64/contrib/"
 G$rbbgzip="rbbg"
 
+## Eikon
+G$eikonurl="https://github.com/ahmedmohamedali/eikonapir/archive/master.zip"
+G$eikonzip='eikon'
+
 ## Ahkscript
 ## G$ahkurl="http://ahkscript.org/download/ahk2exe.zip" # removed
 G$ahkurl="https://autohotkey.com/download/ahk.zip"
@@ -74,24 +78,29 @@ G$github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 G$github.local="" # Auto-set by makeBloomR() if gitsim=T, relative to workdir 
 
 ## Packages to download. Case sensitive
-x="rJava zoo xts RCurl XML knitr"
+pks="rJava zoo xts RCurl XML knitr"
 
 ## RCurl deps
-x=paste(x, "bitops")
+pks=paste(pks, "bitops")
 
 ## Knitr deps
-x=paste(x, "evaluate digest markdown yaml highr formatR stringr")
+pks=paste(pks, "evaluate digest markdown yaml highr formatR stringr")
 
 ## Stringr deps
-x=paste(x, "stringi magrittr")
+pks=paste(pks, "stringi magrittr")
 
 ## Markdown deps
-x=paste(x, " mime")
+pks=paste(pks, " mime")
 
 ## read.xlx deps
-x=paste(x, "plyr pbapply Rcpp")
-G$packlist=x
-rm(x)
+pks=paste(pks, "plyr pbapply Rcpp")
+
+## Eikon deps
+pks=paste(pks, "httr jsonlite curl openssl R6")
+
+## All packs deps
+G$packlist=pks
+rm(pks)
     
 ## Innoextract
 G$innourl="http://constexpr.org/innoextract/files"
@@ -271,6 +280,10 @@ downloads=function(tight){
     ## rbbg
     download.nice(rbbgurl.ver(), makePath("@packs", G$rbbgzip), overwrite,
                   "rbbg files")
+
+    ## Eikon
+    download.nice(G$eikonurl, G$eikonzip, overwrite,
+                  "Eikon files")
     
     ## ahkscript
     ## given a not found error there is a temp fix
@@ -343,6 +356,10 @@ expand=function(){
     uzip(G$apizip, paste0(G$apizip,'.d'), 
           "API binaries")
 
+    ## Eikon
+    uzip(G$eikonzip, paste0(G$eikonzip,'.d'), 
+          "Eikon binaries")
+    
     ## CRAN packages
     message('\nExpanding packages', '...')
     from="@packs"
@@ -412,6 +429,17 @@ bloomrTree=function(){
     to=app.pt(G$apizip)
     copy.dir(from, to, "Bloomberg API")
 
+    ## Install Eikon package
+    message("Install Eikon API")
+    exe=win.pt(app.pt('R/bin/R.exe'))
+    from= win.pt(paste0(G$eikonzip,'.d/eikonapir-master'))
+    to= win.pt(app.pt('R/library'))
+    to=paste0("--library=", to)
+    cmd=paste(exe, "--no-site-file --no-environ --no-save --no-restore --quiet CMD INSTALL",
+              from, to)
+    cmd=paste0('"', cmd, '"') # do not shQuote() as it will escape internal quotes
+    shell(cmd, shell=Sys.getenv("COMSPEC"))
+        
     ## Copy libs
     message("\nAdding R libraries")
     lib.from='lib.d'
@@ -930,7 +958,7 @@ download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
 
 
 makePath=function(parent, child){    
-### Chains parent-child paths managing '/' middle slashes 
+### Chain parent-child paths managing '/' middle slashes 
 ## You don't have to rememeber if you need to add or not that slash
 
     ## No trail for parent 
@@ -941,7 +969,7 @@ makePath=function(parent, child){
     child=sub('^/', '',  child)
     child=sub('^\\\\', '',  child)
 
-    ## Now the input is secure
+    ## Now file.path inputs is secure
     file.path(parent, child)
 
 }
@@ -979,15 +1007,12 @@ slisp.pt=function(dir=""){
 
 
 win.pt=function(path){
-### Quote Windows-ize and make relative to currpath
-### E.g. "rel path/to/sub dir" -> "\"abs path\\to\\/sub dir\""
-### This function is used to send path to the shell therefore output is relative to currpath
+### Given a Unix path relative to global workdir (G$work), quote, Windows-ize and prefix with wordir
+### If G$work=="./workdir", "foo/bar" -> "\".\\wordir\\foo\\bar\""
+### This function is used to send paths Windows shell (e.g. with shell)
     
-    #op <- options("useFancyQuotes")
-    op=options(useFancyQuotes = FALSE)
     path=work.pt(path)
-    path=dQuote(path)
-    options(op)
+    path=shQuote(path)
     chartr("/", "\\", path)
 }
 

@@ -39,6 +39,7 @@
   (global-set-key (kbd "C-w")  '(lambda ()
 				  "Kill current buffer."
 				  (interactive) (kill-buffer (current-buffer))))
+  (global-set-key (kbd "C-s") 'save-buffer)
 
   ;; Search keys
   (global-set-key (kbd "C-f") 'isearch-forward)

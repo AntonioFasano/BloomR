@@ -3,7 +3,7 @@
 ##  Set custom warnings when prevailing style cannot be applied, advertising column position
 
 ## News to commit 
-## read.xlx: ~rc2df() sorts dimnames, +realskip arg skips blank lines
+## read.xlx: ~rc2df() sorts dimnames, +realskip arg skips blank lines, fixed LibreOffice custom date formats (in capital letters)
 
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
@@ -364,12 +364,12 @@ read.xlx= function(
         f=sub("^\\[\\$.+\\]", "", f) #remove locales [$...]
         d=0
         ## Time? +1
-        if(grepl("h|(:m)|s", f)){
+        if(grepl("h|(:m)|s", f, ignore.case = TRUE)){
             d=d+1
             f=sub(":m+", "", f)
         }
         ## Date? +2
-        if(grepl("d|m|y", f)) d=d+2
+        if(grepl("d|m|y", f, ignore.case = TRUE)) d=d+2
         
         ## Map to known built-in numFmtId's
         switch(as.character(d),
