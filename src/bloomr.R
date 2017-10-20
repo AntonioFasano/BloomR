@@ -262,7 +262,7 @@ br.md2pdf=function(md.file, pdf.file){
     panexe=dbr.brmain("pandoc/bin/pandoc.exe")
     if(!file.exists(panexe))
         stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
-    latbin=dbr.brmain("latex/miktex/bin")
+    latbin=dbr.brmain("/latex/texmfs/install/miktex/bin/latex.exe")
     if(!file.exists(latbin))
         stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
 
