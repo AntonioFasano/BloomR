@@ -2,16 +2,13 @@
 
 ##  TODO
 ##  Compile BRemacs packages (BM) on first run
-##  Add  rClr, rEikon, RDatastream  in site-library?
 ##  NSIS does not delete an existing dir, but silently overwrites it
-##  Test BRemecs with rmd, rnw etc.
 ##  Fix getURL("https://www.google.com", cainfo="cacert.pem"), using http://curl.haxx.se/ca/cacert.pem which
 ##    causes:
 ##    Fix download error in: download.nice(G$apiurl, G$apizip, ..., cert=F), if cert is T
 ##    Fix download error in: download.nice(G$ahkurl, G$ahkzip ...)
 ##
 ##
-##  Create a java bin to test java directory variables
 ##  Finish help in src\bloomr.beta.Rmd
 ##
 ##  Usage:
@@ -149,7 +146,7 @@ makeBloomR=function( # Build BloomR
                     zip=FALSE,    # if TRUE zip the BloomR output dir
                     ask=TRUE,     # asks if to overwrite existent workdir and BloomR installer
                     what='all',   # core/bremacs/all; build BloomR core, BRemacs or all of them 
-                                  # if deb!=1:6, despite all only executes first branch (core)
+                                  # 'all' requires deb==1:6. Else only core is built
                     ## For debug/test:
                     deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug.
                     gitsim=FALSE  # local path (abs. or relative)to simulate github downloads.  
@@ -177,6 +174,9 @@ makeBloomR=function( # Build BloomR
     ## Parse Arguments
     G$bremacs=FALSE
     if(what=="bremacs") G$bremacs=TRUE
+    G$branch=ifelse(G$bremacs, "brEmacs", "brCore")
+    
+    ## Parse residual arguments
     G$ndown=ndown
     
     ## Step 1
@@ -397,9 +397,6 @@ expand=function(){
 
 bloomrTree=function(){
 ### Make BloomR directory tree
-
-    G$branch="brCore"
-    if(G$bremacs) G$branch="brEmacs"
     
     message("\nCreating BloomR tree")   
     existMake(G$branch, TRUE, FALSE, "BloomR root dir:")

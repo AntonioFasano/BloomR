@@ -3,7 +3,7 @@ My First Report
 
 Good morning, first of all I will set the default figure dimensions:
 
-```{r setup}
+```{r setup, echo=FALSE}
 # set global chunk options: images will be 7x5 inches
 opts_chunk$set(fig.width=7, fig.height=5)
 ```
@@ -32,4 +32,18 @@ with(mtcars, {
   plot(mpg~hp, pch=20, col='darkgray', main="My First Plot")
   lines(lowess(hp, mpg))
 })
+```
+
+```{r compile, echo=FALSE, eval=FALSE}
+
+## setwd() or alt-enter 
+library(knitr)
+library(markdown)
+knit("my-first-report.Rmd")
+markdownToHTML("my-first-report.md", "my-first-report.html")
+br.md2pdf("my-first-report.md", "my-first-report.pdf")
+
+## Note the eval=FALSE above
+## This is for internal commands that should not appear in PDF/HTML report
+
 ```

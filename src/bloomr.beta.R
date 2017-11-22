@@ -569,25 +569,29 @@ br.desc=function(con, tik)
 store(br.desc)
 
 ## ----br.md2pdf, opts.label='brfuncs'-------------------------------------
-
 br.md2pdf=function(md.file, pdf.file){
 ### Make a markdown file into a PDF
-## It assumes that you have installed the BloomR LaTeX addons
+    ## It assumes that you have installed the BloomR LaTeX addons
+
+    ## Test arguments
+    if(missing(md.file)) stop("Argument 'md.file' missing.")
+    if(missing(pdf.file)) stop("Argument 'pdf.file' missing.")
 
     ## Set pandoc and LaTeX exe and dir 
     panexe=dbr.brmain("pandoc/bin/pandoc.exe")
     if(!file.exists(panexe))
         stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
-    latbin=dbr.brmain("latex/miktex/bin")
+    latbin=dbr.brmain("/latex/texmfs/install/miktex/bin/latex.exe")
     if(!file.exists(latbin))
         stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
+    latbin=dbr.brmain("/latex/texmfs/install/miktex/bin")
 
     ## Shell escape
     panexe=.br.wpath(panexe)
 
     ## Set system Path to LaTeX bin
     old.path=Sys.getenv('Path')
-    x=paste0(Sys.getenv("Path"), ';', gsub('/', '\\\\',  latbin))
+    x=paste0(gsub('/', '\\\\',  latbin), ';',  Sys.getenv("Path"))
     Sys.setenv(Path=x)
 
     cmd=paste(panexe, .br.wpath(md.file), '-o', .br.wpath(pdf.file))

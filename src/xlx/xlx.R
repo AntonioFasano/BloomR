@@ -3,8 +3,7 @@
 ##  Set custom warnings when prevailing style cannot be applied, advertising column position
 
 ## News to commit 
-## read.xlx: ~rc2df() sorts dimnames, +realskip arg skips blank lines, fixed LibreOffice custom date formats (in capital letters)
-
+##
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
 

@@ -260,6 +260,17 @@ data=br.hist.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```
+## 
+## Attaching package: 'zoo'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+```
+
+```
 ## Loading 3988 HK Equity
 ```
 
@@ -331,22 +342,22 @@ data
 
 ```
 ## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2017-06-21      NA     NA        NA     NA   9.856
-## 2017-06-22      NA 10.328        NA     NA  10.796
-## 2017-06-23      NA     NA    10.348     NA   9.192
+##            3988 HK C US 601288 CH BAC US HSBA LN
+## 2017-11-17      NA   NA        NA  9.202      NA
+## 2017-11-20      NA   NA        NA 10.582  10.379
+## 2017-11-21      NA   NA        NA  9.566  11.474
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2017-06-21      NA  11.532     NA  8.804      NA
-## 2017-06-22  10.745      NA     NA     NA      NA
-## 2017-06-23      NA      NA  9.851     NA  10.392
+## 2017-11-17  10.551   9.317  9.572     NA   9.941
+## 2017-11-20  11.523  12.777  8.863     NA   9.710
+## 2017-11-21      NA  12.341 10.060     NA   8.206
 ## 
 ## $Indices
-##              DJI DJUSFN  W1TEC
-## 2017-06-21    NA  9.567 12.000
-## 2017-06-22    NA 11.391     NA
-## 2017-06-23 10.79     NA  8.729
+##              DJI DJUSFN W1TEC
+## 2017-11-17    NA 10.611    NA
+## 2017-11-20    NA 10.508    NA
+## 2017-11-21 9.174 10.456 8.935
 ```
 
 Note:
@@ -734,10 +745,11 @@ br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2017-06-19      NA  10.108
-## 2017-06-20      NA  10.003
-## 2017-06-21   8.639  10.394
-## 2017-06-22   9.009  10.536
+## 2017-11-15      NA  10.053
+## 2017-11-16      NA   9.764
+## 2017-11-17      NA   9.614
+## 2017-11-20      NA   8.796
+## 2017-11-21  10.261      NA
 ```
 
 ```r
