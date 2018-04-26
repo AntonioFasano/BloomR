@@ -15,14 +15,14 @@ source(paste0(R.home("share"), "/bloomr/xlx.R"), local=bloomr.addons)
 attach(bloomr.addons)
 
 ## Load libs
-library(rJava)
-library(Rbbg)
+library(Rblpapi)
+library(eikonapir)
 library(stats)
 library(zoo, warn.conflicts=FALSE)
 library(xts)
 
 ## Several tests
-.br.testBR()
+#.br.testBR()
 
 ## Set default repository (to install packaes)
 local({r <- getOption("repos")

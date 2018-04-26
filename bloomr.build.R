@@ -1,33 +1,26 @@
 ###  BloomR source
 
 ##  TODO
+##  New tests and test data and help docs for Rblpapi
 ##  Compile BRemacs packages (BM) on first run
 ##  NSIS does not delete an existing dir, but silently overwrites it
-##  Fix getURL("https://www.google.com", cainfo="cacert.pem"), using http://curl.haxx.se/ca/cacert.pem which
-##    causes:
-##    Fix download error in: download.nice(G$apiurl, G$apizip, ..., cert=F), if cert is T
-##    Fix download error in: download.nice(G$ahkurl, G$ahkzip ...)
-##
-##
 ##  Finish help in src\bloomr.beta.Rmd
+##
 ##
 ##  Usage:
 ##  Source this file and run:
 ##  makeBloomR("path/to/workDir")
-##  You will get the BloomR green executable in workDir
+##  You will get the BloomR green installer in workDir
 ##
 ##  Requirements:
-##  XML and Rcurl packages. If missing it will try to download and install them.
+##  XML and curl packages. If missing, I try to download and install them.
 ##  R should be able to connect to the Internet.
 ##  .Platform$OS.type == "windows"
 ##
 ##  Credits:
-##  R-Portable*.exe from sourceforge.net/projects/rportable
 ##  blpapi_java*.tar from http://www.openbloomberg.com/open-api/
-##  Rbbg_*.zip from http://r.findata.org/bin/windows/contrib/
 ##  peazip from http://sourceforge.net/projects/peazip
 ##  ahkscript from http://ahkscript.org
-##  Alex Kasko java from https://bitbucket.org/alexkasko/openjdk-unofficial-builds
 ##  Nsis from nsis.sourceforge.net
 ##  innoextract from http://constexpr.org/innoextract
 ##  Icon set Simplicio CC 3.0 by Neurovit: http://neurovit.deviantart.com
@@ -39,24 +32,10 @@
 G=new.env()
 
 ### Contribs
-## Java alexkasko
-G$javaurl="https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/"
-G$javaurl.dom="https://bitbucket.org"
-## win32
-G$javaurl.bit="windows-i586-image.zip"
-## win64
-G$javaurl.bit="windows-amd64-image.zip"
-G$javazip='openjdk'
-
-## Bloomberg API for icedtea 
+## Bloomberg API for icedtea (not used)
 G$apiurl="https://bloomberg.bintray.com/BLPAPI-Stable-Generic/blpapi_java_3.8.8.2.zip"
 G$apizip="blpapi"
 
-## Rbbg win32         
-G$rbbgurl="http://r.findata.org/bin/windows/contrib/"
-## Rbbg win64
-G$rbbgurl="http://r.findata.org/bin/windows64/contrib/"
-G$rbbgzip="rbbg"
 
 ## Eikon
 G$eikonurl="https://github.com/ahmedmohamedali/eikonapir/archive/master.zip"
@@ -67,15 +46,18 @@ G$eikonzip='eikon'
 G$ahkurl="https://autohotkey.com/download/ahk.zip"
 G$ahkzip="ahk"
 
-## Web certificates
-G$certurl='http://curl.haxx.se/ca/cacert.pem'
+## Web certificates (not used)
+## G$certurl='http://curl.haxx.se/ca/cacert.pem'
 
 ## Github
 G$github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 G$github.local="" # Auto-set by makeBloomR() if gitsim=T, relative to workdir 
 
 ## Packages to download. Case sensitive
-pks="rJava zoo xts RCurl XML knitr"
+pks="Rblpapi zoo xts RCurl XML knitr"
+
+## Rblpapi deps
+pks=paste(pks, "Rcpp") 
 
 ## RCurl deps
 pks=paste(pks, "bitops")
@@ -168,7 +150,7 @@ makeBloomR=function( # Build BloomR
         stop("Sorry, Bloomberg Terminal only exists for Windows and so BloomR.")
     
     ## Check for required package
-    if(!loadLib("RCurl")) return(1)
+    if(!loadLib("curl")) return(1)
     if(!loadLib("XML")) return(1)
 
     ## Parse Arguments
@@ -178,7 +160,7 @@ makeBloomR=function( # Build BloomR
     
     ## Parse residual arguments
     G$ndown=ndown
-    
+
     ## Step 1
     if(1 %in% deb) existMake('', overwrite=!tight, ask, paste("working dir:\n", G$work))
     
@@ -227,15 +209,7 @@ downloads=function(tight){
 
     overwrite=!tight
         
-    ## Get certificates from curl site 
-    # download.nice(G$certurl, cert(), overwrite,
-    #              "Curl Certificates", cert=FALSE)
-    if(is.path.abs_(makePath(G$work, cert())) && !overwrite){
-        warn.path(makePath(G$work, cert()), "already exists.")
-    } else download.file(G$certurl, makePath(G$work, cert()))
-
-
-    ## peazip
+    ## PeaZip
     cback=function(){
         url=sfFirstbyProject(G$pzip, '[[:digit:]]') #get release dir 
         url=sfFirstbyUrl(url, "portable[^\"]*?windows")
@@ -262,37 +236,27 @@ downloads=function(tight){
     download.nice(cback, G$nsiszip, overwrite,
                   "NSIS")
     
-    ## Openjdk
-    download.nice(javaurl.ver, G$javazip, overwrite,
-                  "Java files")
 
-    ## Bloomberg API
-    download.nice(G$apiurl, G$apizip, overwrite,
-                  "Bloomberg API", cert=FALSE)
-        
     ## CRAN packages
     existMake("@packs", overwrite=!tight, ask=FALSE, "packages dir:") # @ to distinguish from unzipped dir   
     packs= strsplit(gsub('(^ +)|( +$)', '', G$packlist), split=' +')[[1]]    
-    for(pack in packs) # Loop over packs and download them 
+    for(pack in unique(packs)) # Loop over packs and download them 
         download.nice(cran.geturl(pack), makePath("@packs", pack), overwrite,
                   pack)
     
-    ## rbbg
-    download.nice(rbbgurl.ver(), makePath("@packs", G$rbbgzip), overwrite,
-                  "rbbg files")
-
+    ## Bloomberg API (not used)
+    download.nice(G$apiurl, G$apizip, overwrite,
+                  "Bloomberg API")
+        
+    
     ## Eikon
     download.nice(G$eikonurl, G$eikonzip, overwrite,
                   "Eikon files")
     
     ## ahkscript
-    ## given a not found error there is a temp fix
-    ## download.nice(G$ahkurl, G$ahkzip, overwrite,
-    ##               "ahkscript")
-    if(is.path.abs_(makePath(G$work, G$ahkzip)) && !overwrite){
-        warn.path(makePath(G$work, G$ahkzip), "already exists.")
-    } else download.file(G$ahkurl, makePath(G$work, G$ahkzip))
-
+    download.nice(G$ahkurl, G$ahkzip, overwrite,
+                   "ahkscript")
+    
     ## BRemacs
     if(G$bremacs){
         cback=function(){
@@ -340,19 +304,11 @@ expand=function(){
     innoextract(G$rzip, paste0(G$rzip,'.d'),
                 "R files")
 
-    ## R portable files
-    ## uzip.7z(G$rport, paste0(G$rport,'.d'), 
-    ##       "R files")
-        
     ## NSIS files
     uzip.7z(G$nsiszip, paste0(G$nsiszip, '.d'), 
             "NSIS files")
-
-    ## openjdk 
-    uzip.7z(G$javazip, paste0(G$javazip, '.d'), 
-            "Java binaries")
     
-    ## Bloomberg API
+    ## Bloomberg API (not used)
     uzip(G$apizip, paste0(G$apizip,'.d'), 
           "API binaries")
 
@@ -410,16 +366,7 @@ bloomrTree=function(){
     to=app.pt("R")
     copy.dir(from, to, "main R files")
     makeDir(app.pt('R/site-library'), "BloomR library:")
-    ## del.path(app.pt("R/unins000.dat"))
-    ## del.path(app.pt("R/unins000.exe"))
     
-    ## Copy java
-    from=paste0(G$javazip,'.d'); x=work.pt(from)
-    from=makePath(from, dir(x))
-    to=app.pt(G$javazip)
-    copy.dir(from, to, "Java modules")
-    del.path(makePath(to, 'src.zip'))
-
     ## Copy Bloomberg API
     from=paste0(G$apizip,'.d'); x=work.pt(from)
     from=makePath(from, dir(x))
@@ -646,9 +593,6 @@ PROF=function(){ #Keep this on separate line
     
     source(paste0(R.home("share"), "/bloomr/bloomr.init.R"))
     
-    #library("rJava")
-    #library("Rbbg")
-    
     
     ## end BloomR----------
 }
@@ -705,7 +649,7 @@ sfFirstbyProject=function (project, filtx, quiet=FALSE){
     ref="https://sourceforge.net"    
     page=download.html(url)    
     url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
-        "//a[@class='name']",  xmlGetAttr, "href")
+                    "//a[span[@class='name']]",  xmlGetAttr, "href")
     url=grep(filtx, url, value=TRUE, ignore.case=TRUE)[1] 
     if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
     return (url)
@@ -718,7 +662,7 @@ sfFirstbyUrl=function (url, versionx, quiet=FALSE){
     if(substr(url,1,1)=='/') url=paste0(ref, url)#relative to absolute
     page=download.html(url)    
     url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
-        "//a[@class='name']",  xmlGetAttr, "href")
+        "//a[span[@class='name']]",  xmlGetAttr, "href")
     return (grep(versionx, url, value=TRUE, ignore.case=TRUE)[1])
 }
 
@@ -729,7 +673,7 @@ sfDirLink=function (url, quiet=FALSE){
     ref="http://sourceforge.net"
     page=download.html(url, refr=ref)    
     url=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE),
-        "//a[@class='direct-download']",  xmlGetAttr, "href")
+        "//a[@data-release-url]",  xmlGetAttr, "data-release-url")
     return (url)
 }
 
@@ -751,36 +695,11 @@ cran.geturl=function(pack){
 }
 
 
-## Get last versions    
-javaurl.ver=function(url){
-    url=G$javaurl
-    messagev("Parsing page:\n", url, ' ...')
-    if(!url.exists.cert(url, cert=TRUE))
-        stop("Unable to open java download page:\n", url)       
-    href=getURL(url, ssl.verifypeer=TRUE, cainfo=cert.abs_())   
-    href=xpathSApply(htmlTreeParse(href, useInternalNodes=TRUE),
-        "//a[@class='execute']", xmlGetAttr, "href")
-    href=grep(paste0(G$javaurl.bit, "$"), href, value=TRUE)[1]
-    paste0(G$javaurl.dom, href)
-}
-
-rbbgurl.ver=function(){
-    url=G$rbbgurl
-    messagev("Parsing page:\n", url, ' ...')
-    if(!url.exists.cert(url, cert=TRUE)) stop("Unable to open rbbg page:\n", url)
-    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
-    href=grep("^[[:digit:]]\\.[[:digit:]]", href, value=TRUE)
-    url=paste0(url, href[length(href)])
-    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
-    href=grep("\\.zip$", href, value=TRUE)
-    paste0(url, href)
-}
-
 innourl.ver=function(){
     url=G$innourl
     messagev("Parsing page:\n", url, ' ...')
-    if(!url.exists.cert(url, cert=FALSE)) stop("Unable to open ", url, " page:\n", url)
-    href=xpathSApply(htmlTreeParse(url, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
+    page=download.html(url)    
+    href=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
     href=rev(grep("innoextract-*", href, valu=TRUE))[1]
     href=gsub("/", "", href)
     paste0(url, "/",  href, "/", href, "-windows.zip")
@@ -789,8 +708,8 @@ innourl.ver=function(){
 rurl.ver=function(){
     url=G$rurl
     messagev("Parsing page:\n", url, ' ...')
-    if(!url.exists.cert(url, cert=FALSE)) stop("Unable to open ", url, " page:\n", url)
-    href=xpathSApply(htmlTreeParse(getURL(url), useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
+    page=download.html(url)    
+    href=xpathSApply(htmlTreeParse(page, useInternalNodes=TRUE), "//a", xmlGetAttr, "href")
     href=grep("R.+win\\.exe", href, value=TRUE)
     paste0(url, "/",  href)
 }
@@ -798,17 +717,8 @@ rurl.ver=function(){
 
 ###== Donwload helpers ==
 
-### Verify url exists using cert.abs_() certificate
-url.exists.cert=function(url, cert=TRUE){
-    ## cert=TRUE implies an exisiting pem cert.abs_()
-    
-    if(cert==FALSE) return(url.exists(url, ssl.verifypeer=FALSE))
-    if(!file.exists(cert.abs_())) stop('\nCan\'t find certificate\n', cert.abs_())
-    return(url.exists(url, ssl.verifypeer=TRUE))
 
-}
-
-download.nice=function(from, to, overwrite, desc="", cert=TRUE){
+download.nice=function(from, to, overwrite, desc=""){
 ### Download relative to workdir with nice user info and overwrite management
 
     if(desc=="") desc=sub('.+/', '', to)
@@ -826,42 +736,30 @@ download.nice=function(from, to, overwrite, desc="", cert=TRUE){
     ## Execute from callback 
     if(is.function(from)) from=from()
     message("from:\n", from)
-    cert= if(cert) cert.abs_() else NULL
 
     ## Download ndown times and exit deleting file on errors
     for(i in 1:G$ndown)
-        if(s<-download.bin(from, to, cert=cert)$succ) break
+        if(s <- !is.null(tryCatch(
+                     curl_download(from, to, quiet = FALSE),
+                     error = function(x) cat("\nCurl Error:", x$message, '\n')))) break
     if(!s){
         unlink(to, force = TRUE)
         stop('\nDownload error')
     }
-   
-    
-   # if(!download.bin(from, to, cert)$succ) {
-   #     unlink(to, force = TRUE)
-   #     stop('\nDownload error')
-   # }
-    
 }
 
-download.html=function(url, refr=NULL, cert=TRUE){
+
+download.html=function(url, refr=NULL){
 ### Download html page with simple progress and stop on error
-    
-    if(!url.exists.cert(url, cert)) stop('\nCan\'t find page\n', url)
-    cert= if(cert) cert.abs_() else NULL    
-    ret=getURL(url, referer=refr, noprogress=FALSE,
-               ssl.verifypeer=!is.null(cert), cainfo=cert,
-               progressfunction=function(down,up) cat("\rBytes:", down[2]))
-    cat("\n")
-    ret
-}
 
-cert=function() {# local web certificate relative to workdir
-    "cacert.pem"
-}
-
-cert.abs_=function() {# local web certificate relative to currpath
-    work.pt(cert())
+    h <- new_handle()
+    handle_setopt(h, referer = refr)
+    for(i in 1:G$ndown){
+        req <- curl_fetch_memory(url, handle=h)
+        if(is200 <- req$status_code == 200) break
+    }
+    if(!is200) stop('\nRequest for page\n', url, '\ngave error ', req$status_code)
+    rawToChar(req$content)        
 }
 
 
@@ -887,68 +785,6 @@ download.git=function(file, to, overwrite=TRUE, desc=""){
 
 }
 
-
-### Download binary file returning list(succ, headers) 
-download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
-    redirect=!is.null(curl)
-    if(is.null(curl)) curl = getCurlHandle()
-    f = CFILE(file, mode="wb")
-    headers =  basicHeaderGatherer()
-    width= getOption("width") - 25  # output width (dots + data)
-    dcur=0  # download status
-    ## Referer
-    opt=list(referer=NULL); opt$referer =refr
-
-    ## Callback function for curlPerform
-    dProgress=function(down, up, dcur, width){
-        total=as.numeric(down[1]) # Total size as passed from curlPerform
-        cur=as.numeric(down[2])   # Current size as passed from curlPerform
-        x=cur/total
-        px= round(100 * x)
-        if(total==0)  x=cur
-        ## if(!is.nan(x) &&  px>60) return(dcur) # Just to debug at 60%
-        if(!is.nan(x) && cur!=dcur){
-            sc=rev(which(total>= c(0, 1024^1, 1024^2, 1024^3)))[1]-1 # scale stats to total
-            if(x>1)  { #Download size unknown 
-                total<-px<-NA
-                x=0
-                sc=rev(which(cur>= c(0, 1024^1, 1024^2, 1024^3)))[1]-1 # scale to current
-            }
-            lb=c('B', 'KB', 'MB', 'GB')[sc+1]
-            wx= round(width * x) # line width as as percent download
-            cat(paste(c(         # Print |, dots if any, stats 
-                        "\r  |", rep.int(".", wx), rep.int(" ", width - wx),
-                        sprintf("| %g%s of %g%s %g%%",
-                                round(cur/1024^sc, 2), lb, round(total/1024^sc, 2), lb, px)),
-                      collapse = ""))
-            flush.console() # if the outptut is buffered, it will go immediately to the console
-            return(cur)
-        }
-        return(dcur)
-    }
-
-    ## Start download
-    succ=tryCatch(
-        curlPerform(url=url, .opts=opt, curl=curl, writedata=f@ref,
-                    ssl.verifypeer=!is.null(cert), cainfo=cert,
-                    progressfunction=function(down,up)
-                        dcur<<-dProgress(down, up, dcur, width),
-                    noprogress=FALSE, headerfunction = headers$update),
-        error = function(x) cat("Curl Error:", x$message, '\n'))
-    cat('\n')
-    if(redirect) cat (paste('Redirect to', url), '\n'); 
-    close(f)
-    if(is.null(succ)) headers=NULL else headers=headers$value()
-    if(!is.null(succ) && !(headers["status"] %in% c('200', '301', '302'))){
-        cat('Server Error\n')
-        print(headers)
-        succ=NULL
-    }
-    ## Follow location via recursion
-    loc=ifelse(is.null(headers), NA, headers["Location"])
-    if(!is.na(loc)) download.bin(url=loc, file, refr=refr, cert=cert, curl=curl) else
-    return(list(succ=!is.null(succ), headers=headers))
-}
 
 
 ###== File System ==
