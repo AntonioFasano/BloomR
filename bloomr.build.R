@@ -1297,8 +1297,7 @@ getImports <- function(pnames, available=NULL){
         options(repos=repOpt)       
         available <- available.packages()
     }
-    udeps <- unique(unlist(lapply(pnames, function(pname){
-        #browser()
+    udeps <- unique(unlist(lapply(pnames, function(pname){       
         deps <- NA
         if(pname %in% rownames(available)){
             deps <- available[pname,"Imports"]
