@@ -15,8 +15,9 @@ source(paste0(R.home("share"), "/bloomr/xlx.R"), local=bloomr.addons)
 attach(bloomr.addons)
 
 ## Load libs
-library(Rblpapi)
+local(x <- utils:::capture.output(library(Rblpapi), type = c("message")))
 library(eikonapir)
+set_app_id("6ffad79674dd44a2b343bd5dd7d3359aa4c7c6fe")
 library(stats)
 library(zoo, warn.conflicts=FALSE)
 library(xts)

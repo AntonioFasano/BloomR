@@ -1,10 +1,14 @@
 ###  BloomR source
 
 ##  TODO
-##  New tests and test data and help docs for Rblpapi
 ##  Compile BRemacs packages (BM) on first run
 ##  NSIS does not delete an existing dir, but silently overwrites it
-##  Finish help in src\bloomr.beta.Rmd
+##  Repurpose src\bloomr.beta.*
+##  Repurpose tests and test data 
+##  Change app path from main to programs?
+##  Add MikTeX to credit
+##  RCurl find and remove references everywhere 
+##  Set new polymode version
 ##
 ##
 ##  Usage:
@@ -36,7 +40,6 @@ G=new.env()
 G$apiurl="https://bloomberg.bintray.com/BLPAPI-Stable-Generic/blpapi_java_3.8.8.2.zip"
 G$apizip="blpapi"
 
-
 ## Eikon
 G$eikonurl="https://github.com/ahmedmohamedali/eikonapir/archive/master.zip"
 G$eikonzip='eikon'
@@ -46,36 +49,38 @@ G$eikonzip='eikon'
 G$ahkurl="https://autohotkey.com/download/ahk.zip"
 G$ahkzip="ahk"
 
-## Web certificates (not used)
-## G$certurl='http://curl.haxx.se/ca/cacert.pem'
-
 ## Github
 G$github="https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
 G$github.local="" # Auto-set by makeBloomR() if gitsim=T, relative to workdir 
 
 ## Packages to download. Case sensitive
-pks="Rblpapi zoo xts RCurl XML knitr"
+## To learn about deps use:
+## x=available.packages(); x["ggplot2","Imports"]; x["ggplot2","Depends"]
 
-## Rblpapi deps
-pks=paste(pks, "Rcpp") 
+pks="knitr Rblpapi xts XML httr rmarkdown RCurl" # RCurl to be removed
+pks=paste(pks, "plyr pbapply") # for read read.xlx
 
-## RCurl deps
-pks=paste(pks, "bitops")
-
-## Knitr deps
-pks=paste(pks, "evaluate digest markdown yaml highr formatR stringr")
-
-## Stringr deps
-pks=paste(pks, "stringi magrittr")
-
-## Markdown deps
-pks=paste(pks, " mime")
-
-## read.xlx deps
-pks=paste(pks, "plyr pbapply Rcpp")
-
-## Eikon deps
-pks=paste(pks, "httr jsonlite curl openssl R6")
+### now auto with getDeps.format
+### Rblpapi deps
+#pks=paste(pks, "Rcpp") 
+# 
+### RCurl deps
+#pks=paste(pks, "bitops")
+# 
+### Knitr deps
+#pks=paste(pks, "evaluate digest markdown yaml highr formatR stringr")
+# 
+### Stringr deps
+#pks=paste(pks, "stringi magrittr")
+# 
+### Markdown deps
+#pks=paste(pks, " mime")
+# 
+### read.xlx deps
+#pks=paste(pks, "plyr pbapply Rcpp")
+# 
+### Eikon deps
+#pks=paste(pks, "httr jsonlite curl openssl R6")
 
 ## All packs deps
 G$packlist=pks
@@ -98,7 +103,8 @@ G$emacs='emacsbinw64'
 G$emacs.type='Og' # e.g.: emacs-w64-25.1-Og.7z
 
 ## ESS, Polymode, Markdown, BM
-G$essurl='https://github.com/emacs-ess/ESS/archive/master.zip'
+G$essurl='https://github.com/emacs-ess/ESS/archive/master.zip' # seems to require a Julia lib dep
+G$essurl='http://ess.r-project.org/downloads/ess/ess-17.11.zip'
 G$esszip='ess'
 G$polyurl='https://github.com/vspinu/polymode/archive/master.zip'
 G$polyzip='polymode'
@@ -107,6 +113,12 @@ G$markzip='markmode'
 G$bmurl='https://github.com/joodland/bm/archive/master.zip'
 G$bmzip='bmmode'
 
+## LaTeX & Pandocfor Studio
+G$mikurl="http://mirrors.ctan.org/systems/windows/miktex/setup/windows-x86/miktex-portable.exe"
+G$mikinst="mikport.exe"
+G$panurl = "https://github.com/jgm/pandoc/releases"
+G$paninst = "pandoc.msi"
+
 ## Local paths
 G$work=""
 G$appname="main" # BloomR application folder name. Used by app.pt() 
@@ -114,6 +126,7 @@ G$branch=NULL #"brCore"
 
 ## Arguments
 G$bremacs=NULL
+G$studio=NULL
 G$ndown=0
 
 
@@ -125,13 +138,14 @@ makeBloomR=function( # Build BloomR
                     work,         # work dir path, absolute or relative to cur path
                     tight=FALSE,  # reuse downloaded material in workdir
                     ndown=2,      # num of download attempts
-                    zip=FALSE,    # if TRUE zip the BloomR output dir
-                    ask=TRUE,     # asks if to overwrite existent workdir and BloomR installer
-                    what='all',   # core/bremacs/all; build BloomR core, BRemacs or all of them 
+                    what='all',   # core/bremacs/studio/all; BloomR core, BRemacs, Studio, all 
                                   # 'all' requires deb==1:6. Else only core is built
                     ## For debug/test:
+                    bundle='exe', # exe/zip/all/none make the related installer for distribution
+                    ask=TRUE,     # asks if to overwrite existent workdir and installer
                     deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug.
-                    gitsim=FALSE  # local path (abs. or relative)to simulate github downloads.  
+                    gitsim=FALSE, # local path (abs. or relative)to simulate github downloads.
+                    sndpass=FALSE   # Used for Studio to denote second pass 
 ){
 
     ## Set work dir
@@ -154,10 +168,10 @@ makeBloomR=function( # Build BloomR
     if(!loadLib("XML")) return(1)
 
     ## Parse Arguments
-    G$bremacs=FALSE
-    if(what=="bremacs") G$bremacs=TRUE
-    G$branch=ifelse(G$bremacs, "brEmacs", "brCore")
-    
+    G$bremacs <- what=="bremacs" || what=="studio"
+    G$branch=ifelse(G$bremacs, "brEmacs", "brCore") # distro directory
+    G$studio <- (sndpass && what=="studio")
+
     ## Parse residual arguments
     G$ndown=ndown
 
@@ -177,15 +191,23 @@ makeBloomR=function( # Build BloomR
     if(5 %in% deb) initScripts()
 
     ## Step 6
-    if(6 %in% deb) {makeInst(ask); if(zip) makeZip(ask)}
+    if(6 %in% deb) makeBundle(bundle)
 
-    if(what=='all' && deb==1:6) 
+    ## Make additional builds
+    if(what=='all' && deb==1:6) {
         makeBloomR(work=work, tight=TRUE,  
-                   ndown=ndown, zip=zip, ask=ask,     
+                   ndown=ndown, bundle=bundle, ask=ask,     
                    what="bremacs",
                    deb=deb, gitsim=gitsim)
+    }
 
-    
+    ## To save space Studio recycles BRemacs folder
+    if((what=='all' || what=='studio') && !sndpass) {
+        makeBloomR(work=work, tight=TRUE,  
+                   ndown=ndown, bundle=bundle, ask=ask,     
+                   what="studio", sndpass=TRUE,
+                   deb=deb, gitsim=gitsim)
+    }     
 }
 
 ###== Main steps ==
@@ -238,8 +260,8 @@ downloads=function(tight){
     
 
     ## CRAN packages
-    existMake("@packs", overwrite=!tight, ask=FALSE, "packages dir:") # @ to distinguish from unzipped dir   
-    packs= strsplit(gsub('(^ +)|( +$)', '', G$packlist), split=' +')[[1]]    
+    existMake("@packs", overwrite=!tight, ask=FALSE, "packages dir:")# @ to distinguish from unzipped dir
+    packs=getDeps.format(G$packlist)    
     for(pack in unique(packs)) # Loop over packs and download them 
         download.nice(cran.geturl(pack), makePath("@packs", pack), overwrite,
                   pack)
@@ -272,8 +294,10 @@ downloads=function(tight){
                       "ESS files")
     
         ## Polymode
-        download.nice(G$polyurl, G$polyzip, overwrite,
-                      "Polymode files")
+        #download.nice(G$polyurl, G$polyzip, overwrite,
+        #              "Polymode files")
+        download.git("res/polymode-2017.zip", G$polyzip,
+                     "Polymode files")
 
         ## Markdown mode
         download.nice(G$markurl, G$markzip, overwrite,
@@ -283,14 +307,32 @@ downloads=function(tight){
         download.nice(G$bmurl, G$bmzip, overwrite,
                       "BM mode files")
 
-
     }
-    
+
+    ## BloomR Studio
+    if(G$studio) {
+        ## MikTeX
+        download.nice(G$mikurl, G$mikinst, overwrite, "MikTeX")
+        ## Pandoc
+        cback=function(){
+            req <- curl_fetch_memory(G$panurl, new_handle())
+            req <- rawToChar(req$content)        
+            lnks = xpathSApply(htmlTreeParse(req, useInternalNodes = TRUE), 
+                               "//a", xmlGetAttr, "href")
+            lrel =grep("pandoc-[.0-9]+-windows.msi$", lnks, ignore.case=TRUE, value=TRUE)[1] 
+            if (!nzchar(lrel)) 
+                stop("I can't find a parsable Pandoc download.") 
+            paste0("https://github.com", lrel)
+        }
+        download.nice(cback, G$paninst, overwrite, "Pandoc")
+    }
 }
 
 
 ### Expand components
 expand=function(){
+
+    if(G$studio) return()
     
     ## peazip
     uzip(G$pzip, paste0(G$pzip,'.d'), 
@@ -353,6 +395,12 @@ expand=function(){
 
 bloomrTree=function(){
 ### Make BloomR directory tree
+
+    if(G$studio) {
+        message("\nAdding Studio files to BRemacs BloomR tree")   
+        makeStudio()
+        return()
+    }
     
     message("\nCreating BloomR tree")   
     existMake(G$branch, TRUE, FALSE, "BloomR root dir:")
@@ -428,12 +476,14 @@ bremacsTree=function(){
     copy.dir(from, to, "main BRemacs files")
 
     ## Copy ESS
-    from=paste0(G$esszip, '.d/ESS-master')              
+    from=paste0(G$esszip, '.d')
+    from=globpath(from, '/ess*')
     to=slisp.pt(G$esszip)
     copy.dir(from, to, "ESS")
 
     ## Copy Polymode
-    from=paste0(G$polyzip, '.d/polymode-master')              
+    from=paste0(G$polyzip, '.d')
+    from=globpath(from, '/polymode*')
     to=slisp.pt(G$polyzip)
     copy.dir(from, to, "Polymode")
 
@@ -476,12 +526,121 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
 }
 
 
+makeStudio=function(){
+### Make add LaTeX distro to BRemacs directory tree
+### debug with
+### makeBloomR('./work', tight=TRUE, what="studio", deb=1:2, gitsim=".")
+    
+    makeStudio.getLatexAddons()
+    makeStudio.getPandoc()    
+}
+
+
+makeStudio.getLatexAddons=function(){
+
+    ### Download LaTeX distro, Pandoc and knitr required LaTeX packages
+    
+    ## Latex variables  
+    latdir=app.pt("latex")
+    latbin.pt=makePath(latdir, "/texmfs/install/miktex/bin/latex.exe")
+
+
+    ## Expand MikTeX 
+    message("Expand MikTeX")
+    out <- system(paste0(win.pt(G$mikinst), " -o", win.pt(latdir), " -y"),
+                  intern = TRUE, invisible = FALSE)
+    if(!file.exists(work.pt(latbin.pt)))
+        stop(paste("An error occurred while extracting\n", G$mikinst,
+                   "\nPlease, exit BloomR and try again."))
+
+    
+    ## Add extra packages
+    lpacks=c(
+        'fancyvrb',
+        'microtype',
+        'mptopdf',
+        'upquote',
+        'url',
+        'parskip'
+        )  
+    x=sapply(lpacks, getLatex.pack, getLatex.packList(inst=TRUE))
+
+}
+
+getLatex.pack=function(pname, ipacks=NULL){
+### Install a LaTeX Package, via  MiKTeX mpm --install
+## ipacks (optional) is the list of installed packages.
+## Used to speed-up if calling the function many times 
+    
+    mpm=app.pt("latex/texmfs/install/miktex/bin/mpm.exe")
+    if(!file.exists(work.pt(mpm))) stop(paste('Unable to find:\n', mpm))
+
+    if(is.null(ipacks)) ipacks=getLatex.packList(inst=TRUE)
+    if(pname %in% ipacks) {
+        message(shQuote(pname), ' already installed. Skipping.')
+        return()
+    }
+
+    message('Installing package ', shQuote(pname))
+    pack=paste0("--install=", pname)
+    out=system(paste(win.pt(mpm), pack), intern = TRUE, invisible = FALSE)
+    if(!getLatex.packCheck(pname)) stop("Unable to install LaTeX package ", shQuote(pname))
+
+}
+
+getLatex.packList=function(inst=FALSE){
+### Get list of all packages from MiKTeX mpm --list
+## If inst=TRUE, give vector of names of installed ones
+
+
+    mpm=app.pt("latex/texmfs/install/miktex/bin/mpm.exe")
+    if(!file.exists(work.pt(mpm))) stop(paste('Unable to find:\n', mpm))
+    out=system(paste(win.pt(mpm), '--list'), intern = TRUE, invisible = FALSE)
+    if(inst) {
+        x=grep('^i', out, value=TRUE)
+        sapply(strsplit(x, ' +'), `[`, 4)
+    } else out
+}
+
+getLatex.packCheck=function(pname) # Check if a package is installed via MiKTeX mpm --list
+    pname %in% getLatex.packList(inst=TRUE)    
+
+
+makeStudio.getPandoc=function(){
+### Download Pandoc  
+
+    ## Pandoc variables (msi wants abs path)
+    pandir = app.pt("pandoc")
+    panbin = work.pt(makePath(pandir, "/bin/pandoc.exe"))
+    pantmp=work.pt(makePath(pandir, "temp"))
+    pantmp.abs=shQuote(normalizePath(pantmp, mustWork=FALSE))
+    paninst.abs=shQuote(normalizePath(work.pt( G$paninst)))
+
+    
+    ## Create Pandoc dir
+    existMake(pandir, TRUE, FALSE, "Pandoc dir:")
+
+    ## Install Pandoc 
+    cmd = paste("msiexec /qb /a", paninst.abs)
+    cmd = paste0(cmd, " TARGETDIR=", pantmp.abs)
+    out <- system(cmd, intern = TRUE, invisible = FALSE)
+    file.rename(makePath(pantmp, "/pandoc"),
+                work.pt(makePath(pandir, "/bin")))
+    unlink(pantmp, recursive = TRUE, force = TRUE)
+        
+    if(!file.exists(panbin)) 
+        stop(paste("An error occurred while extracting\n", G$paninst, 
+            "\nPlease, exit BloomR and try again."))
+}
+
 
 
 ###== Boot functions ==
 
 ### Make etc/Rprofile.site from PROF()
 initScripts=function(){
+
+    if(G$studio) return()
 
     message("\nMaking etc/Rprofile.site and shared directory")
 
@@ -601,13 +760,25 @@ PROF=function(){ #Keep this on separate line
 
 ###== Utilities ==
 
-### Exe and Zip distro 
+### Exe and Zip distro
+makeBundle=function(bundle, # 'exe'/'zip'/'all'/'none'
+                    ask
+                    ){
+### Create create exe, zip, both, or nothing   
+### Every bundle value not 'exe'/'zip'/'all' means 'none'
+    
+    if(bundle=='all' || bundle=='exe') makeInst(ask)
+    if(bundle=='all' || bundle=='zip') makeZip(ask)    
+}
+
+
 makeInst=function(ask){
 
     message('\nCreating BloomR green installer')
     ## Set name (nsi name is "BRsetup.exe")
     to="BloomR_setup_.exe"
     if(G$bremacs) to="BloomR+BRemacs_setup_.exe"
+    if(G$studio) to="BloomR+Studio_setup_.exe"
     if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)
     download.git("bloomr.nsi", "bloomr.nsi")
@@ -628,6 +799,7 @@ makeZip=function(ask){
     message('\nCreating BloomR.zip')
     to="BloomR_setup_.zip"
     if(G$bremacs) to="BloomR+BRemacs_setup_.zip"
+    if(G$studio) to="BloomR+Studio_setup_.zip"
     if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)    
     from=paste0('./', G$branch, '/*')  # In 7z ./ removes dir prefix from archive files
@@ -815,8 +987,8 @@ work.pt=function(dir=""){
 }
 
 root.pt=function(dir=""){
-### Prefix dir path with BloomR root path relative to workdir.
-### Currently Bloomr root name is "bloomR"
+### Prefix dir path with BloomR distro root path relative to workdir.
+### Depends on distro under build: e.g. path/to/workdir/brCore
 
     makePath(G$branch, dir)
 }
@@ -825,6 +997,7 @@ root.pt=function(dir=""){
 app.pt=function(dir=""){
 ### Prefix dir path with BloomR apps' path relative to workdir.
 ### App dir name depends on G$appname, its parent is BloomR root dir
+### E.g. path/to/workdir/current-distro/G$appname
 
     x=root.pt(G$appname)
     makePath(x, dir)
@@ -985,10 +1158,18 @@ copy.dir_=function(from, to){ # copy.dir work horse
     file.rename(makePath(dirname(to), basename(from)), to)
 }
 
+globpath=function( # Add globbed child to parent relative to workdir
+                  parent,   # relative to workdir
+                  globchild # child with globbing    
+                  ){
+    wparent <- work.pt(parent)
+    base <- basename(Sys.glob(makePath(wparent, globchild)))
+    makePath(parent, base)    
+}
 
 existMake=function(dir, overwrite, ask, desc){
 ### If dir relative to workdir does not exist make it, otherwise might ask and skip creation 
-### An empty-dir is considered non-existent. Note: if dir="" it is the workdir 
+### An empty-dir is considered non-existent. Note: if dir="", it is the workdir 
 
     ## Inform user with desc if any
     if(nzchar(desc)) message("\nCreating ", desc, '\n',  dir)
@@ -1080,6 +1261,62 @@ getInnobin=function(){ # Get 7z.exe relative to workdir
 }
 
 
+getDeps <- function(pnames){
+### Get recursively a package depenecies/imports
+
+    myCRAN <- "http://cran.r-project.org"
+    
+    ## Set package repository, unless already set 
+    repOpt <- getOption("repos")
+    if(repOpt["CRAN"] == "@CRAN@")  repOpt["CRAN"] <- myCRAN
+    options(repos=repOpt)       
+
+    sort(unique(unlist(utils:::.make_dependency_list(pnames, available.packages(), recursive=TRUE))))
+
+}
+
+
+getDeps.format <- function(packstring){
+### Format space separated package string and get packs+deps vector
+    
+    pnames <- strsplit(gsub('(^ +)|( +$)', '', packstring), split=' +')[[1]]
+    unique(c(pnames, getDeps(pnames)))
+}
+
+getImports <- function(pnames, available=NULL){
+### Get recursively package imports
+### NOT USED. Replaced by getDeps
+
+    myCRAN <- "http://cran.r-project.org"
+    
+    ## Get available CRAN packages
+    if(is.null(available)) {
+        ## Set default repository (to install packaes)
+        repOpt <- getOption("repos")
+        if(repOpt["CRAN"] == "@CRAN@")  repOpt["CRAN"] <- myCRAN
+        options(repos=repOpt)       
+        available <- available.packages()
+    }
+    udeps <- unique(unlist(lapply(pnames, function(pname){
+        #browser()
+        deps <- NA
+        if(pname %in% rownames(available)){
+            deps <- available[pname,"Imports"]
+            deps <- gsub("\\(.+?\\)", "", deps)
+            deps <- gsub("\\n", "", deps)
+            deps <- gsub(" +", "", deps)
+            deps <- strsplit(deps, ",")[[1]]
+        }
+
+    #    print(pname) ; print(deps)
+        if(!any(is.na(deps))) deps <- c(deps, getImports(deps, available))
+     })))
+
+    ## Remove initial
+    setdiff(udeps, pnames)
+
+}
+
 
 ### == Messages ==
 
@@ -1137,5 +1374,4 @@ exit.p=function(path,  mess){
 mess.down=function(desc){
     messagev("\nDownloading", desc)
 }
-
 

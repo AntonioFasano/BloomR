@@ -1,26 +1,26 @@
 BloomR
 ======
 
-*Portable R for Bloomberg*
+*Portable R for Bloomberg and Thomson Reuters Eikon*
 
 
-BloomR is a portable R distribution reshaped in order to get, manipulate and run models against Bloomberg data.
+BloomR is a portable R distribution reshaped in order to get, manipulate and run models against Bloomberg or Thomson Reuters Eikon data.
 
 __Focus on  Data__
 
 <!-- Peace of mind  -->
 
-Connecting R and Bloomberg is difficult and time consuming. BloomR has no learning curve: extract its files on your USB flash disk, plug it into any Bloomberg terminal where you have access and you are done.  
-If you prefer to copy BloomR files on your Bloomberg terminal, that's fine too. 
+Connecting R and Bloomberg or Eikon is difficult and time consuming. BloomR has no learning curve: extract its files on your USB flash disk, plug it into any Bloomberg or Eikon terminal where you have access and you are done.  
+If you prefer to copy BloomR files on your Bloomberg or Eikon terminal, that's fine too. 
 
 __Work with Data__
 
 <!-- Work Straight with data  -->
 
-BloomR has a number of functions to easily get and manipulate Bloomberg data: for example, with a single line of code you can get the  historical data from all members of a given index in R _xts_ format.  
+BloomR has a number of functions to easily get and manipulate Bloomberg or Eikon data: for example, with a single line of code you can get the  historical data from all members of a given index in R _xts_ format.  
 To save you time, BloomR functions can work in bulk with many tickers together, possibly  grouped in categories that you define, representing your portfolios, sectors, etc.
 
-__Visualize and Communicate your Research__
+__Visualise and Communicate your Research__
 	
 BloomR can save the output of your models in spreadsheet format and can produce template based reports in HTML or PDF format. You may also want to export model plots as figures for your presentation.
 
@@ -34,7 +34,8 @@ In particular, you might want to minimise the risk of errors by using Excel name
 
 __Decoupling the Model Development and Production__
 
-You can run BloomR alone (without a Bloomberg terminal) in _simulated mode_. In this way you might design your models and tests with artificial data and, when you think you ready  for production, you plug it into a Bloomberg terminal and test your models with actual data.
+_Not available in this release_
+You can run BloomR alone (without a Bloomberg or Eikon terminal) in _simulated mode_. In this way you might design your models and tests with artificial data and, when you think you ready  for production, you plug it into a Bloomberg or Eikon terminal and test your models with actual data.
 
 
 __Reproducible Research__
@@ -48,31 +49,33 @@ In a business environment this also facilitates the process of keeping track and
 
 __No Extra Licensing Restrictions__
 
-BloomR itself is open source and it is based on the public API released by  Bloomberg ([Bloomberg Open API](http://www.openbloomberg.com/open-api/)). This means that the same  licensing terms of your Bloomberg Professional Service apply to data when you work with it.
+BloomR itself is open source and it is based on the public APIs released by  Bloomberg ([Bloomberg Open API](http://www.openbloomberg.com/open-api/)) and by [Thomson Reuters](https://developers.thomsonreuters.com/eikon-data-apis/). This means that the same  licensing terms of your Bloomberg Professional Service and Thomson Reuters Eikon service apply to data when you work with it.
 
 
+BloomR Versions
+-------------
+
+BloomR comes in two versions. 
+
+__BloomR Core__ is based on R standard GUI. It is light and convenient to run scripts on the data terminals. 
+
+__BloomR BRemacs__  features also a sophisticated editor (based on Emacs) for writing and executing scripts and interactive code. 
 
 
 
 What's new
 ----------
 
-### BloomR Turandot (1.3.*)
+### BloomR Casta Diva (1.4.*)
 
-Improvements over Début version:
+Improvements over Turandot version:
 
-- BloomR development is now open source on Github.com.
-- Only 64 bit (it means less space).
-- Updated to R-3.2.0 .
-- Green installer, to simplify extraction of BloomR files.
-- Generation of automatic HTML reports for web publishing or in PDF (PDF's require a separate large add-on to be downloaded separately)
-- New functions for bulk download using tickers from CSV files, from index constituents or from ticker vectors.
-- Simulated download allows to prepare scripts at home and test on Bloomberg terminal later.
-- Bulk and non-bulk download of many description fields.
-- More consistent naming scheme: `bbg.*` suffix is deprecated now, use `br.*`
-- A formal documentation (see bloomr.html or [bloomr.pdf](https://github.com/AntonioFasano/BloomR/blob/master/bloomr.pdf?raw=true))
-- Demo and examples.
-- BloomR can be downloaded as a binary or generated from an R script. So you can stay always updated with the latest version of R (and related packages).
+This release is a major update with significant changes.
+
+Now both Bloomberg and Thomson Reuters Eikon are supported.
+ 
+Bloomberg interface is now based on Rblpapi.   
+BloomR comes in two versions *BloomR Core* and *BloomR BRemacs*. The latter implements an editor based on Emacs.  
 
 
 __read.xlx__
@@ -101,18 +104,28 @@ For a self-paced introduction,  download _BloomR Classroom Companion_ from the [
 Start to get results in BloomR immediately 
 ----------------------------------------
 
+__Bloomberg__
+
 1. Download the latest [BloomR release](https://github.com/AntonioFasano/BloomR/releases/latest).
 2. Run the _green_ installer: it will only extract the BloomR files on your chosen directory (perhaps on your USB drive), without further touching your system. 
 3. Run "BloomR.exe" in the main folder.
 4. Log to Bloomberg service on the same PC (if you are not logged already).
 5. To get some data, type in the BloomR console:
 
-        con=br.open()                                            # Connect BloomR to Bloomberg
-        br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE) # Last 5 days for price of these tickers 
-        br.bulk.idx(con, "SX5E Index", field="PX_LAST")          # Last 5 days for price of these indices
-        br.close(con)                                            # Disconnect BloomR from Bloomberg
+			
+        con <- blpConnect()                                               # Connect BloomR to Bloomberg
+        bdh(c("MSFT US", "AMZN US"), "PX_LAST", start.date=Sys.Date()-5)  # Last 5 days for price of these tickers 
+        blpDisconnect(con)                                                # Disconnect BloomR from Bloomberg
 
 
+__Eikon__
+
+1. Execute step 1,2,3 above
+2. Log to Eikon service on the same PC (if you are not logged already).
+3. To get some data, type in the BloomR console:
+
+        # 2015 monthly prices for Microsoft 
+        get_timeseries("MSFT.O", c("TIMESTAMP", "CLOSE"), "2015-01-01T00:00:00", "2016-01-01T00:00:00", "monthly")
 
 Build instructions
 ------------------
@@ -206,12 +219,24 @@ After clicking on the link, you get the following:
 If you want to run the executable, click `Run anyway`. 
 
 
+Credits
+-------
 
+BloomR is build upon several great pieces of open source software:
 
+peazip from http://sourceforge.net/projects/peazip  
+autohotkey from http://ahkscript.org  
+Nsis from http://nsis.sourceforge.net  
+innoextract from http://constexpr.org/innoextract  
+Icon set Simplicio CC 3.0 by Neurovit: http://neurovit.deviantart.com  
+eikonapir from https://github.com/ahmedmohamedali/eikonapir  
+Rblpapi from https://cran.r-project.org/web/packages/Rblpapi/index.html  
     
 <!-- Local Variables: -->
 <!-- mode: markdown -->
 <!-- End: -->
 
-<!--  LocalWords:  BloomR Bloomberg CSV API
+<!--  LocalWords:  BloomR Bloomberg CSV API BRemacs Eikon xlsx APIs
+ -->
+<!--  LocalWords:  Casta Turandot
  -->

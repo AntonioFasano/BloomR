@@ -29,7 +29,7 @@ br.getLatexAddons=function(){
 ### Download LaTeX distro, Pandoc and knitr required LaTeX packages
 
     require(XML)
-    require(RCurl)
+    require(curl)
 
     ## Latex variables 
     laturl="http://miktex.org/portable"
@@ -38,7 +38,7 @@ br.getLatexAddons=function(){
     latinst=paste0(latdir, "/mikport.exe")
     latbin=paste0(latdir, "/texmfs/install/miktex/bin/latex.exe")
     ## Check connection
-    if(!is.character(getURL("www.google.com")))
+    if(!has_internet())
         stop("It seems you have no internet connection")
 
     ## Check space
@@ -53,18 +53,18 @@ br.getLatexAddons=function(){
     ##     "//a[@class='dllink']",  xmlGetAttr, "href")
     ## if(!nzchar(latlnk))  stop("I can't find a parsable LaTeX download")
 
-    latlnk="http://mirrors.ctan.org/systems/win32/miktex/setup/miktex-portable.exe"
+    latlnk="http://mirrors.ctan.org/systems/windows/miktex/setup/windows-x86/miktex-portable.exe"
     
     ## Create Latex dir
     if(file.exists(latdir))
         unlink(latdir, recursive = TRUE, force = TRUE)
     if(file.exists(latdir))
-        stop(paste("Unable to unlink\n", latdir, "\nPlease, exit BloomR and try again."))
+        stop(paste("Unable to remove existing\n", latdir, "\nPlease, exit BloomR and try again."))
     dir.create(latdir)
 
     ## Start download
     message("Downloading ", latlnk)
-    if(!download.bin(latlnk, latinst)$succ){
+    if(!download_bin(latlnk, latinst)){
         stop("An error occured while downloading LaTeX")
     } else {
         out  <-  system(paste(.br.wpath(latinst), "-y"), intern = TRUE, invisible = FALSE)   
@@ -80,8 +80,9 @@ br.getLatexAddons=function(){
         'microtype',
         'mptopdf',
         'upquote',
-        'url'
-        )
+        'url',
+        'parskip'
+        )  
     x=sapply(lpacks, .br.getLatex.pack, .br.getLatex.packList(inst=TRUE))
 
         
@@ -90,11 +91,12 @@ br.getLatexAddons=function(){
 
 }
 
+
 br.getPandoc=function(){
 ### Download Pandoc  
 
     require(XML)
-    require(RCurl)
+    require(curl)
 
     ## Pandoc variables 
     panurl = "https://github.com/jgm/pandoc/releases"
@@ -104,8 +106,7 @@ br.getPandoc=function(){
     panbin = paste0(pandir, "/bin/pandoc.exe")
 
     ## Check connection
-    if (!is.character(getURL("www.google.com"))) 
-        stop("It seems you have no internet connection")
+    if (!has_internet()) stop("It seems you have no internet connection")
 
     ## Check space
     xx = paste("cmd /c dir", shQuote(R.home()), "/-c")
@@ -116,8 +117,9 @@ br.getPandoc=function(){
 
 
     ## Get download link
-    x = getURL(panurl, ssl.verifypeer = FALSE)
-    lnks = xpathSApply(htmlTreeParse(x, useInternalNodes = TRUE), 
+    req <- curl_fetch_memory(panurl, new_handle())
+    req <- rawToChar(req$content)        
+    lnks = xpathSApply(htmlTreeParse(req, useInternalNodes = TRUE), 
         "//a", xmlGetAttr, "href")
     lrel =grep("pandoc-[.0-9]+-windows.msi$", lnks, ignore.case=TRUE, value=TRUE)[1] 
     if (!nzchar(lrel)) 
@@ -127,19 +129,19 @@ br.getPandoc=function(){
 
     ## "Forbidden" status message is expected for binaries from url.exists().
     ## A bad value would be " "Not Found"  
-    if(url.exists(panlnk, ssl.verifypeer = FALSE, .header=TRUE)['statusMessage'] !=  "Forbidden")
-        stop("Unable to download\n", panlnk) 
+    ##if(url.exists(panlnk, ssl.verifypeer = FALSE, .header=TRUE)['statusMessage'] !=  "Forbidden")
+    ##    stop("Unable to download\n", panlnk) 
 
     ## Create Pandoc dir
     if (file.exists(pandir)) 
         unlink(pandir, recursive = TRUE, force = TRUE)
     if (file.exists(pandir)) 
-        stop(paste("Unable to unlink\n", pandir, "\nPlease, exit BloomR and try again."))
+        stop(paste("Unable to remove existing\n", pandir, "\nPlease, exit BloomR and try again."))
     dir.create(pandir)
 
     ## Start download
     message("Downloading ", panlnk)
-    if (!download.bin(panlnk, paninst)$succ) {
+    if (!download_bin(panlnk, paninst)) {
         stop("An error occured while downloading Pandoc")
     }
     else {
@@ -163,22 +165,23 @@ br.getPandoc=function(){
 ## TRUE if there is a Windows executable for that release.
 
     require(XML)
-    require(RCurl)
+    require(curl)
     panurl = "https://github.com/jgm/pandoc/releases/latest"
 
     ## Check connection
-    if (!is.character(getURL("www.google.com"))) 
-        stop("It seems you have no internet connection")
-
+    if (!has_internet()) stop("It seems you have no internet connection")
 
     ## Get redirect last release link 
-    x=getURL(panurl, ssl.verifypeer = FALSE)    
-    panlnk=xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE), "//a",  xmlGetAttr, "href")
+    req <- curl_fetch_memory(panurl, new_handle())
+    req <- rawToChar(req$content)        
+    panlnk=xpathSApply(htmlTreeParse(req, useInternalNodes=TRUE), "//a",  xmlGetAttr, "href")
     lrel=rev(strsplit(panlnk, '/')[[1]])[1] # Version name inside link 
 
     ## Get download link
-    x=getURL(panlnk, ssl.verifypeer = FALSE)
-    lnks = xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE), "//a",  xmlGetAttr, "href")
+#    x=getURL(panlnk, ssl.verifypeer = FALSE)
+    req <- curl_fetch_memory(panlnk, new_handle())
+    req <- rawToChar(req$content)        
+    lnks = xpathSApply(htmlTreeParse(req, useInternalNodes=TRUE), "//a",  xmlGetAttr, "href")
     panlnk=grep(paste0(lrel, '-windows'), lnks, value=TRUE)
 
     ## Return version and if win exe 
@@ -230,8 +233,25 @@ br.getPandoc=function(){
     shQuote(gsub('/', '\\\\',  s)) 
 
 
+
+    
+download_bin <- function(url, file){
+### Download binary file returning SUCCESS. Based on curl
+
+    library(curl)
+
+    s <- tryCatch(
+        curl_download(url, file, quiet = FALSE),
+        error = function(x) cat("\nDownloading error:\n", x$message, '\n'),
+        finally=cat("\n"))
+    ifelse(is.null(s), FALSE, TRUE)
+}
+    
 download.bin=function(url, file, refr=NULL, cert=NULL, curl = NULL){
-### Download binary file returning list(succ, headers) 
+### Download binary file returning list(succ, headers) based on RCurl
+### Based on outdated RCurl so likely to be rmoved. See download_bin for curl
+
+    library(RCurl)
 
     redirect=!is.null(curl)
     if(is.null(curl)) curl = getCurlHandle()
