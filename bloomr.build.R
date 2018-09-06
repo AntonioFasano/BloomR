@@ -60,28 +60,6 @@ G$github.local="" # Auto-set by makeBloomR() if gitsim=T, relative to workdir
 pks="knitr Rblpapi xts XML httr rmarkdown RCurl" # RCurl to be removed
 pks=paste(pks, "plyr pbapply") # for read read.xlx
 
-### now auto with getDeps.format
-### Rblpapi deps
-#pks=paste(pks, "Rcpp") 
-# 
-### RCurl deps
-#pks=paste(pks, "bitops")
-# 
-### Knitr deps
-#pks=paste(pks, "evaluate digest markdown yaml highr formatR stringr")
-# 
-### Stringr deps
-#pks=paste(pks, "stringi magrittr")
-# 
-### Markdown deps
-#pks=paste(pks, " mime")
-# 
-### read.xlx deps
-#pks=paste(pks, "plyr pbapply Rcpp")
-# 
-### Eikon deps
-#pks=paste(pks, "httr jsonlite curl openssl R6")
-
 ## All packs deps
 G$packlist=pks
 rm(pks)
@@ -118,6 +96,8 @@ G$mikurl="http://mirrors.ctan.org/systems/windows/miktex/setup/windows-x86/mikte
 G$mikinst="mikport.exe"
 G$panurl = "https://github.com/jgm/pandoc/releases"
 G$paninst = "pandoc.msi"
+G$mikpaks=c('fancyvrb', 'microtype', 'mptopdf', 'upquote', 'url', 'parskip', 'framed', 'titling')
+
 
 ## Local paths
 G$work=""
@@ -552,18 +532,9 @@ makeStudio.getLatexAddons=function(){
     if(!file.exists(work.pt(latbin.pt)))
         stop(paste("An error occurred while extracting\n", G$mikinst,
                    "\nPlease, exit BloomR and try again."))
-
     
-    ## Add extra packages
-    lpacks=c(
-        'fancyvrb',
-        'microtype',
-        'mptopdf',
-        'upquote',
-        'url',
-        'parskip'
-        )  
-    x=sapply(lpacks, getLatex.pack, getLatex.packList(inst=TRUE))
+    ## Add extra packages    
+    x=sapply(G$mikpaks, getLatex.pack, getLatex.packList(inst=TRUE))
 
 }
 
