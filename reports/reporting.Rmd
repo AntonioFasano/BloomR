@@ -19,16 +19,15 @@ In the next sections you will learn how easy is the  markdown syntax and the com
 
 ## Setup BloomR for creating HTML reports 
 
-HTML reports are the simplest to create.
-
-When you start BloomR load the following libraries:
+The best, if you want to make reports, is to use BloomR Studio so there is nothing to do. However, if you want to try this feature in BloomR Core or BloomR BRemacs, start by  loading `knitr` and `markdown` libraries, with 
+the following commands:
 
 ```{r loadlibs, eval=FALSE}
 library(knitr)
 library(markdown)
 ```
 
-As every library command they are per session. They stay loaded in memory until BloomR session is running. If you close and reopen BloomR, to use them  you will need to load them again. 
+As for every `library` command,  they are per session. They stay loaded in memory until BloomR session is running. If you close and reopen BloomR, to use them  you will need to load them again. 
 
 Now you are ready to create ...
 
@@ -39,30 +38,37 @@ Now you are ready to create ...
 
 We start by creating an *Rmd* file containing only the narrative and no R code. 
 
-Change to some directory, for example `mybloomr` with the tilde:
+
+With the usual File menu create a new file. For example, create a new  file  named `my-first-report.Rmd` in the directory `mybloomr`. Remember to add the `Rmd` extension when you name the file. 
+
+In BloomR Core you can do this with R commands too, like follows. 
+
+Change to  `mybloomr` directory identified with the tilde:
 
 ```{r cd, eval=FALSE}
 setwd('~')
 ```
 
-
-Create an empty file  named `my-first-report.Rmd`. Note the `Rmd` extension.
+Create the empty file  named `my-first-report.Rmd`. Note the `Rmd` extension.
 
 ```{r file.create, eval=FALSE}
 file.create('my-first-report.Rmd')
 dir() # Check the file was actually created!
 ```
 
-__Warning__: For your convenience, inside `mybloomr/examples`, there is already a sample `my-first-report.Rmd`, pay attention not to overwrite it!
-
-
-We now start editing the file with some  Wikipedia-style content (markdown):
+To  start editing the file. Use: 
 
 ```{r edit, eval=FALSE}
 file.edit('my-first-report.Rmd')
 ```
 
 The editor window pops up: copy and paste in it the following material:
+
+
+__Warning__: For your convenience, inside `mybloomr/examples`, there is already a sample `my-first-report.Rmd`, pay attention not to overwrite it!
+
+
+Type the following   Wikipedia-style content (markdown) in `my-first-report.Rmd`:
 
 
 \newpage
@@ -101,7 +107,7 @@ The editor window pops up: copy and paste in it the following material:
     3.  ...
 
 
-After the conversion, your text will be formatted  like this: 
+After the conversion  (that we are going to show ahead), your text will be formatted  like this: 
 
 ---------------
 
@@ -169,15 +175,38 @@ Also, can you see your Rmd-file in the current directory? If so, you avoid to  p
 dir()
 ```
 
-Now it is time to create your first HTML report, which is as simple as running the following two commands:
+
+Now it is time to create your first HTML report. First, when you are finished with editing, remember to _save the Rmd_ file.   
+In BloomR Core and BloomR BRemacs, use the following two commands to generate the report: 
+
 
 ```{r knitMark, eval=FALSE}
+library(knitr)
+library(markdown)
 knit("my-first-report.Rmd") # ->will give: my-first-report.md
 markdownToHTML("my-first-report.md", "my-first-report.html")
 ```
 
+For your convenience, I have retyped the `library` commands, but you need to type them only once and they libraries will stay in memory until you close BloomR.
+
+
+
+
 The first function _knits_ the Rmd file, that is transforms the R markdown in a standard markdown (like the one used for Wikipedia articles). To be honest, for such a simple file it is pretty useless. 
 The second function is self-explanatory: open with your browser `my-first-report.html`  and see the report.
+
+
+In BloomR Studio, you can use all the commands above, but there is a simpler suggested way. Just type:
+
+```{r rmd2htmlbasic, eval=FALSE}
+br.rmd2html("my-first-report.Rmd")
+```
+
+Note that, in BloomR Studio,  there are no libraries to load. 
+
+__Warning__: Before generating the report you need to be sure that the current working directory is set to the one containing the Rmd file `my-first-report.Rmd`.  To do this use `setwd` command,  as noted above, and to be sure check the content of the current working directory with `dir()`.    
+There is an easier way in BloomR BRemacs and  BloomR Studio. Here you will notice a button like an "R" with an enter symbol, the __Sync button__. Move your cursor on a place in the Rmd file where there is R code (not the narrative). Now click the Sync button. You will see a message on the bottom of the window informing about the path of the synced directory.   
+One way to avoid  setting the working directory is specifying  the full path of the file, such as  `D:\\some-dir\\my-first-report.Rmd`. Note that you need to use `\\` (double backslashes) in the paths.  
 
 
 Let us step ahead to for a real Rmd file with code chunks. 
@@ -262,7 +291,7 @@ In your editor replace the text with the following new one (as usual copy & past
      
     And now let me plot my ideas:
      
-    ```{{{R}} myNicePlot, fig.cap="In this plot we compare Miles per Gallon with HP."}
+    ```{{{R}} myNicePlot, fig.cap="We compare Miles per Gallon with HP."}
     par(mar = c(4, 4, 2, .1))
     with(mtcars, {
       plot(mpg~hp, pch=20, col='darkgray', main="My First Plot")
@@ -271,7 +300,7 @@ In your editor replace the text with the following new one (as usual copy & past
     ```
 
 
-After the conversion (that we are going to do),  your text will be formatted like this: 
+The conversion can be done with the same commands shown above and will produce the following formatted output: 
 
 -----------------
 
@@ -327,46 +356,58 @@ A final notice about figure generating chunks. The code for `myNicePlot` uses th
 ### Maths
 
 
-You can use LaTeX maths, therefore:
 
-    $f(\alpha, \beta) \propto x^{\alpha-1}(1-x)^{\beta-1}$
+You can use LaTeX style maths in your report. 
 
-will be rendered as:     $f(\alpha, \beta) \propto x^{\alpha-1}(1-x)^{\beta-1}$.
+The following markdown:
+
+    $$f(\alpha, \beta) \propto x^{\alpha-1}(1-x)^{\beta-1}$$
+
+will be rendered as:     
+
+$$f(\alpha, \beta) \propto x^{\alpha-1}(1-x)^{\beta-1}$$
+
+
+Note that `_` and `^` set indices and exponents. LaTeX commands/symbols are preceeded by a backslash, e.g.: `\frac`, `\sum`, and arguments (if any) are encolesed in curly braces. To use braces literally escape them with : `{` and `\}`. A single index or exponent does not require enclosing braces.  
+
+
+Now consider the following more involved equation:
+
+
+$$f(\alpha) = \frac{1}{c+1}\sum_{k=0}^\infty  x^{\alpha-1}_k,
+              \mathrm{where} c \in \mathbf{n} = \{1 \ldots \bar{n} \}$$.
+
+You can generate it with commands: 
+
+    $$f(\alpha) = \frac{1}{c+1}\sum_{k=0}^\infty  x^{\alpha-1}_k,
+                  \mathrm{ where } c \in \mathbf{n} = \{1 \ldots \bar{n} \}$$
+
+For inline expressions use a single dollar. So `$x_k^j$` gives: $x_k^j$.
+
+Try to exercise on some online engine like  [codecogs.com](https://www.codecogs.com/latex/eqneditor.php).
+
+
 
 
 ## Convert the rich Rmd document to an HTML report
 
-As usual, when you are done with editing, save  `my-first-report.Rmd` and type in the console:
-
-```{r knitMarkR, eval=FALSE}
-knit("my-first-report.Rmd") # ->will give: my-first-report.md
-markdownToHTML("my-first-report.md", "my-first-report.html")
-```
-
-
-
-Now let us check the file produced:
-
+There are no special commands here. Just the same used for the simple Rmd without code. However, in BloomR Core and BloomR BRemacs, when you check for the file produced:
 
 ```{r checkhtml, eval=FALSE}
 dir() # a strage "figure" directory will appear
 ```
 
-This time, together with  `my-first-report.html`, you see also a mysterious `figure` directory listed.
+together with  `my-first-report.html`, you see also a  `figure` directory listed. Here you find the report's figures, in case you need to use them separately. You can  delete this directory. 
 
-As you might already know, the HTML files are not technically designed to store figures (but only markup text to be interpreted by browsers). So HTML files just tell the browser where to go and find the figures to be displayed.  
-In our case the report's figures are placed in the in the `figure` directory. Do  explore yourself this directory: you will find the list of plots  used by the report as PNG pictures (a format better than the best known JPEG). 
-
-There is an important thing to remember now: whenever you move/share the HTML report, don't forget to _bring the figure directory alongside the file_!
 
 
 
 ## Setup BloomR for creating PDF reports 
 
-Creating PDF reports implies downloading the BloomR LaTeX addons. Since they take huge space, they are not added by default to BloomR.
+There is nothing to setup in BloomR Studio. Out of the box BloomR Core and BloomR BRemacs do not support PDF reporting. However, you can _upgrade_ them adding  the Latex Addons. After the upgrade BloomR BRemacs is equivalent to BloomR Studio. BloomR Core remains with the simplified interface, but can build PDF reports. 
 
-You will need approx. 700 MB of free space on the storage device where BloomR is installed, and you will also need an Internet connection to properly download the addons.  
-Note that you _do not_ need to be logged to the  Bloomberg  Service (or anyway working on a Bloomberg terminal) to install the addons, you will need  Bloomberg only later, when generating the reports. 
+Clearly the reason why  BloomR Latex addons are not there by default in all version is that they take take huge space. You will need approx. 800 MB of free space on the storage device where BloomR is installed, and you will also need an Internet connection to properly download the addons.  
+Note that you _do not_ need to be logged to the  Bloomberg or Eikon  Service (or  working on their  terminal) to install the addons, you will need  these services only later, when generating the reports with their data. 
 
 Assuming that you have the space and an Internet connection, the setup  consist of this line of code:
 
@@ -379,13 +420,17 @@ Of course this long process is to be done only once.
 
 ## Convert the rich Rmd document to a PDF report
 
+<!--  Since we have already generated the HTML report and so we have  _knitted_ the Rmd file, we already have generated the markdown file `my-first-report.md`. We need to transform this file in a PDF. 
+ -->
 
-Since we have already generated the HTML report and so we have  _knitted_ the Rmd file, we already have generated the markdown file `my-first-report.md`. We need to transform this file in a PDF. To tranform an `.md`  file to a PDF  we  type in the console:
+To tranform our Rmd file into a PDF,   type in the console:
 
-```{r md2pdf, eval=FALSE}
-dir() # Check that your '.md' file is here
-br.md2pdf("my-first-report.md", "my-first-report.pdf")
+```{r rmd2pdf, eval=FALSE}
+br.rmd2pdf("my-first-report.Rmd")
 ```
+
+As usual remember to sync R working directory before running the function. 
+
 
 As we have observed above,  in LaTeX (PDF) the plot is automatically placed in such a way to optimise the text flow. Figures and tables are therefore named by those who speak properly _floats_.
 
@@ -401,7 +446,46 @@ As hinted above, you can do even more.  Set the `fig.cap` property in your plot 
 
 Then in the PDF output (but not in HTML output), after the plot number,  you get also the given caption, which adds more insights and makes the report more eye catching.  
 
+if you want both a PDF and HTML report, instead of running two command you can use:
 
+```{r rmd2both, eval=FALSE}
+br.rmd2both("my-first-report.Rmd")
+```
+
+
+Presenting matrix-like objects as tables
+---------------------------------------
+
+To print matrix-like objects as tables, you use the command `kable` and the chunk option `results="asis"`.
+
+First of all, normally you don't get table captions using Pandoc.
+But there is a trick to get them: add a chunk on top of your `my-first-report.Rmd` with the usual _chunk-syntax_  containing the following:
+
+```{r setTableCaptions, eval=FALSE}
+opts_knit$set(rmarkdown.pandoc.to = "latex")  
+```
+
+Add a chunk for creating a generic matrix to print:
+
+```{r mymat}
+i=4; j=6
+(M=matrix(rnorm(i*j), i, dimnames= list(letters[1:i], LETTERS[1:j])))
+```
+
+To print `M` with four decimals, we use this chunk: 
+
+```{r myMat.print}
+kable(M, digits=4, caption="This is a test matrix")
+```
+
+One can show a tabular regression output like follows:
+
+
+```{r reg.print}
+x=rnorm(100)
+y=x^2
+kable(summary(lm(y ~ x))$coefficients)
+```
 
 ## I am not a literate girl
 
@@ -444,5 +528,7 @@ markdownToHTML(md, output=html)
 
 <!--  LocalWords:  PDF Wikipedia autoreports Pandoc markup Setup TeX
  -->
-<!--  LocalWords:  MiKTeX BasicTeX knitr Rmd inline backticks
+<!--  LocalWords:  MiKTeX BasicTeX knitr Rmd inline backticks BloomR
+ -->
+<!--  LocalWords:  BRemacs addons Bloomberg Eikon
  -->
