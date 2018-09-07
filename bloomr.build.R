@@ -6,9 +6,9 @@
 ##  Repurpose src\bloomr.beta.*
 ##  Repurpose tests and test data 
 ##  Change app path from main to programs?
-##  Add MikTeX to credit
 ##  RCurl find and remove references everywhere 
 ##  Set new polymode version
+##  fix pandoc version when downloading
 ##
 ##
 ##  Usage:
@@ -22,6 +22,8 @@
 ##  .Platform$OS.type == "windows"
 ##
 ##  Credits:
+##  R from https://www.r-project.org/
+##  MiKTeX from  https://miktex.org
 ##  blpapi_java*.tar from http://www.openbloomberg.com/open-api/
 ##  peazip from http://sourceforge.net/projects/peazip
 ##  ahkscript from http://ahkscript.org
@@ -91,7 +93,7 @@ G$markzip='markmode'
 G$bmurl='https://github.com/joodland/bm/archive/master.zip'
 G$bmzip='bmmode'
 
-## LaTeX & Pandocfor Studio
+## LaTeX & Pandoc for Studio
 G$mikurl="http://mirrors.ctan.org/systems/windows/miktex/setup/windows-x86/miktex-portable.exe"
 G$mikinst="mikport.exe"
 G$panurl = "https://github.com/jgm/pandoc/releases"
@@ -291,8 +293,8 @@ downloads=function(tight){
 
     ## BloomR Studio
     if(G$studio) {
-        ## MikTeX
-        download.nice(G$mikurl, G$mikinst, overwrite, "MikTeX")
+        ## MiKTeX
+        download.nice(G$mikurl, G$mikinst, overwrite, "MiKTeX")
         ## Pandoc
         cback=function(){
             req <- curl_fetch_memory(G$panurl, new_handle())
@@ -525,8 +527,8 @@ makeStudio.getLatexAddons=function(){
     latbin.pt=makePath(latdir, "/texmfs/install/miktex/bin/latex.exe")
 
 
-    ## Expand MikTeX 
-    message("Expand MikTeX")
+    ## Expand MiKTeX 
+    message("Expand MiKTeX")
     out <- system(paste0(win.pt(G$mikinst), " -o", win.pt(latdir), " -y"),
                   intern = TRUE, invisible = FALSE)
     if(!file.exists(work.pt(latbin.pt)))
@@ -539,7 +541,7 @@ makeStudio.getLatexAddons=function(){
 }
 
 getLatex.pack=function(pname, ipacks=NULL){
-### Install a LaTeX Package, via  MiKTeX mpm --install
+### Install a LaTeX Package, via MiKTeX mpm --install
 ## ipacks (optional) is the list of installed packages.
 ## Used to speed-up if calling the function many times 
     

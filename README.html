@@ -391,9 +391,12 @@ For a self-paced introduction, download <em>BloomR Classroom Companion</em> from
  get_timeseries(&quot;MSFT.O&quot;, c(&quot;TIMESTAMP&quot;, &quot;CLOSE&quot;), &quot;2015-01-01T00:00:00&quot;, &quot;2016-01-01T00:00:00&quot;, &quot;monthly&quot;)</code></pre></li>
 </ol>
 </div>
-<div id="build-instructions" class="section level2">
-<h2>Build instructions</h2>
+<div id="build-instructions-for-advanced-users" class="section level2">
+<h2>Build instructions (for advanced users)</h2>
 <p>This section is intended only for developers willing to build BloomR themselves. Standard users will not need this.</p>
+<p>The three flavours of BloomR are entirely built from the <a href="https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.R">bloomr.build.R</a>.</p>
+<p>Since BloomR is based on several open source software, when the packages are updated, the script can automatically rebuild BloomR. For example, if a new version of R is out, running the script automatically integrates it in the BloomR build.</p>
+<p>Of course, the build script can be of interest for those willing to customise BloomR. For example, to automatically add extra R packages in the installer.</p>
 <div id="for-the-impatient" class="section level3">
 <h3>For the impatient</h3>
 <p>Download <a href="https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.R">bloomr.build.R</a> (as a text file, <em>not as a HTML file</em>, and make sure your browser does not change “.R” extension to “.html” or “.txt”). In the console of R for Windows issue:</p>

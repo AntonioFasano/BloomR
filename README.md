@@ -129,11 +129,17 @@ __Eikon__
         # 2015 monthly prices for Microsoft 
         get_timeseries("MSFT.O", c("TIMESTAMP", "CLOSE"), "2015-01-01T00:00:00", "2016-01-01T00:00:00", "monthly")
 
-Build instructions
-------------------
+Build instructions (for advanced users)
+--------------------------------------
 
 This section is intended only for developers willing to build BloomR themselves.
 Standard users will not need this. 
+
+The three flavours of BloomR are entirely built from the [bloomr.build.R](https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.R). 
+
+Since BloomR is based on several open source software, when the packages are updated, the script can automatically rebuild BloomR. For example, if a new version of R is out, running the script automatically integrates it in the BloomR build. 
+
+Of course, the build script can be of interest for those willing to customise BloomR.  For example, to automatically add extra R packages in the installer. 
 
 ### For the impatient
 
