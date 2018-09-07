@@ -61,6 +61,8 @@ __BloomR Core__ is based on R standard GUI. It is light and convenient to run sc
 
 __BloomR BRemacs__  features also a sophisticated editor (based on Emacs) for writing and executing scripts and interactive code. 
 
+__BloomR Studio__  Like BloomR BRemacs, but adds a minimal LaTeX (MiKTeX) distribution, which allows to generate both HTML and PDF reports from financial data feeds.
+
 
 
 What's new
