@@ -14,3 +14,4 @@ Build:
 LaTeX addon:
 - Updated portable LaTeX link
 - Replaced download.bin download_bin based on curl not RCurl
+- New functions rmd2pdf, rmd2html, rmd2both for fast knitting

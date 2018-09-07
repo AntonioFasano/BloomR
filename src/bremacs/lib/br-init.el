@@ -87,6 +87,8 @@ The latter means generally removing the trailing (back)slash."
   (setq cua-enable-cursor-indications t)
   (setq cua-overwrite-cursor-color "yellow")
   (setq cua-read-only-cursor-color "green")
+  (setq visible-bell t) 
+
 
   ;; Keyboard
   (cua-mode t)
@@ -144,34 +146,12 @@ The rest goes to br-setmodes.el."
   (require 'br-setmodes)
  ; (require 'br-rnw) 
   (require  'br-simple-buffer-menu)
-  (br-init-simple-menu))
+  (br-init-simple-menu)
+  (require 'bm))
 
 (defun br-init-history()
   (savehist-mode 1) ; minibuffer hist
   (require 'br-recentf))
-
-(defun br-init-key()
-  "Global key bindings"
-  (cua-mode t)
-  (setq completion-styles '(partial-completion initials))
-  (global-set-key (kbd "C-<next>") 'next-buffer)
-  (global-set-key [(control tab)] 'other-window)
-  (setq tab-always-indent 'complete) ; ESS uses a different var!
-  (global-set-key  (kbd "ESC ESC") 'keyboard-escape-quit)
-
-  ;; search 
-  (global-set-key (kbd "C-f") 'isearch-forward)
-  (global-set-key (kbd "<f3>")  'isearch-forward)
-  (global-set-key (kbd "S-<f3>")  'isearch-backward)
-  (define-key isearch-mode-map (kbd "C-f") 'isearch-repeat-forward)
-  (define-key isearch-mode-map (kbd "<f3>") 'isearch-repeat-forward)
-  (define-key isearch-mode-map (kbd "S-<f3>") 'isearch-repeat-backward)
-
-  (global-set-key (kbd "C-w")  '(lambda ()
-				  "Kill current buffer."
-				  (interactive) (kill-buffer (current-buffer))))
-
-  )
 
 
 (defun br-init-main()  

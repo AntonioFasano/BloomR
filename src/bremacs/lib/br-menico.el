@@ -12,10 +12,36 @@
 		     :help   "Toggle horizontal split"))
 
 
+(defun ess-eval-line-and-step-xx (&optional simple-next even-empty invisibly)
+  "Evaluate the current line visibly and step to the \"next\" line.
+If SIMPLE-NEXT is non-nil, possibly via prefix arg, first skip
+empty and commented lines. If 2nd arg EVEN-EMPTY [prefix as
+well], also send empty lines.  When the variable `ess-eval-empty'
+is non-nil both SIMPLE-NEXT and EVEN-EMPTY are interpreted as
+true."
+  ;; From an idea by Rod Ball (rod@marcam.dsir.govt.nz)
+  (interactive "P\nP"); prefix sets BOTH !
+  (ess-force-buffer-current "Process to load into: ")
+  (save-excursion
+    (end-of-line)
+    (let ((end (point)))
+      (beginning-of-line)
+      ;; go to end of process buffer so user can see result
+      (ess-eval-linewise (buffer-substring (point) end)
+                         invisibly 'eob (or even-empty ess-eval-empty))))
+  (if (or simple-next ess-eval-empty even-empty)
+      (forward-line 1)
+    (ess-next-code-line 1)))
+
+
+(define-key ess-mode-map
+       [menu-bar ESS sync]
+       '("Set directory to this file" . ess-use-this-dir))
+
 (defun br-init-ess-icons()
   "Set ESS icons. Run after `br-init-general-icons` to inherit its icons."
-
-  ;; Remove S-plus icon  
+  
+  ;; Remove S-plus icon
   (setq ess-toolbar-items
  	(quote
  	 ((R "startr" "Start R process only")
@@ -24,9 +50,13 @@
  	  (ess-eval-function-or-paragraph-and-step "rregion" "Eval function or paragraph and step")
  	  (ess-load-file "rbuffer" "Load file")
  	  (ess-eval-function "rfunction" "Eval function")
- 	  (ess-switch-to-ESS "switch_ess" "Switch to ESS buffer"))))
+
+ 	  (ess-use-this-dir "switchr" "Set directory to this file")
+
+	  )))
 
   (ess-make-toolbar))
+
 
 (defun br-toggle-split-h ()
  "Toggle horizontal split"
