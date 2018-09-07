@@ -255,7 +255,7 @@ store(br.desc)
 ## ----br.md2pdf, opts.label='purlme'--------------------------------------
 br.md2pdf=function(md.file, pdf.file){
 ### Make a markdown file into a PDF
-    ## It assumes that you have installed the BloomR LaTeX addons
+### You need  BloomR LaTeX addons or the proper BloomR version
 
     ## Test arguments
     if(missing(md.file)) stop("Argument 'md.file' missing.")
@@ -291,6 +291,160 @@ br.md2pdf=function(md.file, pdf.file){
 
 }
 store(br.md2pdf)
+
+## ----br.rmd2html, opts.label='purlme'------------------------------------
+br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
+### Make an R Markdown file into an HTML self-contained file
+### You need  BloomR LaTeX addons or the proper BloomR version
+
+    
+    ## Test arguments
+    if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
+    if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(rmd.file), '.html')
+
+    library(knitr)
+    library(rmarkdown)
+
+    ## Set pandoc and LaTeX exe and dir 
+    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
+    if(!file.exists(panexe))
+        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
+    pandir=dbr.brmain("pandoc/bin")
+    
+    ## Add Pandoc bin dir to system Path
+    old.path=Sys.getenv('Path')
+    x=paste0(gsub('/', '\\\\',  pandir), ';',  Sys.getenv("Path"))
+    Sys.setenv(Path=x)
+    
+    tryCatch(
+        ## Render Rmd to HTML
+        out <- render(rmd.file,
+                      output_format=html_document(theme="cerulean", highlight="tango",
+                                                  md_extensions="-tex_math_single_backslash"),
+                      output_file=html.file, quiet=quiet),
+        finally = {
+            ## Restore original system Path
+            if(!quiet) message("\nPandoc dir/ver: ", rmarkdown:::.pandoc$dir,
+                               " v", as.character(rmarkdown:::.pandoc$version))
+            Sys.setenv(Path=old.path)
+        })    
+
+    invisible(out)
+}
+store(br.rmd2html)
+
+## ----br.rmd2pdf, opts.label='purlme'-------------------------------------
+br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
+### Make an R Markdown file into a PDF
+### You need BloomR LaTeX addons or the proper BloomR version
+    
+    ## Test arguments
+    if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
+    if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(rmd.file), '.pdf')
+
+    library(knitr)
+    library(rmarkdown)
+
+    ## Set pandoc and LaTeX exe and dir 
+    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
+    if(!file.exists(panexe))
+        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
+    pandir=dbr.brmain("pandoc/bin")
+    
+    latbin=dbr.brmain("latex/texmfs/install/miktex/bin/latex.exe")
+    if(!file.exists(latbin))
+        stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
+    latdir=dbr.brmain("latex/texmfs/install/miktex/bin")
+
+    ## Add Pandoc and LaTeX bin dirs to system Path
+    old.path=Sys.getenv('Path')
+    x=paste0(gsub('/', '\\\\',  pandir), ';',  Sys.getenv("Path"))
+    x=paste0(gsub('/', '\\\\',  latdir), ';',  x)
+    Sys.setenv(Path=x)
+    
+    tryCatch(
+        ## Render Rmd to PDF
+        out <- render(rmd.file,
+                      output_format=pdf_document(highlight="tango",
+                                                  md_extensions="-tex_math_single_backslash"),
+                      output_file=pdf.file, quiet=quiet),
+        finally = {
+            ## Restore original system Path
+            if(!quiet) message("\nPandoc dir/ver: ", rmarkdown:::.pandoc$dir,
+                               " v", as.character(rmarkdown:::.pandoc$version),
+                               "\nLaTeX dir: ", latdir)  
+            Sys.setenv(Path=old.path)
+        })
+    invisible(out)            
+}
+store(br.rmd2pdf)
+
+## ----br.rmd2both, opts.label='purlme'------------------------------------
+br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
+### Make an R Markdown file into a PDF and an HTML self-contained file
+### You need  BloomR LaTeX addons or the proper BloomR version
+
+    
+    ## Test arguments
+    if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
+    
+    pdf.file=paste0(tools:::file_path_sans_ext(rmd.file), '.pdf')
+    html.file=paste0(tools:::file_path_sans_ext(rmd.file), '.html')
+    if(!missing(out.dir)){
+        out.dir <- paste0(sub("/$", "", out.dir), "/") 
+        pdf.file <- paste0(out.dir, basename(pdf.file))
+        html.file <- paste0(out.dir, basename(html.file))
+    }
+
+
+    
+    library(knitr)
+    library(rmarkdown)
+
+    ## Set pandoc and LaTeX exe and dir 
+    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
+    if(!file.exists(panexe))
+        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
+    pandir=dbr.brmain("pandoc/bin")
+    
+    latbin=dbr.brmain("/latex/texmfs/install/miktex/bin/latex.exe")
+    if(!file.exists(latbin))
+        stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
+    latdir=dbr.brmain("/latex/texmfs/install/miktex/bin")
+
+    ## Add Pandoc and LaTeX bin dirs to system Path
+    old.path=Sys.getenv('Path')
+    x=paste0(gsub('/', '\\\\',  pandir), ';',  Sys.getenv("Path"))
+    x=paste0(gsub('/', '\\\\',  latdir), ';',  x)
+    Sys.setenv(Path=x)
+    
+    tryCatch(
+        {
+            ## Render Rmd to HTML
+            out <- render(rmd.file,
+                          output_format=html_document(theme="cerulean", highlight="tango",
+                                                     md_extensions="-tex_math_single_backslash"),
+                          output_file=html.file, quiet=quiet)
+
+            ## Render Rmd to PDF
+            out <- render(rmd.file,
+                          output_format=pdf_document(highlight="tango",
+                                                     md_extensions="-tex_math_single_backslash"),
+                          output_file=pdf.file, quiet=quiet)
+
+        },
+        finally = {
+            ## Restore original system Path
+            if(!quiet) message("\nPandoc dir/ver: ", rmarkdown:::.pandoc$dir,
+                               " v", as.character(rmarkdown:::.pandoc$version),
+                               "\nLaTeX dir: ", latdir)
+            Sys.setenv(Path=old.path)
+        })
+    
+    invisible(dirname(out))    
+}
+store(br.rmd2both)
+
 
 ## ----br.sample, opts.label='purlme'--------------------------------------
 br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,

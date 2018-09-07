@@ -8,6 +8,9 @@ R topics documented:
 [br.bulk.tiks](#br.bulk.tiks)   
 [br.desc](#br.desc)   
 [br.md2pdf](#br.md2pdf)    
+[br.rmd2html](#br.rmd2html)    
+[br.rmd2pdf](#br.rmd2pdf)    
+[br.rmd2both](#br.rmd2both)    
 [br.sample](#br.sample)   
 [Deprecated functions](#deprecated.functions)   
 [Internal BloomR functions](#Internal)   
@@ -352,28 +355,27 @@ data
 
 ```
 ## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2017-11-17      NA  8.377     8.995     NA   9.278
-## 2017-11-18      NA 10.957        NA     NA   9.747
-## 2017-11-19   10.91 10.384        NA     NA      NA
-## 2017-11-20      NA  9.571        NA     NA   9.248
-## 2017-11-21      NA 11.194    10.365  9.639  10.132
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2018-09-01   9.464    NA     9.788  8.984  12.182
+## 2018-09-02   9.299    NA    10.022 10.842   9.366
+## 2018-09-03   8.427 9.132    11.543  8.962   8.245
+## 2018-09-04   8.626    NA    10.536  8.947   9.408
+## 2018-09-05  12.733    NA    10.229  9.445   9.705
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2017-11-17      NA      NA     NA 11.083      NA
-## 2017-11-18      NA  11.200     NA     NA      NA
-## 2017-11-19   8.344  11.693     NA     NA  10.348
-## 2017-11-20   9.523  10.355  9.189     NA      NA
-## 2017-11-21   9.247      NA  9.473     NA      NA
+## 2018-09-01      NA  10.312 10.724 10.112    9.53
+## 2018-09-02   9.261      NA     NA     NA      NA
+## 2018-09-03  11.239      NA  9.512 10.197      NA
+## 2018-09-04      NA      NA  9.861  8.899      NA
+## 2018-09-05   9.301      NA  9.474  9.746      NA
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2017-11-17  9.289 10.542 11.647
-## 2017-11-18  9.995     NA 10.053
-## 2017-11-19 11.144  9.636 10.970
-## 2017-11-20     NA     NA  8.590
-## 2017-11-21  9.915  9.639 10.091
+## 2018-09-01 10.371 10.993 10.456
+## 2018-09-02 10.243 10.554  8.443
+## 2018-09-03  7.508  9.669     NA
+## 2018-09-05     NA 10.974     NA
 ```
 
 Note:
@@ -709,10 +711,10 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2017-11-17  11.829  10.532
-## 2017-11-19   8.490      NA
-## 2017-11-20  11.851      NA
-## 2017-11-21  10.413   9.903
+## 2018-09-01      NA   9.875
+## 2018-09-02      NA  11.163
+## 2018-09-03      NA  10.726
+## 2018-09-04   8.884      NA
 ```
 
 ```r
@@ -780,6 +782,104 @@ Value
 -----
 If there are no errors, it returns zero invisibly, otherwise it prints an error message and returns the related error code.
 
+
+
+
+br.rmd2html{#br.rmd2html} 
+========================
+
+Description
+-----------
+Make an R markdown file into a HTML.
+
+Usage
+-----
+    br.rmd2html(rmd.file, html.file, quiet=TRUE)
+
+Arguments
+---------
+rmd.file
+:   path to the R markdown file to be converted.  
+
+html.file
+:   path to the HTML file to be generated. If missing, change extension of rmd.file to html.  
+
+quiet
+:   FALSE to show pandoc command line and information on executables.  
+
+Details
+-------
+You need BloomR LaTeX addons or the proper BloomR version. 
+
+Value
+-----
+If there are no errors, it returns invisibly the absolute path of the output file.
+
+
+
+
+
+br.rmd2pdf{#br.rmd2pdf} 
+=======================
+
+Description
+-----------
+Make an R markdown file into a PDF.
+
+Usage
+-----
+    br.rmd2pdf(rmd.file, pdf.file, quiet=TRUE)
+
+Arguments
+---------
+rmd.file
+:   path to the R markdown file to be converted.  
+
+pdf.file
+:   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
+
+quiet
+:   FALSE to show pandoc command line and information on executables.  
+
+Details
+-------
+You need BloomR LaTeX addons or the proper BloomR version. 
+
+Value
+-----
+If there are no errors, it returns invisibly the absolute path of the output file.
+
+
+
+br.rmd2both{#br.rmd2both} 
+=========================
+
+Description
+-----------
+Make an R Markdown file into a PDF and an HTML self-contained file
+
+Usage
+-----
+    br.rmd2both(rmd.file, out.dir, quiet=TRUE)
+
+Arguments
+---------
+rmd.file
+:   path to the R markdown file to be converted.  
+
+out.dir
+:   directory of the output files. If missing, use `dirname(rmd.file)`.  
+
+quiet
+:   FALSE to show pandoc command line and information on executables.  
+
+Details
+-------
+You need BloomR LaTeX addons or the proper BloomR version. 
+
+Value
+-----
+If there are no errors, it returns invisibly the absolute path of the output file.
 
 
 
