@@ -33,7 +33,7 @@ br.getLatexAddons=function(){
 
     ## Latex variables 
     laturl="http://miktex.org/portable"
-    latsize=600   # min space in mega
+    latsize=700   # min space in mega
     latdir=dbr.brmain("latex")
     latinst=paste0(latdir, "/mikport.exe")
     latbin=paste0(latdir, "/texmfs/install/miktex/bin/latex.exe")
@@ -47,11 +47,6 @@ br.getLatexAddons=function(){
     x=as.numeric(x)    
     if(x/1000^2 < latsize)  stop("Not enough space on your drive")
     
-    ## Get download link 
-    ## x=getURL(laturl) 
-    ## latlnk = xpathSApply(htmlTreeParse(x, useInternalNodes=TRUE),
-    ##     "//a[@class='dllink']",  xmlGetAttr, "href")
-    ## if(!nzchar(latlnk))  stop("I can't find a parsable LaTeX download")
 
     latlnk="http://mirrors.ctan.org/systems/windows/miktex/setup/windows-x86/miktex-portable.exe"
     
@@ -81,7 +76,7 @@ br.getLatexAddons=function(){
         'mptopdf',
         'upquote',
         'url',
-        'parskip'
+        'parskip', 'framed', 'titling', 'booktabs'
         )  
     x=sapply(lpacks, .br.getLatex.pack, .br.getLatex.packList(inst=TRUE))
 
