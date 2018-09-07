@@ -1,7 +1,46 @@
-My First Report
-===============
+---
+title: "My First Report"
+---
 
-Good morning, first of all I will set the default figure dimensions:
+Introduction
+============
+
+Here are some formatting examples. See the text of the Rmd file to understand them:
+
+**Bold**, *Italic*, _Italic again_
+
+These lines will be
+printed as a single line.
+
+To insert a line break leave two or more blank spaces to the right of this line.
+Now I will be printed on a new line!
+
+The following is the typewriter style. Use it if you want to comment/show code templates.
+
+    # This is the main project function
+    myfunction(arg1, arg2, arg3)
+
+To obtain it leave four spaces before lines and (at least) one blank line above and below the block.
+To use the typewriter style *inline*, enclose the text inside backticks,
+therefore this `text` will be printed in typewriter style.
+If you use dashes, `-`, instead of equals, `=`, you will get a subsection header.
+
+Using Itemisations and Enumerations
+-----------------------------------
+
+See code Rmd file content
+
+* Item 1
+* Item 2
+* ...
+
+1. Item 1
+2. Item 2
+3. ...
+
+
+And now some R code 
+-------------------
 
 ```{r setup, echo=FALSE}
 # set global chunk options: images will be 7x5 inches
@@ -13,7 +52,7 @@ I will implement some calculations. See the code and results below:
 ```{r myFirstChunk}
 x <- 1+1 # a simple calculator
 set.seed(123)
-rnorm(5)  # boring random numbers
+rnorm(5)  # generate five random numbers
 ```
 
 I will now generate six random numbers.
@@ -21,7 +60,7 @@ Well, you already know the code behind, so I don't show it:
 
 ```{r myChunkNoecho, echo=FALSE}
 set.seed(321)
-rnorm(6)  # boring random numbers
+rnorm(6)  # generate six random numbers
 ```
 
 And now let me plot my ideas:
@@ -34,14 +73,71 @@ with(mtcars, {
 })
 ```
 
+Maths
+-----
+
+
+You can use LaTeX style maths, therefore:
+
+    $$f(\alpha) = \frac{1}{c+1}\sum_{k=0}^\infty  x^{\alpha-1}_k,
+                  \mathrm{ where } c \in \mathbf{n} = \{1 \ldots \bar{n} \}$$
+
+will be rendered as:
+
+$$f(\alpha) = \frac{1}{c+1}\sum_{k=0}^\infty  x^{\alpha-1}_k,
+              \mathrm{where} c \in \mathbf{n} = \{1 \ldots \bar{n} \}$$.
+
+
+For inline expressions use a single dollar. So `$x_k^j$` gives: $x_k^j$.
+
+Note that `_` and `^` set indices and exponents. LaTeX commands/symbols are preceeded by a backslash, e.g.: `\frac`, `\sum`, and arguments (if any) are encolesed in curly braces. To use braces literally escape them with : `{` and `\}`. A single index or exponent does not require enclosing braces.  
+Exercise on some online engine like  [codecogs.com](https://www.codecogs.com/latex/eqneditor.php).
+
+
+Presenting matrix-like objects as tables
+---------------------------------------
+
+To print matrix-like objects as tables, you use the command `kable` and the chunk option `results="asis"`.
+
+First of all, normally you don't get table captions using Pandoc.
+But there is a trick to get them: add a chunk on top of your `my-first-report.Rmd` with the usual _chunk-syntax_  containing the following:
+
+```{r setTableCaptions, eval=FALSE}
+opts_knit$set(rmarkdown.pandoc.to = "latex")  
+```
+
+Add a chunk for creating a generic matrix to print:
+
+```{r mymat}
+i=4; j=6
+(M=matrix(rnorm(i*j), i, dimnames= list(letters[1:i], LETTERS[1:j])))
+```
+
+To print `M` with four decimals, we use this chunk: 
+
+```{r myMat.print}
+kable(M, digits=4, caption="This is a test matrix")
+```
+
+One can show a tabular regression output like follows:
+
+
+```{r reg.print}
+x=rnorm(100)
+y=x^2
+kable(summary(lm(y ~ x))$coefficients)
+```
+
 ```{r compile, echo=FALSE, eval=FALSE}
 
-## setwd() or alt-enter 
-library(knitr)
-library(markdown)
-knit("my-first-report.Rmd")
-markdownToHTML("my-first-report.md", "my-first-report.html")
-br.md2pdf("my-first-report.md", "my-first-report.pdf")
+## Warning sync work dir using: setwd(), alt-enter, the BRemacs sync button 
+br.rmd2both("my-first-report.Rmd")
+
+## HTML only for BloomR Core
+## library(knitr)
+## library(markdown)
+## knit("my-first-report.Rmd")
+## markdownToHTML("my-first-report.md", "my-first-report.html")
 
 ## Note the eval=FALSE above
 ## This is for internal commands that should not appear in PDF/HTML report
