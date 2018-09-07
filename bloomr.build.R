@@ -96,8 +96,8 @@ G$mikurl="http://mirrors.ctan.org/systems/windows/miktex/setup/windows-x86/mikte
 G$mikinst="mikport.exe"
 G$panurl = "https://github.com/jgm/pandoc/releases"
 G$paninst = "pandoc.msi"
-G$mikpaks=c('fancyvrb', 'microtype', 'mptopdf', 'upquote', 'url', 'parskip', 'framed', 'titling')
-
+G$mikpaks=c('fancyvrb', 'microtype', 'mptopdf', 'upquote', 'url',
+            'parskip', 'framed', 'titling', 'booktabs')
 
 ## Local paths
 G$work=""
@@ -171,7 +171,7 @@ makeBloomR=function( # Build BloomR
     if(5 %in% deb) initScripts()
 
     ## Step 6
-    if(6 %in% deb) makeBundle(bundle)
+    if(6 %in% deb) makeBundle(bundle, ask)
 
     ## Make additional builds
     if(what=='all' && deb==1:6) {
