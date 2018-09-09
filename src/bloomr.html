@@ -551,28 +551,27 @@ If there is only one group, the first (and unique) element of the list will be r
 <p>If you want to have detailed ticker descriptions, see <a href="#br.bulk.desc.exem">br.bulk.desc Example</a>. Downloaded data look like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
-##            3988 HK  C US 601288 CH BAC US HSBA LN
-## 2018-09-03  12.242 9.763    11.267     NA      NA
-## 2018-09-04      NA    NA        NA 10.189      NA
-## 2018-09-05      NA 7.885        NA     NA      NA
-## 2018-09-06   9.540    NA        NA     NA  10.539
-## 2018-09-07      NA 8.964    10.250     NA      NA
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2018-09-05   9.968  9.536     9.596  9.595   9.451
+## 2018-09-06  11.024 10.905     8.983     NA  10.302
+## 2018-09-07      NA     NA     8.370     NA      NA
+## 2018-09-08  10.850 10.148        NA  9.805  10.984
+## 2018-09-09   9.534  7.792     9.973     NA  10.690
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2018-09-03      NA      NA 11.495  9.996      NA
-## 2018-09-04  10.592  11.619     NA     NA      NA
-## 2018-09-05  10.751      NA     NA  9.071      NA
-## 2018-09-06      NA  10.051     NA  9.824      NA
-## 2018-09-07      NA   9.850     NA  9.693   9.827
+## 2018-09-05   9.752      NA     NA  9.271  10.912
+## 2018-09-06  10.005      NA     NA     NA  10.243
+## 2018-09-07  11.988      NA     NA     NA   8.513
+## 2018-09-08   9.764  10.179     NA     NA   9.804
+## 2018-09-09  10.419      NA  9.684     NA      NA
 ## 
 ## $Indices
-##               DJI DJUSFN W1TEC
-## 2018-09-03  8.743  9.590 9.689
-## 2018-09-04 12.471  9.728 9.596
-## 2018-09-05 10.790 11.807 7.942
-## 2018-09-06  9.895 10.665 9.926
-## 2018-09-07 10.560  9.427 8.782</code></pre>
+##               DJI DJUSFN  W1TEC
+## 2018-09-05  9.729     NA 10.763
+## 2018-09-06 10.874  8.933     NA
+## 2018-09-08  9.477     NA  7.993
+## 2018-09-09 11.141     NA  9.032</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />
@@ -749,8 +748,11 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2018-09-04      NA   9.637
-## 2018-09-07   9.625  11.511</code></pre>
+## 2018-09-05   7.993  10.147
+## 2018-09-06      NA  10.281
+## 2018-09-07   9.174   9.852
+## 2018-09-08   9.982      NA
+## 2018-09-09      NA   9.333</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

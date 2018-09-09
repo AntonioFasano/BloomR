@@ -55,7 +55,7 @@ BloomR itself is open source and it is based on the public APIs released by  Blo
 BloomR Versions
 -------------
 
-BloomR comes in two versions. 
+BloomR comes in three versions.
 
 __BloomR Core__ is based on R standard GUI. It is light and convenient to run scripts on the data terminals. 
 
