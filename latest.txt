@@ -1,17 +1,8 @@
-1.4.1
+1.4.2
 
 R version 3.5.1 (2018-07-02) -- "Feather Spray"
 
-Now BloomR comes in three layers:  Core, BRemacs, Studio
+Bug Fixes
 
-BloomR registered with Eikon ID
-
-Build:
-- 'bundle' argument replaces zip,
-- ESS temporary set to 17.11 to avoid Julia dep,
-- Temporary stored Polymode 2017,  which is not more available online
-
-LaTeX addon:
-- Updated portable LaTeX link
-- Replaced download.bin download_bin based on curl not RCurl
-- New functions rmd2pdf, rmd2html, rmd2both for fast knitting
+Wrong help dir shipped in Studio
+Added some LaTeX dependencies
