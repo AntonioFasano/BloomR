@@ -10,7 +10,6 @@
 ##  Set new polymode version
 ##  fix pandoc version when downloading
 ##
-##
 ##  Usage:
 ##  Source this file and run:
 ##  makeBloomR("path/to/workDir")
@@ -99,7 +98,7 @@ G$mikinst="mikport.exe"
 G$panurl = "https://github.com/jgm/pandoc/releases"
 G$paninst = "pandoc.msi"
 G$mikpaks=c('fancyvrb', 'microtype', 'mptopdf', 'upquote', 'url',
-            'parskip', 'framed', 'titling', 'booktabs')
+            'parskip', 'framed', 'titling', 'booktabs', 'etoolbox')
 
 ## Local paths
 G$work=""

@@ -76,7 +76,7 @@ br.getLatexAddons=function(){
         'mptopdf',
         'upquote',
         'url',
-        'parskip', 'framed', 'titling', 'booktabs'
+        'parskip', 'framed', 'titling', 'booktabs', 'etoolbox'
         )  
     x=sapply(lpacks, .br.getLatex.pack, .br.getLatex.packList(inst=TRUE))
 
