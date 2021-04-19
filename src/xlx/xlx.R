@@ -3,7 +3,8 @@
 ##  Set custom warnings when prevailing style cannot be applied, advertising column position
 
 ## News to commit 
-##
+## plyr:::rbind.fill without loading package to avoid conflicts
+
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
 
@@ -136,7 +137,8 @@ read.xlx= function(
     x=sapply(seq(1,length(packs), 2), function(i)
         if(length(find.package(packs[i], quiet=TRUE))==0){
             error(packs[i], "package is missing! It is required to", packs[i+1])
-        } else require(packs[i], character.only=TRUE))
+        } else {
+            if(packs[i]!="plyr") require(packs[i], character.only=TRUE)})
 
         
     ## Check arguments
@@ -308,7 +310,7 @@ read.xlx= function(
 #####                         cellstack[sapply(cellstack, class) == "data.frame"])
     cellstack=cellstack[sapply(cellstack, class) == "data.frame"]
     if(length(cellstack)>1) message('Aggregating sheets')
-    cellstack= rbind.fill(cellstack)
+    cellstack= plyr:::rbind.fill(cellstack)
     
     ## Return if whole spread is empty  
     if(is.null(cellstack)) return(d(NULL))
