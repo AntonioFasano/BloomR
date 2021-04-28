@@ -3,27 +3,24 @@
 :: ======================================
 
 @Echo off
+SETLOCAL
 
 :: Up from bloomR\main\ed\
-cd ..\..
+cd /D %~dp0\..\..
 
 Set "BLOOMR=%CD%"
 Echo BLOOMR env var is:
 Echo %BLOOMR%
 
 Set "HOME=%BLOOMR%\main"
-Echo Temp HOME env var is:
+Echo Temp HOME env var is (reset in site-start.el):
 Echo %HOME%
 
-Set "JAVA_HOME=%BLOOMR%\main\openjdk\jre"
-Echo JAVA_HOME env var is:
-Echo %JAVA_HOME%
-
-Echo Temp work dir set to:
+Echo Temp work dir set to (reset in site-start.el):
 Echo %CD%
 
 :: 1 causes to load br-init-dbg.el insetead of br-init-dbg.el
-   set "EMACSDBG=1"
+set "BREMACSDBG=1"
 
 :: Breamcs site-start.el calls br-init(-dbg)
 Echo Start main\bremacs\bin\runemacs.exe -q --no-splash %%*

@@ -1,12 +1,30 @@
 ###  BloomR source
 
+## Release log
 ##  New edition system. MiKTeX standalone installer. Minimal Perl for rmarkdown pdfcrop. UNC support. Removed refs to old Java API. New masking quit(). Byte compilation with autoloads. Updated utility URLs.
 
+## To commit
+
+#git update-index --assume-unchanged README.html README.md
+#git commit -am "Commit message" 
+#git update-index --no-assume-unchanged README.html README.md
+
+
+## build: makeStudio (with miktex, mpm, initexmf)
+## br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, -require 'ess-site and 'markdown-mode, +declare br-init-simple-menu, +br-init-autoloads.
+## br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
+## br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign
+## bloomr.init.R: +q/quit
+## bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, +buildenv
+## xlx.R: plyr:::rbind.fill without loading package to avoid conflicts
+## ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el
 
 ##  TODO
-##  Custom polimode names, temporary disabled in next commit, to be restored in br-setmode.el
+##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
+##  Test it is: (defun name<space>()  with  \(defun +[[:alpha:]]+\)( → \1 (
+##  Custom polimode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
 ##  Create a download folder var in global env
-##  Byte compile is async. "0" can be removed in tha case stadard emcas elisp files
+##  Byte compile is async. "0" can be removed in tha case stadard emacs elisp files
 ##  Automatically identify knit/rmarkdown needed LaTeX packages. See scatch latex.autopackages
 ##  Perhaps use switch+get.edition() rather than if-else + is.core/lab/studio, in downloads/expand/bloomrTree
 ##  NSIS does not delete an existing dir, but silently overwrites it
@@ -391,7 +409,7 @@ downloads.studio <- function(overwrite){
         cmd <- p0(awin.pt(miktex.exe),
                   " --verbose --local-package-repository=", awin.pt(p0(G$mikzip,'.d')), 
                   " --package-set=basic download")
-        shell.ps(cmd, awin.pt("lastpslog.txt"))
+        shell.ps(cmd, awin.pt("ps.latexdown.txt"))
     }
         
     ## Pandoc        
@@ -713,18 +731,55 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
 
     ## Site-lisp sources need adding their directories to lisp-path, we also create autoloads
     eldir <- globpaths(bremacs, 'share/emacs/site-lisp')
-    elisp.t <- "    
+    elisp.t <-"
 (let* ((site-lisp %s)
-       (default-directory site-lisp))
+       (default-directory site-lisp)
+       (pkg-name) (pkg-dir) (pkg-autoload-buf)
+       (pkg-autoload-path) (pkg-autoload-basename))
+
+  ;; genarate elc in all site-lisp subdirs
   (normal-top-level-add-subdirs-to-load-path)
   (byte-recompile-directory site-lisp 0)
 
+  ;; genarate autoloads in all site-lisp subdirs
   (require 'package)
-  (mapcar (lambda (dir) (package-generate-autoloads (file-name-nondirectory dir) dir))
+  (require 'autoload)
+  (mapcar (lambda (pkg-dir)
+	    (setq pkg-name (file-name-nondirectory pkg-dir)
+		  pkg-autoload-basename (concat pkg-name (symbol-name '-autoloads.el))
+		  pkg-autoload-path (expand-file-name pkg-autoload-basename pkg-dir))
+		   
+	    (unless (file-exists-p pkg-autoload-path)
+	      ;; comments added to autoload files and 
+	      (let ((autoload-timestamps nil)
+		    (backup-inhibited t)
+		    (version-control 'never)
+		    (generated-autoload-file pkg-autoload-path)); wanted by upd-dir-autoloads
+		(write-region (autoload-rubric pkg-autoload-path (symbol-name 'package) nil)
+			      nil pkg-autoload-path nil 'silent)
+		(update-directory-autoloads pkg-dir))
+	      ;; update-directory-autoloads does not close generated-autoload-file 
+	      (when (setq pkg-autoload-buf (find-buffer-visiting pkg-autoload-path))
+		(kill-buffer pkg-autoload-buf))
+		(message pkg-dir)))
+	  
   	  (seq-filter 'file-directory-p (directory-files site-lisp t directory-files-no-dot-files-regexp)))
-
   (kill-emacs 0))
-"
+"       
+
+# old        
+#        "    
+#(let* ((site-lisp %s)
+#       (default-directory site-lisp))
+#  (normal-top-level-add-subdirs-to-load-path)
+#  (byte-recompile-directory site-lisp 0)
+# 
+#  (require 'package)
+#  (mapcar (lambda (dir) (package-generate-autoloads (file-name-nondirectory dir) dir))
+#  	  (seq-filter 'file-directory-p (directory-files site-lisp t directory-files-no-dot-files-regexp)))
+# 
+#  (kill-emacs 0))
+#"
     elisp <- sprintf(elisp.t,  l(work.pt(eldir)))
     args <- sprintf("-Q -eval %s", dQuote(elisp))
     shell.cd(c(work.pt(cmd), args))        
@@ -744,12 +799,7 @@ bloomrTree.Studio <- function(){
 
 makeStudio.addLatex <- function(){
 ### Install LaTeX. Currently MiKTeX
-    
-    ## consider mpm --update --verbose
-
-    
-
-    
+           
     ## Latex variables  
     latdir <- app.pt("latex")
     latbin.pt <- makePath(latdir, "/texmfs/install/miktex/bin/x64/latex.exe")
@@ -762,7 +812,7 @@ makeStudio.addLatex <- function(){
                   " --verbose --local-package-repository=", awin.pt(p0(G$mikzip,'.d')),
                   " --portable=", awin.pt(app.pt("latex")), 
                   " --package-set=basic install")
-    shell.ps(cmd, awin.pt("lastpslog.txt"))
+    shell.ps(cmd, awin.pt("ps.latexexpn.txt"))
     
     if(!file.exists(work.pt(latbin.pt)))
         stop(paste("An error occurred while extracting\n", G$mikinst,
@@ -779,17 +829,26 @@ makeStudio.addLatex <- function(){
         G$work <- unc.subs(G$work)
     }
 
+    ## Package to download and install
     toinstall <- "upquote microtype parskip kvoptions ltxcmds kvsetkeys xurl bookmark infwarerr kvdefinekeys
                   pdfescape hycolor letltxmacro auxhook intcalc etexcmds bitset bigintcalc rerunfilecheck
                   uniquecounter geometry fancyvrb framed booktabs footnotehyper refcount gettitlestring"
-
     toinstall <- paste(toinstall, "pdfcrop") # required by intermediate commands  
     toinstall <- gsub("[[:space:]]+", ",", toinstall)
     
     mpm <- app.pt("latex/texmfs/install/miktex/bin/x64/mpm.exe")
     if(!file.exists(work.pt(mpm))) stop(paste('Unable to find:\n', mpm))
     cmd <- p0(awin.pt(mpm), " --verbose --require=", toinstall)
-    shell.ps(cmd, awin.pt("lastpslog.txt"))
+    shell.ps(cmd, awin.pt("ps.addpacks.txt"))
+
+    ## Update distro, necessary to avoid: 'major issue: So far, you have not checked for MiKTeX updates'
+    cmd <- p0(awin.pt(mpm), "  --update --verbose")
+    shell.ps(cmd, awin.pt("ps.latexupd.txt"))
+
+    initexmf <- app.pt("latex/texmfs/install/miktex/bin/x64/initexmf.exe")
+    if(!file.exists(work.pt(initexmf))) stop(paste('Unable to find:\n', initexmf))
+    cmd <- p0(awin.pt(initexmf), " --report")
+    shell.ps(cmd, awin.pt("ps.latexrpt.txt"))
 
     ## Restore previous drive mapping
     if(!is.null(G$tempmap)) unc.mapdel(G$tempmap)
@@ -798,7 +857,7 @@ makeStudio.addLatex <- function(){
 }
 
 latex.autopackages  <- function(){
-### This is a draft to be implemented
+### This is a draft to be implemented, based on MiKTeX Just enough TeX, https://miktex.org/kb/just-enough-tex
     
     ## To identify the package needed by knit and rmarkdown:::redner, we use the MiKTeX auto-install-package feature.
     ## Step 1 Enable automatic packages with:
@@ -811,12 +870,12 @@ latex.autopackages  <- function(){
     ## pdfcrop
     ## rmarkdown:::redner() makes some preliminary tex operations before generating the tex file.
     ## currently they seem figure cropping based on package pdfcrop, which in turn reuires perl
-    ## If redner() does not find pdfcrop package stops, so the auto-install feature will not operate for pdfcrop
+    ## If render() does not find pdfcrop package stops, so the auto-install will not operate for pdfcrop
 
     ## Activate AutoInstall packages
     initexmf <- app.pt("latex/texmfs/install/miktex/bin/initexmf.exe")
     cmd <- paste0(awin.pt(initexmf), " --set-config-value=[MPM]AutoInstall=yes")
-    shell.ps(cmd, awin.pt("lastpslog.txt"))
+    shell.ps(cmd, awin.pt("ps.latexautop.txt"))
 
     ## Find auto-installed packages
     latlog.path <- paste0("c:/Users/kvm/Desktop/", "brEmacs/main/latex/texmfs/data/miktex/log/pdflatex.log")

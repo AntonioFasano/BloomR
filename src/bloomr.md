@@ -273,17 +273,6 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```
-## 
-## Attaching package: 'zoo'
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-```
-
-```
 ## Loading 3988 HK Equity
 ```
 
@@ -356,26 +345,27 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2018-09-05   9.968  9.536     9.596  9.595   9.451
-## 2018-09-06  11.024 10.905     8.983     NA  10.302
-## 2018-09-07      NA     NA     8.370     NA      NA
-## 2018-09-08  10.850 10.148        NA  9.805  10.984
-## 2018-09-09   9.534  7.792     9.973     NA  10.690
+## 2021-04-21   9.595 10.543        NA  7.674   8.755
+## 2021-04-22      NA  8.484        NA     NA      NA
+## 2021-04-23      NA     NA        NA 11.425  11.407
+## 2021-04-24  10.106     NA     9.710  8.873      NA
+## 2021-04-25      NA 10.169    11.474 10.495  10.415
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2018-09-05   9.752      NA     NA  9.271  10.912
-## 2018-09-06  10.005      NA     NA     NA  10.243
-## 2018-09-07  11.988      NA     NA     NA   8.513
-## 2018-09-08   9.764  10.179     NA     NA   9.804
-## 2018-09-09  10.419      NA  9.684     NA      NA
+## 2021-04-21      NA      NA     NA 10.406      NA
+## 2021-04-22      NA      NA     NA  8.337  10.048
+## 2021-04-23      NA   8.843 10.769 10.652      NA
+## 2021-04-24      NA   9.350 10.664     NA   9.864
+## 2021-04-25   8.959      NA  7.410  9.513  10.233
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2018-09-05  9.729     NA 10.763
-## 2018-09-06 10.874  8.933     NA
-## 2018-09-08  9.477     NA  7.993
-## 2018-09-09 11.141     NA  9.032
+## 2021-04-21 10.034     NA     NA
+## 2021-04-22     NA     NA  8.430
+## 2021-04-23     NA     NA 11.452
+## 2021-04-24     NA  9.691  9.858
+## 2021-04-25 10.208     NA  9.171
 ```
 
 Note:
@@ -711,11 +701,9 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2018-09-05   7.993  10.147
-## 2018-09-06      NA  10.281
-## 2018-09-07   9.174   9.852
-## 2018-09-08   9.982      NA
-## 2018-09-09      NA   9.333
+## 2021-04-21   8.544      NA
+## 2021-04-22      NA   9.847
+## 2021-04-23  10.619  10.836
 ```
 
 ```r
@@ -751,6 +739,8 @@ tik
 Value
 -----
 A data frame containing the value of the Bloomberg fields form `ds001` to `ds009` and the long field `CIE_DES_BULK`.
+
+
 
 
 
@@ -840,7 +830,7 @@ pdf.file
 :   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
 
 quiet
-:   FALSE to show pandoc command line and information on executables.  
+:   FALSE to show pandoc command line, information on executables, and intermediate files.  
 
 Details
 -------
@@ -872,7 +862,7 @@ out.dir
 :   directory of the output files. If missing, use `dirname(rmd.file)`.  
 
 quiet
-:   FALSE to show pandoc command line and information on executables.  
+:   FALSE to show pandoc command line, information on executables, and intermediate files.  
 
 Details
 -------
@@ -1113,6 +1103,8 @@ Details
 If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
 `%+%` and `%-%` add and subtract months to a date.  
 `last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
+
+
 
 
 

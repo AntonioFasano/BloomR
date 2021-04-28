@@ -2,9 +2,6 @@
 ##  Manage name conflicts between sheets and ranges and perhaps among ranges
 ##  Set custom warnings when prevailing style cannot be applied, advertising column position
 
-## News to commit 
-## plyr:::rbind.fill without loading package to avoid conflicts
-
 ## Print comments
 ## cat(grep("##", readLines('xlx.r'), value=T), sep='\n')
 

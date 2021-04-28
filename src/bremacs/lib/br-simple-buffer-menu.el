@@ -131,7 +131,7 @@
 	 (setcdr global-buffers-menu-map (cons "Buffers" buffers-menu)))))
 
 
-(defun br-init-simple-menu()
+(defun br-init-simple-menu ()
   (setq menu-bar-buffers-menu-command-entries nil)
   (menu-bar-update-buffers t))
 

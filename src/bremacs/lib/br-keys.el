@@ -7,9 +7,9 @@
   ;; ESS binding (R code)
   (add-hook 'ess-mode-hook
 	    '(lambda()
+	       (local-set-key "_" #'ess-insert-assign)
 	       (local-set-key (kbd "C-l")   'ess-eval-line-and-step)
-	       (local-set-key (kbd "C-S-l") 'ess-eval-region )
-					; (local-set-key (kbd "C-c C-k") 'ess-eval-chunk)
+	       (local-set-key (kbd "C-S-l") 'polymode-eval-region-or-chunk)
 	       (local-set-key (kbd "C-d") 'comment-region)
 	       (local-set-key (kbd "C-S-d") 'uncomment-region)
 	       (local-set-key (kbd "<tab>") 'ess-indent-or-complete)))
@@ -18,10 +18,9 @@
   ;; ESS-inf binding (R console)
   (add-hook 'inferior-ess-mode-hook
 	    '(lambda()
-	       (local-set-key (kbd "C-a") 'mark-whole-buffer)
-	       (macroexpand '(br-ess-quit))
-	       ))
-  
+	       (local-set-key "_" #'ess-insert-assign)
+	       (local-set-key (kbd "C-a") 'mark-whole-buffer)))
+
   
   ;; Buffers
   (global-set-key (kbd "C-<next>") 'next-buffer)

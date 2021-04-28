@@ -16,12 +16,14 @@ OTS(demofull= list(purl=FALSE, eval=step2,  include=TRUE))  # run w/ code + out
 OTS(demorun=  list(purl=FALSE, eval=step2,  include=TRUE, echo=FALSE)) # run w/ out, no code 
 OTS(demodry=  list(purl=FALSE, eval=step2,  include=FALSE)) # run only (no code/out)
 OTS(democode= list(purl=FALSE, eval=FALSE,  include=TRUE))  # show code only, no run  
+OTS(buildenv= list(purl=FALSE, eval=step2,  include=FALSE))  # Called in step2 by the build chunk to knit this document 
 
 ## Purl hook
 hook_purl=function (before, options, envir) 
 {
     .knitEnv=knitr:::.knitEnv
-    isFALSE=knitr:::isFALSE
+    #isFALSE=knitr:::isFALSE
+    isFALSE <- function (x) identical(x, FALSE)
     label_code=knitr:::label_code
     
     if (before || !options$purl || options$engine != "R") 
@@ -785,6 +787,49 @@ store(br.desc)
 ```
 
 
+```{r rmd-internal, opts.label='purlme'}
+
+.br.addpaths <- function(pandonly = FALSE, quiet=TRUE){
+### Add to Windows System Path the executable directories of LaTeX, Pandoc, and Perl with this search priority, and
+### return invisibly the original path. If "pandonly" is true, add only Pandoc. If "quiet" is false, print the new path.
+
+  ## Find executables
+  panexe=dbr.brmain("pandoc/bin/pandoc.exe")
+  if(!file.exists(panexe))
+    stop(paste("Unable to find:", panexe, '\nYour BloomR edition might not support it.'))
+  pandir=normalizePath(dirname(panexe))
+    
+  latbin=dbr.brmain("latex/texmfs/install/miktex/bin/x64/latex.exe")
+  if(!file.exists(latbin))
+    stop(paste("Unable to find:", latbin, '\nYour BloomR edition might not support it.'))
+  latdir=normalizePath(dirname(latbin))
+
+  perlexe <- dbr.brmain("perl/bin/perl.exe")
+  if(!file.exists(perlexe))
+    stop(paste("Unable to find:", perlexe, '\nYour BloomR edition might not support it.'))
+  perldir <- normalizePath(dirname(perlexe))
+  
+  ## Add executable dirs to system path
+  old.path=Sys.getenv('Path')
+  f <- function(dir) Sys.setenv(PATH=paste0(dir, ";", Sys.getenv("PATH")))
+
+  ## Wanted final order is: LaTeX;Pandoc;Perl 
+  if(!pandonly) f(perldir)
+  f(pandir)
+  if(!pandonly) f(latdir)
+  
+  ## Add Ghostscript environment variable   
+  Sys.setenv(GSC="mgs.exe")   
+
+  if(!quiet)  message(Sys.getenv("PATH"))
+
+  invisible(old.path)
+  
+}
+
+
+```
+
 br.md2pdf{#br.md2pdf} 
 =====================
 
@@ -949,7 +994,7 @@ pdf.file
 :   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
 
 quiet
-:   FALSE to show pandoc command line and information on executables.  
+:   FALSE to show pandoc command line, information on executables, and intermediate files.  
 
 Details
 -------
@@ -970,30 +1015,17 @@ br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
 
     library(knitr)
     library(rmarkdown)
-
-    ## Set pandoc and LaTeX exe and dir 
-    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
-    if(!file.exists(panexe))
-        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
-    pandir=dbr.brmain("pandoc/bin")
     
-    latbin=dbr.brmain("latex/texmfs/install/miktex/bin/latex.exe")
-    if(!file.exists(latbin))
-        stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
-    latdir=dbr.brmain("latex/texmfs/install/miktex/bin")
-
-    ## Add Pandoc and LaTeX bin dirs to system Path
-    old.path=Sys.getenv('Path')
-    x=paste0(gsub('/', '\\\\',  pandir), ';',  Sys.getenv("Path"))
-    x=paste0(gsub('/', '\\\\',  latdir), ';',  x)
-    Sys.setenv(Path=x)
+    ## Set executable paths
+    old.path <- .br.addpaths()
     
     tryCatch(
         ## Render Rmd to PDF
         out <- render(rmd.file,
                       output_format=pdf_document(highlight="tango",
                                                   md_extensions="-tex_math_single_backslash"),
-                      output_file=pdf.file, quiet=quiet),
+                      output_file=pdf.file,
+                      clean=quiet, quiet=quiet),
         finally = {
             ## Restore original system Path
             if(!quiet) message("\nPandoc dir/ver: ", rmarkdown:::.pandoc$dir,
@@ -1026,7 +1058,7 @@ out.dir
 :   directory of the output files. If missing, use `dirname(rmd.file)`.  
 
 quiet
-:   FALSE to show pandoc command line and information on executables.  
+:   FALSE to show pandoc command line, information on executables, and intermediate files.  
 
 Details
 -------
@@ -1053,28 +1085,12 @@ br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
         pdf.file <- paste0(out.dir, basename(pdf.file))
         html.file <- paste0(out.dir, basename(html.file))
     }
-
-
     
     library(knitr)
     library(rmarkdown)
 
-    ## Set pandoc and LaTeX exe and dir 
-    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
-    if(!file.exists(panexe))
-        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
-    pandir=dbr.brmain("pandoc/bin")
-    
-    latbin=dbr.brmain("/latex/texmfs/install/miktex/bin/latex.exe")
-    if(!file.exists(latbin))
-        stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
-    latdir=dbr.brmain("/latex/texmfs/install/miktex/bin")
-
-    ## Add Pandoc and LaTeX bin dirs to system Path
-    old.path=Sys.getenv('Path')
-    x=paste0(gsub('/', '\\\\',  pandir), ';',  Sys.getenv("Path"))
-    x=paste0(gsub('/', '\\\\',  latdir), ';',  x)
-    Sys.setenv(Path=x)
+    ## Set executable paths
+    old.path <- .br.addpaths()
     
     tryCatch(
         {
@@ -1088,7 +1104,8 @@ br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
             out <- render(rmd.file,
                           output_format=pdf_document(highlight="tango",
                                                      md_extensions="-tex_math_single_backslash"),
-                          output_file=pdf.file, quiet=quiet)
+                          output_file=pdf.file,
+                          clean=quiet, quiet=quiet)
 
         },
         finally = {
@@ -1550,22 +1567,36 @@ attach(bloomr)
 rm(store)
 ```
 
+```{r setpaths, opts.label='buildenv'}
+
+original.system.path <- .br.addpaths()
+
+```
+
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}
 knitr:::opts_chunk$set(tidy.opts=list(width.cutoff=60))
 knit2=function(file){
+
+    
     require(knitr); require(rmarkdown)
     fse=tools:::file_path_sans_ext(file)
     step2=FALSE
     knit(file)
     step2=TRUE
-    knit(file)
+    build.env <- new.env()
+    knit(file, envir = build.env)
+    message("Old Path: ", build.env$original.system.path)
+    message("New: ", Sys.getenv("PATH"))
     topics()
     render(paste0(fse, '.md'), "html_document")
     render(paste0(fse, '.md'), pdf_document())
     render("../README.md", html_document())
+
+    Sys.setenv(Path=build.env$original.system.path)
+    message("Old system path restored")
+
 }
-knit2("bloomr.Rmd")
- 
+knit2("bloomr.Rmd") 
 
 ## if with markdown lib, but topics needs rewrite
 ## shell("pandoc bloomr.md -o bloomr.pdf", shell=Sys.getenv("COMSPEC"))

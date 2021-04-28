@@ -3,27 +3,22 @@
 :: ==============================
 
 @Echo off
+SETLOCAL
 
 :: Up from bloomR\main\ed\
-cd ..\..
+cd /D %~dp0\..\..
 
 Set "BLOOMR=%CD%"
 Echo BLOOMR env var is:
 Echo %BLOOMR%
 
 Set "HOME=%BLOOMR%\main\bremacs"
-Echo Temp HOME env var is:
+Echo Temp HOME env var is (reset in site-start.el):
 Echo %HOME%
 
-Set "JAVA_HOME=%BLOOMR%\main\openjdk\jre"
-Echo JAVA_HOME env var is:
-Echo %JAVA_HOME%
-
-Echo Temp work dir set to:
+Echo Temp work dir set to (reset in site-start.el):
 Echo %CD%
 
-
-REM Set PATH=%JAVA_HOME%\bin;%PATH%
 Echo Start main\bremacs\bin\runemacs.exe -q --no-splash
      Start main\bremacs\bin\runemacs.exe -q --no-splash
 Pause

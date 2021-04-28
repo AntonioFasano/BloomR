@@ -113,7 +113,7 @@ The latter means generally removing the trailing (back)slash."
   "ESS/R key bindings that you want to keep handy. Global variables that might be subject to frequent change.
 The rest goes to br-setmodes.el."
   
-  (setq ess-tab-complete-in-script t); Auto-complete in ESS code mode if there is nothing to indent
+  (setq tab-always-indent t); Auto-complete in ESS code mode if there is nothing to indent
   (setq ess-first-tab-never-complete 'symbol) ; Complete, yes, unless following char is a symbol
   (setq ess-ask-for-ess-directory nil) ;don't prompt for data dir
   (setq ess-history-directory user-emacs-directory)
@@ -121,14 +121,16 @@ The rest goes to br-setmodes.el."
   (setq initial-major-mode 'R-mode)
   (setq initial-scratch-message "R scratchpad")
   (setq-default major-mode 'R-mode)
-  (setq inferior-R-program-name br-rterm)
+  (setq inferior-ess-r-program br-rterm)
 
-  ;; Set R init file to to main\bremacs\share\emacs\site-lisp\bremacs\ess-init.R
+  ;; Inject main\bremacs\share\emacs\site-lisp\bremacs\ess-init.R in R console on start
   ;; This is equivalent to standard \etc\Rprofile.site, but is run only when starting R from BRemacs
-  (setf (cdr (assoc 'inferior-ess-start-file ess-r-customize-alist))
-	(concat (file-name-directory (locate-library  "br-init")) "ess-init.R"))
+  (add-hook 'ess-r-post-run-hook (lambda ()
+				   (ess-load-file
+				    (concat (file-name-directory
+					     (locate-library  "br-init")) "ess-init.R"))))
 
-  ;; Use BRemacs for help
+  ;; Use BRemacs for help, but currently we prefer HTML help
   ;; (add-hook 'ess-post-run-hook
   ;;  	    (lambda()
   ;;  	      (when (string= ess-dialect "R")
@@ -139,13 +141,32 @@ The rest goes to br-setmodes.el."
   )
 
 
+(defun br-init-autoloads ()
+  "Activate autoloads in site-lisp subdirectories and set `Info-directory-list'. 
+The function does NOT recursively descend into site-lisp subdirectories."
+  
+  (mapcar (lambda (pkg-dir)
+	    (let*   ((pkg-name (file-name-nondirectory pkg-dir))
+		     (pkg-autoload-basename (format "%s-autoloads.el" pkg-name))
+		     (pkg-autoload-path (expand-file-name pkg-autoload-basename pkg-dir)))
+
+	      (load pkg-autoload-path 'noerror) ; no error on no *-autoloads.el
+	      
+	    ;; Add dir to directories searched by Info, if dir file found
+	    (when (file-exists-p (expand-file-name "dir" pkg-dir))
+              (require 'info)
+              (info-initialize)
+              (push pkg-dir Info-directory-list))))
+	  
+	  (let ((site-lisp (expand-file-name "share/emacs/site-lisp"    br-bremacs-dir)))
+	    (seq-filter 'file-directory-p
+			(directory-files site-lisp t directory-files-no-dot-files-regexp)))))
+
 (defun br-init-packs()
-  (package-initialize)
-  (require 'ess-site)
-  (require 'markdown-mode)
+;;  (package-initialize) not necessary with latest emacs 
   (require 'br-setmodes)
- ; (require 'br-rnw) 
-  (require  'br-simple-buffer-menu)
+  (require 'br-simple-buffer-menu)
+  (declare-function br-init-simple-menu "br-simple-buffer-menu.el" ())
   (br-init-simple-menu)
   (require 'bm))
 
@@ -153,9 +174,9 @@ The rest goes to br-setmodes.el."
   (savehist-mode 1) ; minibuffer hist
   (require 'br-recentf))
 
-
 (defun br-init-main()  
   (br-init-paths)
+  (br-init-autoloads)
   (br-init-packs)
   (br-init-visual)
   (br-init-set-ess)
@@ -170,5 +191,4 @@ The rest goes to br-setmodes.el."
   
 
 (br-init-main)
-
 

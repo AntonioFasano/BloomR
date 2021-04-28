@@ -17,9 +17,10 @@ Since these files include R code chunks inside a markdown narrative, they are na
 In the next sections you will learn how easy is the  markdown syntax and the commands needed to convert Rmd files to HTML or PDF files.
 
 
-## Setup BloomR for creating HTML reports 
+## Setup BloomR Core or BloomR Lab for creating HTML reports 
 
-The best, if you want to make reports, is to use BloomR Studio so there is nothing to do. However, if you want to try this feature in BloomR Core or BloomR BRemacs, start by  loading `knitr` and `markdown` libraries, with 
+The best, if you want to make reports, is to use BloomR Lab or BloomR Studio, because you can leverage an Rmd report editor, plus in BloomR Studio you can create PDF reports  (and there is zero setup to do). In _BloomR Core or Lab you can only create HTML reports_.  
+To try this feature in BloomR Core or Lab, start by  loading `knitr` and `markdown` libraries, with 
 the following commands:
 
 ```{r loadlibs, eval=FALSE}
@@ -177,7 +178,7 @@ dir()
 
 
 Now it is time to create your first HTML report. First, when you are finished with editing, remember to _save the Rmd_ file.   
-In BloomR Core and BloomR BRemacs, use the following two commands to generate the report: 
+In BloomR Core and BloomR Lab, use the following two commands to generate the report: 
 
 
 ```{r knitMark, eval=FALSE}
@@ -196,20 +197,18 @@ The first function _knits_ the Rmd file, that is transforms the R markdown in a 
 The second function is self-explanatory: open with your browser `my-first-report.html`  and see the report.
 
 
-In BloomR Studio, you can use all the commands above, but there is a simpler suggested way. Just type:
+
+## Creating reports in BloomR Studio edition
+
+
+While you could use the commands above, there is a better and  suggested way in BloomR Studio edition, just type:
 
 ```{r rmd2htmlbasic, eval=FALSE}
 br.rmd2html("my-first-report.Rmd")
 ```
 
-Note that, in BloomR Studio,  there are no libraries to load. 
+There is nothing to setup. 
 
-__Warning__: Before generating the report you need to be sure that the current working directory is set to the one containing the Rmd file `my-first-report.Rmd`.  To do this use `setwd` command,  as noted above, and to be sure check the content of the current working directory with `dir()`.    
-There is an easier way in BloomR BRemacs and  BloomR Studio. Here you will notice a button like an "R" with an enter symbol, the __Sync button__. Move your cursor on a place in the Rmd file where there is R code (not the narrative). Now click the Sync button. You will see a message on the bottom of the window informing about the path of the synced directory.   
-One way to avoid  setting the working directory is specifying  the full path of the file, such as  `D:\\some-dir\\my-first-report.Rmd`. Note that you need to use `\\` (double backslashes) in the paths.  
-
-
-Let us step ahead to for a real Rmd file with code chunks. 
 
 
 ## R Code Chunks 
@@ -345,7 +344,7 @@ As you can see  code chunks are now followed by their output.
 
 When a code chunk contains plotting commands, here the command `plot(mpg~hp, pch=20, col='darkgray')`, then the report will also show the generated figure. There are some differences concerning figure positioning.  
 In  HTML-format output the figure will be placed _immediately after_ the code chunk  generating it (so here soon after `myNicePlot` chunk).  
-That will be different for PDF output. Because PDF's want to resemble the physical paper, figures are automatically placed in the document in such a way to optimise the text flow. In fact, sometimes there is not enough space on the current page to insert the picture, which is therefore placed on another page (perhaps the next one). So, if in this very moment you are reading me from a PDF output, don't be surprised to find the plot placed in what is only apparently a weird place. 
+That would be different for PDF output. Because PDF's want to resemble the physical paper, figures are automatically placed in the document in such a way to optimise the text flow. In fact, sometimes there is not enough space on the current page to insert the picture, which is therefore placed on another page (perhaps the next one). So, if in this very moment you are reading me from a PDF output, don't be surprised to find the plot placed in what is only apparently a weird place. 
 
 
 A final notice about figure generating chunks. The code for `myNicePlot` uses the not so mysterious 
@@ -391,16 +390,29 @@ Try to exercise on some online engine like  [codecogs.com](https://www.codecogs.
 
 ## Convert the rich Rmd document to an HTML report
 
-There are no special commands here. Just the same used for the simple Rmd without code. However, in BloomR Core and BloomR BRemacs, when you check for the file produced:
+There are no special commands here. Just the same used for the simple Rmd without code. However, in BloomR Core and BloomR Lab, when you check for the file produced:
 
 ```{r checkhtml, eval=FALSE}
-dir() # a strage "figure" directory will appear
+dir() # a strange "figure" directory will appear
 ```
 
 together with  `my-first-report.html`, you see also a  `figure` directory listed. Here you find the report's figures, in case you need to use them separately. You can  delete this directory. 
 
 
 
+## Sync Rmd directory in BloomR Lab or Studio  and reduce potential errors 
+
+As noted, before generating the report you need to be sure that the current working directory is set to the one containing the Rmd file `my-first-report.Rmd`.  To do this use `setwd` command,  as noted above, and to be sure check the content of the current working directory with `dir()`.    
+There is an easier way in BloomR Lab and  BloomR Studio. Here you will notice a button like an "R" with an enter symbol, the __Set directory to this file__. Move your cursor on a place in the Rmd file where there is R code (not the narrative), when you do so the button toolbar modifies and, when you hover the appropriate button, you will read from the mouse pointer tooltip *Set directory to this file*. If you click this button. You will see a message on the R console informing about the changing of  current directory.   
+One way to avoid  setting the working directory is specifying  the full path of the file, such as  `D:\\some-dir\\my-first-report.Rmd`. Note that you need to use `\\` (double backslashes) in the paths.  
+
+
+Let us step ahead to for a real Rmd file with code chunks. 
+
+
+<!--
+
+br.getLatexAddons() is going to be phased out. Just download the Studio edition.
 
 ## Setup BloomR for creating PDF reports 
 
@@ -411,17 +423,20 @@ Note that you _do not_ need to be logged to the  Bloomberg or Eikon  Service (or
 
 Assuming that you have the space and an Internet connection, the setup  consist of this line of code:
 
-```{r addons, eval=FALSE}
+{r addons, eval=FALSE}
  br.getLatexAddons()
-```
+
 
 The process can be long depending on the speed of your Internet connection and of the device where BloomR is stored. During the setup you will see a number of windows popping up.  They will automatically close. _Don't touch them_ or you will crash the installation.  
 Of course this long process is to be done only once. 
 
-## Convert the rich Rmd document to a PDF report
+ -->
+
+## Generate a PDF report in BloomR Studio
 
 <!--  Since we have already generated the HTML report and so we have  _knitted_ the Rmd file, we already have generated the markdown file `my-first-report.md`. We need to transform this file in a PDF. 
  -->
+
 
 To tranform our Rmd file into a PDF,   type in the console:
 
@@ -429,8 +444,8 @@ To tranform our Rmd file into a PDF,   type in the console:
 br.rmd2pdf("my-first-report.Rmd")
 ```
 
-As usual remember to sync R working directory before running the function. 
-
+As usual remember to sync R working directory before running the function.  
+Note that you will get an error if you are not using the Studio edition. 
 
 As we have observed above,  in LaTeX (PDF) the plot is automatically placed in such a way to optimise the text flow. Figures and tables are therefore named by those who speak properly _floats_.
 
@@ -505,6 +520,18 @@ For more info go to  [knitr homepage](http://yihui.name/knitr).
 
 
 ```{r compile, eval=FALSE, echo=FALSE}
+
+## If run inside BloomR, use this:
+br.rmd2pdf("reporting.Rmd")
+
+## or br.rmd2both("reporting.Rmd")
+
+
+```
+
+```{r compile.generic, eval=FALSE, echo=FALSE}
+
+## If run outside BloomR, use this chunk
 library(knitr)
 library(markdown)
 file="reporting"
@@ -530,5 +557,5 @@ markdownToHTML(md, output=html)
  -->
 <!--  LocalWords:  MiKTeX BasicTeX knitr Rmd inline backticks BloomR
  -->
-<!--  LocalWords:  BRemacs addons Bloomberg Eikon
+<!--  LocalWords:   addons Bloomberg Eikon
  -->
