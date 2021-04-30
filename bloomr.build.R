@@ -3,15 +3,8 @@
 ## Release log
 ##  New edition system. MiKTeX standalone installer. Minimal Perl for rmarkdown pdfcrop. UNC support. Removed refs to old Java API. New masking quit(). Byte compilation with autoloads. Updated utility URLs.
 
-## To commit
-
-#git update-index --assume-unchanged README.html README.md
-#git commit -am "Commit message" 
-#git update-index --no-assume-unchanged README.html README.md
-
-
 ## build: makeStudio (with miktex, mpm, initexmf)
-## br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, -require 'ess-site and 'markdown-mode, +declare br-init-simple-menu, +br-init-autoloads.
+## br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown, +declare br-init-simple-menu, +br-init-autoloads.
 ## br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
 ## br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign
 ## bloomr.init.R: +q/quit
@@ -20,6 +13,7 @@
 ## ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el
 
 ##  TODO
+##  fix br.md2.. br.rnw2pdf
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
 ##  Test it is: (defun name<space>()  with  \(defun +[[:alpha:]]+\)( → \1 (
 ##  Custom polimode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el

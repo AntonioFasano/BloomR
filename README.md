@@ -1,10 +1,10 @@
 BloomR
 ======
 
-*Portable R for Bloomberg and Thomson Reuters Eikon*
+*Portable R for Bloomberg and Refinitiv Eikon*
+__Features in the upcoming Lakmé release__
 
-
-BloomR is a portable R distribution reshaped in order to get, manipulate and run models against Bloomberg or Thomson Reuters Eikon data.
+BloomR is a portable R distribution reshaped in order to get, manipulate and run models against Bloomberg or Refinitiv Eikon data.
 
 __Focus on  Data__
 
@@ -49,58 +49,41 @@ In a business environment this also facilitates the process of keeping track and
 
 __No Extra Licensing Restrictions__
 
-BloomR itself is open source and it is based on the public APIs released by  Bloomberg ([Bloomberg Open API](http://www.openbloomberg.com/open-api/)) and by [Thomson Reuters](https://developers.thomsonreuters.com/eikon-data-apis/). This means that the same  licensing terms of your Bloomberg Professional Service and Thomson Reuters Eikon service apply to data when you work with it.
+BloomR itself is free/libre, open source  software and it is based on the public APIs released by  Bloomberg ([Bloomberg Open API](http://www.openbloomberg.com/open-api/)) and by [Refinitiv](https://developers.refinitiv.com/en/api-catalog/eikon/eikon-data-api). This means that the same  licensing terms of your Bloomberg Professional Service and Refinitiv Eikon service apply to data when you work with it.
 
 
-BloomR Versions
+BloomR Editions
 -------------
 
 BloomR comes in three versions.
 
 __BloomR Core__ is based on R standard GUI. It is light and convenient to run scripts on the data terminals. 
 
-__BloomR BRemacs__  features also a sophisticated editor (based on Emacs) for writing and executing scripts and interactive code. 
+__BloomR Lab__  features also a sophisticated editor (based on Emacs) for writing and executing scripts and interactive code. 
 
-__BloomR Studio__  Like BloomR BRemacs, but adds a minimal LaTeX (MiKTeX) distribution, which allows to generate both HTML and PDF reports from financial data feeds.
+__BloomR Studio__  Like BloomR BRemacs, but adds a basic LaTeX (MiKTeX) distribution, which allows to generate both HTML and PDF reports from financial data feeds.
 
 
 
 What's new
 ----------
 
-### BloomR Casta Diva (1.4.*)
+### BloomR Lakmé (1.5.*)
 
-Improvements over Turandot version:
+New edition system: Core, Lab, Studio 
 
-This release is a major update with significant changes.
+Added a mini Perl to improve the cropping.  
 
-Now both Bloomberg and Thomson Reuters Eikon are supported.
+Switched from Thomson Reuters to Refinitiv Eikon.  
  
-Bloomberg interface is now based on Rblpapi.   
-BloomR comes in two versions *BloomR Core* and *BloomR BRemacs*. The latter implements an editor based on Emacs.  
-
-
-__read.xlx__
-
-`read.xlx` joins the family. With this function you can read Excel xlsx workbook sheets into R data frames.  Some features are:
-
-* It can import all, one, or a selection of sheets, where specific sheets are requested by means of their name.
-* Instead of importing all the sheets' cells, it can import only those comprised in a named range.
-* It can distinguish between cells formatted as numbers, percent, text and dates,
-* Date cells are recognised  whatever the language locale. 
-* Blank (visual) lines are detected and automatically removed from the data frame, unless you want to keep them.
-* The filter is not based on any external engine and does not requires Excel to be installed at all. It's pure R code, so you can read xlsx files on Linux systems. 
-
-See xlx.help.html, or [xlx.help.pdf](https://github.com/AntonioFasano/BloomR/blob/master/xlx.help.pdf?raw=true) user manual for more.
-
-The new version of the BloomR manual for lecturers (in slide format) is coming soon. 
+Bug fix: Fixed conflicts in plyr:::rbind. 
  
  
 Documentation
 -------------
 
 Find in your BloomR directory the subdirectory `help` intended for learning and reference material.  
-For a self-paced introduction,  download _BloomR Classroom Companion_ from the [latest BloomR release](https://github.com/AntonioFasano/BloomR/releases/latest).
+The new version of the BloomR manual for lecturers (in slide format) is coming soon. 
 
 
 Start to get results in BloomR immediately 
@@ -230,16 +213,19 @@ If you want to run the executable, click `Run anyway`.
 Credits
 -------
 
-BloomR is build upon several great pieces of open source software:
+BloomR is build upon several great pieces of free and open source software:
 
-peazip from http://sourceforge.net/projects/peazip  
-autohotkey from http://ahkscript.org  
-Nsis from http://nsis.sourceforge.net  
-innoextract from http://constexpr.org/innoextract  
-Icon set Simplicio CC 3.0 by Neurovit: http://neurovit.deviantart.com  
-eikonapir from https://github.com/ahmedmohamedali/eikonapir  
-Rblpapi from https://cran.r-project.org/web/packages/Rblpapi/index.html  
-    
+[AutoHotkey](http://ahkscript.org)  
+[Emacs](https://www.gnu.org/software/emacs/)	
+[eikonapir](https://github.com/ahmedmohamedali/eikonapir)	
+[MiKTeX](https://miktex.org/)	
+[Nsis](http://nsis.sourceforge.net)	 
+[innoextract](http://constexpr.org/innoextract)	 
+[Iconset Simplicio CC 3.0 by Neurovit](http://neurovit.deviantart.com)	
+[PeaZip](http://sourceforge.net/projects/peazip)	
+[R](https://www.r-project.org/)	 
+[Rblpapi](https://cran.r-project.org/web/packages/Rblpapi/index.html)	
+       	
 <!-- Local Variables: -->
 <!-- mode: markdown -->
 <!-- End: -->

@@ -793,6 +793,10 @@ store(br.desc)
 ### Add to Windows System Path the executable directories of LaTeX, Pandoc, and Perl with this search priority, and
 ### return invisibly the original path. If "pandonly" is true, add only Pandoc. If "quiet" is false, print the new path.
 
+    ## Exit in case this snippet is not exectuted in Windows
+    if(.Platform$OS.type != "windows")
+        stop("Sorry, Bloomberg Terminal only exists for Windows and so BloomR functions.")
+        
   ## Find executables
   panexe=dbr.brmain("pandoc/bin/pandoc.exe")
   if(!file.exists(panexe))
@@ -800,15 +804,17 @@ store(br.desc)
   pandir=normalizePath(dirname(panexe))
     
   latbin=dbr.brmain("latex/texmfs/install/miktex/bin/x64/latex.exe")
-  if(!file.exists(latbin))
+  if(!file.exists(latbin) && !pandonly){
     stop(paste("Unable to find:", latbin, '\nYour BloomR edition might not support it.'))
-  latdir=normalizePath(dirname(latbin))
+    latdir=normalizePath(dirname(latbin))
+  }
 
   perlexe <- dbr.brmain("perl/bin/perl.exe")
-  if(!file.exists(perlexe))
+  if(!file.exists(perlexe) && !pandonly){
     stop(paste("Unable to find:", perlexe, '\nYour BloomR edition might not support it.'))
-  perldir <- normalizePath(dirname(perlexe))
-  
+    perldir <- normalizePath(dirname(perlexe))
+  }
+    
   ## Add executable dirs to system path
   old.path=Sys.getenv('Path')
   f <- function(dir) Sys.setenv(PATH=paste0(dir, ";", Sys.getenv("PATH")))
@@ -819,9 +825,9 @@ store(br.desc)
   if(!pandonly) f(latdir)
   
   ## Add Ghostscript environment variable   
-  Sys.setenv(GSC="mgs.exe")   
+  if(!pandonly)  Sys.setenv(GSC="mgs.exe")   
 
-  if(!quiet)  message(Sys.getenv("PATH"))
+  if(!quiet) message(Sys.getenv("PATH"))
 
   invisible(old.path)
   
@@ -836,7 +842,7 @@ br.md2pdf{#br.md2pdf}
 Description
 -----------
 Make a markdown file into a PDF
-It assumes that you have installed the BloomR LaTeX addons
+It assumes that you have installed the proper BloomR version.
 
 Usage
 -----
@@ -850,9 +856,12 @@ md.file
 pdf.file
 :   path to the PDF file to be generated.  
 
+quiet
+:   FALSE to show the system PATH variable.  
+
 Details
 -------
-The function will stop with an error if you have not installed BloomR LaTeX addons. To install them use `br.getLatexAddons()`.
+The function will stop with an error if you have not installed proper BloomR version.
 
 Value
 -----
@@ -860,42 +869,27 @@ If there are no errors, it returns zero invisibly, otherwise it prints an error 
 
 
 ```{r br.md2pdf, opts.label='purlme'}
-br.md2pdf=function(md.file, pdf.file){
+br.md2pdf=function(md.file, pdf.file, quiet=FALSE){
 ### Make a markdown file into a PDF
-### You need  BloomR LaTeX addons or the proper BloomR version
+### You need the proper BloomR version
 
     ## Test arguments
     if(missing(md.file)) stop("Argument 'md.file' missing.")
     if(missing(pdf.file)) stop("Argument 'pdf.file' missing.")
-
-    ## Set pandoc and LaTeX exe and dir 
-    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
-    if(!file.exists(panexe))
-        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
-    latbin=dbr.brmain("/latex/texmfs/install/miktex/bin/latex.exe")
-    if(!file.exists(latbin))
-        stop(paste("Unable to find:", latbin, '\nDid you install BloomR LaTeX addons?'))
-    latbin=dbr.brmain("/latex/texmfs/install/miktex/bin")
-
-    ## Shell escape
-    panexe=.br.wpath(panexe)
-
-    ## Set system Path to LaTeX bin
-    old.path=Sys.getenv('Path')
-    x=paste0(gsub('/', '\\\\',  latbin), ';',  Sys.getenv("Path"))
-    Sys.setenv(Path=x)
-
-    cmd=paste(panexe, .br.wpath(md.file), '-o', .br.wpath(pdf.file))
-    out  <-  system(cmd, intern = TRUE, invisible = FALSE)
-
-    ## Restore origina system Path
-    Sys.setenv(Path=old.path)
-
-    ## Return errors if any
-    if(!is.null(attr(out, 'status')))  message(paste(out, collapse="\n"))
+    
+    ## Set executable paths and render
+    old.path <- .br.addpaths(quiet=quiet)
+    cmd <- paste("pandoc", .br.wpath(md.file), '-o', .br.wpath(pdf.file))
+    tryCatch(
+        out  <-  system(cmd, intern = TRUE, invisible = FALSE),
+        finally = {
+            ## Restore original system Path
+            Sys.setenv(Path=old.path)
+            ## Return errors if any
+            if(!is.null(attr(out, 'status')))  message(paste(out, collapse="\n"))
+        })  
 
     invisible(out)
-
 }
 store(br.md2pdf)
 ```
@@ -920,7 +914,7 @@ html.file
 :   path to the HTML file to be generated. If missing, change extension of rmd.file to html.  
 
 quiet
-:   FALSE to show pandoc command line and information on executables.  
+:   FALSE to show the system PATH variable.  
 
 Details
 -------
@@ -944,17 +938,8 @@ br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
     library(knitr)
     library(rmarkdown)
 
-    ## Set pandoc and LaTeX exe and dir 
-    panexe=dbr.brmain("pandoc/bin/pandoc.exe")
-    if(!file.exists(panexe))
-        stop(paste("Unable to find:", panexe, '\nDid you install BloomR LaTeX addons?'))
-    pandir=dbr.brmain("pandoc/bin")
-    
-    ## Add Pandoc bin dir to system Path
-    old.path=Sys.getenv('Path')
-    x=paste0(gsub('/', '\\\\',  pandir), ';',  Sys.getenv("Path"))
-    Sys.setenv(Path=x)
-    
+    ## Set executable paths and render
+    old.path <- .br.addpaths(pandonly = TRUE, quiet = TRUE)  
     tryCatch(
         ## Render Rmd to HTML
         out <- render(rmd.file,
@@ -963,10 +948,8 @@ br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
                       output_file=html.file, quiet=quiet),
         finally = {
             ## Restore original system Path
-            if(!quiet) message("\nPandoc dir/ver: ", rmarkdown:::.pandoc$dir,
-                               " v", as.character(rmarkdown:::.pandoc$version))
             Sys.setenv(Path=old.path)
-        })    
+        })
 
     invisible(out)
 }
@@ -994,7 +977,7 @@ pdf.file
 :   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
 
 quiet
-:   FALSE to show pandoc command line, information on executables, and intermediate files.  
+:   FALSE to show the system PATH variable and intermediate files.  
 
 Details
 -------
@@ -1016,9 +999,8 @@ br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
     library(knitr)
     library(rmarkdown)
     
-    ## Set executable paths
-    old.path <- .br.addpaths()
-    
+    ## Set executable paths and render
+    old.path <- .br.addpaths(quiet = TRUE)    
     tryCatch(
         ## Render Rmd to PDF
         out <- render(rmd.file,
@@ -1028,9 +1010,6 @@ br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
                       clean=quiet, quiet=quiet),
         finally = {
             ## Restore original system Path
-            if(!quiet) message("\nPandoc dir/ver: ", rmarkdown:::.pandoc$dir,
-                               " v", as.character(rmarkdown:::.pandoc$version),
-                               "\nLaTeX dir: ", latdir)  
             Sys.setenv(Path=old.path)
         })
     invisible(out)            
@@ -1058,7 +1037,7 @@ out.dir
 :   directory of the output files. If missing, use `dirname(rmd.file)`.  
 
 quiet
-:   FALSE to show pandoc command line, information on executables, and intermediate files.  
+:   FALSE to show the system PATH variable, and intermediate files.  
 
 Details
 -------
@@ -1090,7 +1069,7 @@ br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
     library(rmarkdown)
 
     ## Set executable paths
-    old.path <- .br.addpaths()
+    old.path <- .br.addpaths(quiet = TRUE)
     
     tryCatch(
         {
@@ -1110,15 +1089,71 @@ br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
         },
         finally = {
             ## Restore original system Path
-            if(!quiet) message("\nPandoc dir/ver: ", rmarkdown:::.pandoc$dir,
-                               " v", as.character(rmarkdown:::.pandoc$version),
-                               "\nLaTeX dir: ", latdir)
             Sys.setenv(Path=old.path)
         })
     
     invisible(dirname(out))    
 }
 store(br.rmd2both)
+
+```
+
+```{to.be.finished}
+
+br.tex2pdf=function(tex.file, pdf.file, auxname="latexaux", quiet=TRUE){
+### Make an R Markdown file into a PDF
+### You need the proper BloomR version
+
+  ## to be finished uncomment set path var lines, consider synctex !!!!!!!!! 
+  
+  ## Test arguments
+  if(missing(tex.file)) stop("Argument 'tex.file' missing.")
+  texsans <- tools:::file_path_sans_ext(tex.file)
+  tex <- if(texsans == tex.file) paste0(texsans, '.tex') else tex.file
+  pdf <- if(missing(pdf.file)) paste0(texsans, '.pdf') else pdf.file
+
+  if(!file.exists(tex)) stop("There is no file\n", tex)
+  if(!dir.exists(dirname(pdf))) stop("There is no directory\n", dirname(pdf))
+  if(basename(auxname)!= auxname) stop("Please, use a name not a path as 'auxname' argument\n", auxname)
+  
+  ## Build Windows paths 
+  pdfdir <- normalizePath(dirname(pdf))
+  pdfbase <- basename(pdf)
+  pdfbase.sq <- shQuote(tools:::file_path_sans_ext(pdfbase))
+  texdir <- normalizePath(dirname(tex))
+  texbase <- basename(tex)
+  texbase.q <- shQuote(texbase)
+  outdir <- auxname
+  outdir.q <- shQuote(outdir)
+  pdf.aux <- file.path(texdir, outdir, pdfbase)
+
+  library(knitr)
+  library(rmarkdown)
+    
+  ## Set executable paths and build PDF
+##############  old.path <- .br.addpaths(quiet = quiet)
+  old.wd <- setwd(texdir)
+  cmd <- c("pdflatex", "-interaction=batchmode",
+           paste0("-output-directory=", outdir.q), paste0("-jobname=", pdfbase.sq), texbase.q)
+  
+  tryCatch(
+    ret <- system2(cmd[1], cmd[-1]),
+    finally = {
+      setwd(old.wd)
+      new.path <- Sys.getenv("Path")
+##############      Sys.setenv(Path=old.path)
+      if(ret) {
+        cmd[2]  <- "" # remove batchmode
+        stop("There was a non zero exit. To debug you can use:\n\n", 
+             paste("path", new.path, "\n\n"),
+             paste("cd", texdir, "\n\n"),
+             paste(cmd, collapse = " "))
+      } else   file.copy(pdf.aux, pdf)                         
+        })
+    invisible(ret)
+}
+
+
 
 ```
 
@@ -1569,33 +1604,41 @@ rm(store)
 
 ```{r setpaths, opts.label='buildenv'}
 
-original.system.path <- .br.addpaths()
+if(build.env$use.bloomr)
+    original.system.path <- .br.addpaths()
 
 ```
 
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}
-knitr:::opts_chunk$set(tidy.opts=list(width.cutoff=60))
-knit2=function(file){
-
+knit2=function(file, use.bloomr=TRUE){
+### Knit this Rmd with BloomR shipped Pandoc & LaTeX, if use.bloomr=T and we're on Windows. 
     
+    if(use.bloomr && .Platform$OS.type != "windows")
+        stop("If you want to build this Rmd with BloomR shipped Pandoc & LaTeX, you need to use Windows.")
+        
     require(knitr); require(rmarkdown)
+    knitr:::opts_chunk$set(tidy.opts=list(width.cutoff=60))
     fse=tools:::file_path_sans_ext(file)
     step2=FALSE
     knit(file)
     step2=TRUE
     build.env <- new.env()
+    build.env$use.bloomr <- use.bloomr
     knit(file, envir = build.env)
-    message("Old Path: ", build.env$original.system.path)
-    message("New: ", Sys.getenv("PATH"))
+    if(use.bloomr && .Platform$OS.type != "windows")   
+        message("Old Path: ", build.env$original.system.path, 
+                "\nNew: ", Sys.getenv("PATH"))
     topics()
     render(paste0(fse, '.md'), "html_document")
     render(paste0(fse, '.md'), pdf_document())
     render("../README.md", html_document())
 
-    Sys.setenv(Path=build.env$original.system.path)
-    message("Old system path restored")
-
+    if(use.bloomr && .Platform$OS.type != "windows"){
+        Sys.setenv(Path=build.env$original.system.path)
+        message("Old system path restored")
+    }
 }
+## knit2("bloomr.Rmd", use.bloomr=FALSE) 
 knit2("bloomr.Rmd") 
 
 ## if with markdown lib, but topics needs rewrite
