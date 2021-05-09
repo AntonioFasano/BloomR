@@ -12,8 +12,6 @@ source(paste0(R.home("share"), "/bloomr/bloomr.R"))
 assign('bloomr.addons',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
 source(paste0(R.home("share"), "/bloomr/bloomr.sys.R"), local=bloomr.addons)
 source(paste0(R.home("share"), "/bloomr/xlx.R"), local=bloomr.addons)
-bloomr.addons$quit <- function(save = "no", status = 0, runLast = TRUE) base:::quit(save, status, runLast)
-bloomr.addons$q    <- function(save = "no", status = 0, runLast = TRUE) base:::quit(save, status, runLast)
 attach(bloomr.addons)
 
 ## Load libs

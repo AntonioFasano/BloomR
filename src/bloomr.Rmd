@@ -62,7 +62,7 @@ store=function(sym){
     }
     
     assign(name, val, envir=bloomr)
-    rm( list=name, envir=parent.frame())
+    rm(list=name, envir=parent.frame())
 }
 
 ```
@@ -788,7 +788,6 @@ store(br.desc)
 
 
 ```{r rmd-internal, opts.label='purlme'}
-
 .br.addpaths <- function(pandonly = FALSE, quiet=TRUE){
 ### Add to Windows System Path the executable directories of LaTeX, Pandoc, and Perl with this search priority, and
 ### return invisibly the original path. If "pandonly" is true, add only Pandoc. If "quiet" is false, print the new path.
@@ -806,14 +805,14 @@ store(br.desc)
   latbin=dbr.brmain("latex/texmfs/install/miktex/bin/x64/latex.exe")
   if(!file.exists(latbin) && !pandonly){
     stop(paste("Unable to find:", latbin, '\nYour BloomR edition might not support it.'))
-    latdir=normalizePath(dirname(latbin))
   }
+  latdir=normalizePath(dirname(latbin))
 
   perlexe <- dbr.brmain("perl/bin/perl.exe")
   if(!file.exists(perlexe) && !pandonly){
     stop(paste("Unable to find:", perlexe, '\nYour BloomR edition might not support it.'))
-    perldir <- normalizePath(dirname(perlexe))
   }
+  perldir <- normalizePath(dirname(perlexe))
     
   ## Add executable dirs to system path
   old.path=Sys.getenv('Path')
@@ -854,7 +853,7 @@ md.file
 :   path to the markdown file to be converted.  
 
 pdf.file
-:   path to the PDF file to be generated.  
+:   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
 
 quiet
 :   FALSE to show the system PATH variable.  
@@ -869,13 +868,13 @@ If there are no errors, it returns zero invisibly, otherwise it prints an error 
 
 
 ```{r br.md2pdf, opts.label='purlme'}
-br.md2pdf=function(md.file, pdf.file, quiet=FALSE){
+br.md2pdf=function(md.file, pdf.file, quiet=TRUE){
 ### Make a markdown file into a PDF
 ### You need the proper BloomR version
 
     ## Test arguments
     if(missing(md.file)) stop("Argument 'md.file' missing.")
-    if(missing(pdf.file)) stop("Argument 'pdf.file' missing.")
+    if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(md.file), '.pdf')
     
     ## Set executable paths and render
     old.path <- .br.addpaths(quiet=quiet)
@@ -914,7 +913,7 @@ html.file
 :   path to the HTML file to be generated. If missing, change extension of rmd.file to html.  
 
 quiet
-:   FALSE to show the system PATH variable.  
+:   FALSE to show the system PATH variable and intermediate files.  
 
 Details
 -------
@@ -945,7 +944,8 @@ br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
         out <- render(rmd.file,
                       output_format=html_document(theme="cerulean", highlight="tango",
                                                   md_extensions="-tex_math_single_backslash"),
-                      output_file=html.file, quiet=quiet),
+                      output_file=html.file,
+                      clean=quiet, quiet=quiet),
         finally = {
             ## Restore original system Path
             Sys.setenv(Path=old.path)
@@ -1037,7 +1037,7 @@ out.dir
 :   directory of the output files. If missing, use `dirname(rmd.file)`.  
 
 quiet
-:   FALSE to show the system PATH variable, and intermediate files.  
+:   FALSE to show the system PATH variable and intermediate files.  
 
 Details
 -------
@@ -1077,7 +1077,8 @@ br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
             out <- render(rmd.file,
                           output_format=html_document(theme="cerulean", highlight="tango",
                                                      md_extensions="-tex_math_single_backslash"),
-                          output_file=html.file, quiet=quiet)
+                          output_file=html.file,
+                          clean=quiet, quiet=quiet)
 
             ## Render Rmd to PDF
             out <- render(rmd.file,

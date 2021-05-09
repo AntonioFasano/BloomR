@@ -2,7 +2,8 @@ BloomR
 ======
 
 *Portable R for Bloomberg and Refinitiv Eikon*
-__Features in the upcoming Lakmé release__
+
+__Some features are related to the Lakmé beta release__
 
 BloomR is a portable R distribution reshaped in order to get, manipulate and run models against Bloomberg or Refinitiv Eikon data.
 
@@ -72,9 +73,11 @@ What's new
 
 New edition system: Core, Lab, Studio 
 
-Added a mini Perl to improve the cropping.  
+Added a mini Perl distro to improve the cropping.
 
-Switched from Thomson Reuters to Refinitiv Eikon.  
+Switched from Thomson Reuters to Refinitiv Eikon.
+
+Byte compilation with autoloads improving Lab and Studio speed
  
 Bug fix: Fixed conflicts in plyr:::rbind. 
  

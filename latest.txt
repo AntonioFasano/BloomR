@@ -16,8 +16,9 @@ _Change details_
                 +declare br-init-simple-menu, +br-init-autoloads.
     br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
     br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign
-    bloomr.init.R: +q/quit
-    bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, +buildenv
+    bloomr.sys.R: +q/quit, -.br.testBR, -br.getLatexAddons, -br.getPandoc,
+                  -.br.getPandoc.release, -download.bin
+    bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, ~br.rmd2html, ~br.md2pdf, +buildenv
     xlx.R: plyr:::rbind.fill without loading package to avoid conflicts
     ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el
 

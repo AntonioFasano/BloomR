@@ -345,27 +345,27 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2021-04-21   9.595 10.543        NA  7.674   8.755
-## 2021-04-22      NA  8.484        NA     NA      NA
-## 2021-04-23      NA     NA        NA 11.425  11.407
-## 2021-04-24  10.106     NA     9.710  8.873      NA
-## 2021-04-25      NA 10.169    11.474 10.495  10.415
+## 2021-05-04      NA     NA    11.583     NA   9.277
+## 2021-05-05      NA     NA        NA  9.246   6.903
+## 2021-05-06   9.109     NA        NA 10.091  11.011
+## 2021-05-07      NA 10.130        NA 11.924  10.980
+## 2021-05-08      NA 11.156        NA     NA  10.277
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2021-04-21      NA      NA     NA 10.406      NA
-## 2021-04-22      NA      NA     NA  8.337  10.048
-## 2021-04-23      NA   8.843 10.769 10.652      NA
-## 2021-04-24      NA   9.350 10.664     NA   9.864
-## 2021-04-25   8.959      NA  7.410  9.513  10.233
+## 2021-05-04      NA   9.893     NA     NA   9.741
+## 2021-05-05      NA      NA     NA     NA  10.325
+## 2021-05-06  10.544      NA 11.625     NA  10.870
+## 2021-05-07  12.036      NA     NA   9.65  10.014
+## 2021-05-08      NA  10.945     NA     NA      NA
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2021-04-21 10.034     NA     NA
-## 2021-04-22     NA     NA  8.430
-## 2021-04-23     NA     NA 11.452
-## 2021-04-24     NA  9.691  9.858
-## 2021-04-25 10.208     NA  9.171
+## 2021-05-04 10.254  9.250     NA
+## 2021-05-05 11.294 10.915     NA
+## 2021-05-06     NA  9.982     NA
+## 2021-05-07     NA 11.225 10.882
+## 2021-05-08  9.560  9.156 10.171
 ```
 
 Note:
@@ -701,9 +701,11 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2021-04-21   8.544      NA
-## 2021-04-22      NA   9.847
-## 2021-04-23  10.619  10.836
+## 2021-05-04  11.592  10.958
+## 2021-05-05      NA  11.012
+## 2021-05-06   9.166   9.647
+## 2021-05-07      NA   8.681
+## 2021-05-08   8.269   7.876
 ```
 
 ```r
@@ -751,7 +753,7 @@ br.md2pdf{#br.md2pdf}
 Description
 -----------
 Make a markdown file into a PDF
-It assumes that you have installed the BloomR LaTeX addons
+It assumes that you have installed the proper BloomR version.
 
 Usage
 -----
@@ -763,11 +765,14 @@ md.file
 :   path to the markdown file to be converted.  
 
 pdf.file
-:   path to the PDF file to be generated.  
+:   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
+
+quiet
+:   FALSE to show the system PATH variable.  
 
 Details
 -------
-The function will stop with an error if you have not installed BloomR LaTeX addons. To install them use `br.getLatexAddons()`.
+The function will stop with an error if you have not installed proper BloomR version.
 
 Value
 -----
@@ -796,7 +801,7 @@ html.file
 :   path to the HTML file to be generated. If missing, change extension of rmd.file to html.  
 
 quiet
-:   FALSE to show pandoc command line and information on executables.  
+:   FALSE to show the system PATH variable and intermediate files.  
 
 Details
 -------
@@ -830,7 +835,7 @@ pdf.file
 :   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
 
 quiet
-:   FALSE to show pandoc command line, information on executables, and intermediate files.  
+:   FALSE to show the system PATH variable and intermediate files.  
 
 Details
 -------
@@ -862,7 +867,7 @@ out.dir
 :   directory of the output files. If missing, use `dirname(rmd.file)`.  
 
 quiet
-:   FALSE to show pandoc command line, information on executables, and intermediate files.  
+:   FALSE to show the system PATH variable and intermediate files.  
 
 Details
 -------
@@ -874,6 +879,65 @@ If there are no errors, it returns invisibly the absolute path of the output fil
 
 
 
+
+```{to.be.finished}
+
+br.tex2pdf=function(tex.file, pdf.file, auxname="latexaux", quiet=TRUE){
+### Make an R Markdown file into a PDF
+### You need the proper BloomR version
+
+  ## to be finished uncomment set path var lines, consider synctex !!!!!!!!! 
+  
+  ## Test arguments
+  if(missing(tex.file)) stop("Argument 'tex.file' missing.")
+  texsans <- tools:::file_path_sans_ext(tex.file)
+  tex <- if(texsans == tex.file) paste0(texsans, '.tex') else tex.file
+  pdf <- if(missing(pdf.file)) paste0(texsans, '.pdf') else pdf.file
+
+  if(!file.exists(tex)) stop("There is no file\n", tex)
+  if(!dir.exists(dirname(pdf))) stop("There is no directory\n", dirname(pdf))
+  if(basename(auxname)!= auxname) stop("Please, use a name not a path as 'auxname' argument\n", auxname)
+  
+  ## Build Windows paths 
+  pdfdir <- normalizePath(dirname(pdf))
+  pdfbase <- basename(pdf)
+  pdfbase.sq <- shQuote(tools:::file_path_sans_ext(pdfbase))
+  texdir <- normalizePath(dirname(tex))
+  texbase <- basename(tex)
+  texbase.q <- shQuote(texbase)
+  outdir <- auxname
+  outdir.q <- shQuote(outdir)
+  pdf.aux <- file.path(texdir, outdir, pdfbase)
+
+  library(knitr)
+  library(rmarkdown)
+    
+  ## Set executable paths and build PDF
+##############  old.path <- .br.addpaths(quiet = quiet)
+  old.wd <- setwd(texdir)
+  cmd <- c("pdflatex", "-interaction=batchmode",
+           paste0("-output-directory=", outdir.q), paste0("-jobname=", pdfbase.sq), texbase.q)
+  
+  tryCatch(
+    ret <- system2(cmd[1], cmd[-1]),
+    finally = {
+      setwd(old.wd)
+      new.path <- Sys.getenv("Path")
+##############      Sys.setenv(Path=old.path)
+      if(ret) {
+        cmd[2]  <- "" # remove batchmode
+        stop("There was a non zero exit. To debug you can use:\n\n", 
+             paste("path", new.path, "\n\n"),
+             paste("cd", texdir, "\n\n"),
+             paste(cmd, collapse = " "))
+      } else   file.copy(pdf.aux, pdf)                         
+        })
+    invisible(ret)
+}
+
+
+
+```
 
 br.sample{#br.sample}
 ====================

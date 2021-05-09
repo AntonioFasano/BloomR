@@ -1,11 +1,10 @@
 ###  BloomR source
 
 ## For commit
-## user downloads folder, switch-based branching, find alt TeX repos
+## Fixed br.md2, br.rnw2pdf, ~q/quit, -.br.testBR, -br.getLatexAddons, -br.getPandoc, -.br.getPandoc.release, -download.bin
 
 ##  TODO
-##  fix br.md2.. br.rnw2pdf mostly is to test the new bloomr.rmd
-##  Check when  you start R its global env is not dirty
+##  Remove "requestInfo" from R global env at start due to eikonapir
 ##  auto find last ess on melpa
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
 ##  Custom polimode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
@@ -1877,7 +1876,7 @@ existMake_ <- function(dir, overwrite, ask, desc="", isdown=FALSE){
     if(nondirty()) dcmc()
            
     ## Dirty and not overwritable 
-    else if(!overwrite) message("Skipping action, to preserve existing downloads!")
+    else if(!overwrite) message("Skipping action, due to 'tight = TRUE' argument!")
 
     ## Dirty but overwritable 
     else{
