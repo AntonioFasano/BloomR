@@ -1,26 +1,16 @@
 ###  BloomR source
 
-## Release log
-##  New edition system. MiKTeX standalone installer. Minimal Perl for rmarkdown pdfcrop. UNC support. Removed refs to old Java API. New masking quit(). Byte compilation with autoloads. Updated utility URLs.
-
-## build: makeStudio (with miktex, mpm, initexmf)
-## br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown, +declare br-init-simple-menu, +br-init-autoloads.
-## br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
-## br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign
-## bloomr.init.R: +q/quit
-## bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, +buildenv
-## xlx.R: plyr:::rbind.fill without loading package to avoid conflicts
-## ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el
+## For commit
+## user downloads folder, switch-based branching, find alt TeX repos
 
 ##  TODO
-##  fix br.md2.. br.rnw2pdf
+##  fix br.md2.. br.rnw2pdf mostly is to test the new bloomr.rmd
+##  Check when  you start R its global env is not dirty
+##  auto find last ess on melpa
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
-##  Test it is: (defun name<space>()  with  \(defun +[[:alpha:]]+\)( → \1 (
 ##  Custom polimode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
-##  Create a download folder var in global env
 ##  Byte compile is async. "0" can be removed in tha case stadard emacs elisp files
 ##  Automatically identify knit/rmarkdown needed LaTeX packages. See scatch latex.autopackages
-##  Perhaps use switch+get.edition() rather than if-else + is.core/lab/studio, in downloads/expand/bloomrTree
 ##  NSIS does not delete an existing dir, but silently overwrites it
 ##  Repurpose src\bloomr.beta.*
 ##  Repurpose tests and test data 
@@ -107,6 +97,7 @@ G$nsiszip <- 'nsis'
 #G$essurl <- 'http://ess.r-project.org/downloads/ess/ess-17.11.zip'
                                         # consider now melpa
 G$essurl <- "https://melpa.org/packages/ess-20210414.2354.tar"
+G$essurl <- "https://melpa.org/packages/ess-20210505.1651.tar"
 #G$essurl <- 'https://github.com/emacs-ess/ESS/archive/refs/tags/ESSRv1.7.zip'
 G$esszip <- 'ess'
 #G$polyurl <- 'https://github.com/vspinu/polymode/archive/master.zip'
@@ -137,45 +128,56 @@ G$perlzip <- "perl" # used by rmarkdown pdfcrop
 G$perlurl <- "https://strawberryperl.com/download/5.32.1.1/strawberry-perl-5.32.1.1-64bit-portable.zip"
 
 ## Local paths
-G$work <- "" # This is the build workdir, not to be confused wtih R getwd()
+G$work <-    "" # This is the build workdir, not to be confused wtih R getwd()
+G$downdir <- "" # This is the downloads dir. 
 G$appname <- "main" # BloomR application folder name. Used by app.pt() 
-G$branch <- NULL # Branch dir: whether "brCore" or a common "brEmacs" dir for non-Core editions
+G$branch <- NULL # Branch dir. The value can be "brCore" or "brEmacs" (for non-Core editions)
 
 ## Arguments
 G$bremacs <- NULL
 G$studio <- NULL
 G$ndown <- 0
-
 G$what <- NULL # What edition? If what !'core', then is.bremacs() TRUE
 G$builds <- NULL # Char vector of remaining builds to go 
+G$alttex <- FALSE # Try alt LaTeX repos on failures
 
 
-## Dev style 
-## Functions returning/accepting paths normally use paths relative to G$work.
-## The latter ones will use a workhorse function with work.pt() if they need to access file system.
+## Path convention
+## Paths are normally related to G$work or G$downdir.
+## Absolute paths are retrieved by means of work.pt() and down.pt().
+## Other *.pt functions return paths relative to special BloomR folders e.g. root.pt().
+## Primitive functions not using the *.pt functions use a foo_ template
 
 makeBloomR <- function( # Build BloomR
                     work,         # work dir path, absolute or relative to cur path
-                    tight=FALSE,  # reuse downloaded material in the build workdir
+                    downdir=NULL, # optional resoruce download directory   
+                    tight=FALSE,  # Reuse the downloads directory and build workdir 
                     ndown=2,      # num of download attempts
                     what='all',   # what edition: all/core/lab/studio
                                   # 'all' requires deb==1:6. Else only core is built
                     ## For debug/test:
                     bundle='exe', # exe/zip/all/none make the related installer for distribution
                     ask=TRUE,     # asks if to overwrite the existent build workdir and installer
+                    alttex=FALSE, # Try alternative LaTeX repos on failures, beyond the suggested one 
                     deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug.
                     gitsim=FALSE, # local path (abs. or relative)to simulate github downloads.
                     reset=TRUE    # FALSE to allow multi-builds calls and keep globals
 ){
 
+    
     ## Set work dir
     if(!nzchar(work)) stop("Please, specify a work directory as first arg!")
-    if(grepl(":$", work))
-        stop("In ",  work, "\n ending with a colon (:) is ambiguous and not allowed as a working directory.",
-             "\nFor a USB drive root append a slash to it.")
+    chk.colon(work)
     G$work <- work 
 
-   
+    ## Set downloads dir
+    if(!is.null(downdir)){
+        chk.colon(downdir)
+        if(is.subdir_gen(downdir, work))
+            stop(downdir, "\n cannot be a subidrectory of\n", work, ".")
+    }    
+    G$downdir <- if(is.null(downdir)) work.pt("!downloads") else downdir
+       
     ## Set git dir
     G$github.local <- ""
     if(gitsim!=FALSE && nzchar(gitsim))
@@ -187,7 +189,7 @@ makeBloomR <- function( # Build BloomR
     if(.Platform$OS.type != "windows")
         stop("Sorry, Bloomberg Terminal only exists for Windows and so BloomR.")
     
-    ## Check for required package
+    ## Check for required packages
     if(!loadLib("curl")) return(1)
     if(!loadLib("XML")) return(1)
 
@@ -195,6 +197,7 @@ makeBloomR <- function( # Build BloomR
     editions <- c('all', 'core', 'lab', 'studio')
     if(! what %in% editions) messagev("'what' argument is not in", sQuote(editions))
     G$what <- what
+    G$alttex  <- alttex
 
     ## Don't touch the build history, if reset =FALSE 
     if(reset) {
@@ -205,15 +208,14 @@ makeBloomR <- function( # Build BloomR
     ## We use a single branch directory for Lab and Studio. The former needs be bundled before adding Studio files
     G$branch <- ifelse(is.bremacs(), "brEmacs", "brCore") 
     
-    #G$bremacs <- what=="bremacs" || what=="studio"
-    #G$branch <- ifelse(G$bremacs, "brEmacs", "brCore") # distro directory
-    #G$studio <- (sndpass && what=="studio")
-
     ## Parse residual arguments
     G$ndown <- ndown
 
     ## Step 1
-    if(1 %in% deb) existMake('', overwrite=!tight, ask, paste("working dir:\n", G$work))
+    if(1 %in% deb) {
+        existMake(   '', overwrite=!tight, ask, paste("working dir:\n",   G$work))
+        existMake.dd('', overwrite=!tight, ask, paste("downloads dir:\n", G$downdir))
+    }
     
     ## Step 2
     if(2 %in% deb) downloads(tight)
@@ -233,26 +235,12 @@ makeBloomR <- function( # Build BloomR
     ## Make additional builds. If  what == 'all', during the Studio build several steps are skipped.  See was.lab()
     G$builds <- G$builds[-1] # needs makeBloomR(reset=F)
     if(length(G$builds)) makeBloomR(
-                             work=work, tight=TRUE,  
-                             ndown=ndown, bundle=bundle, ask=ask,     
+                             work=work, downdir=downdir, tight=TRUE,  
+                             ndown=ndown, bundle=bundle, ask=ask, alttex=alttex,
                              what=what,
                              reset =FALSE, # this will keep G$builds status 
                              deb=deb, gitsim=gitsim)
         
-    #if(what=='all' && deb==1:6) {
-    #    makeBloomR(work=work, tight=TRUE,  
-    #               ndown=ndown, bundle=bundle, ask=ask,     
-    #               what="bremacs",
-    #               deb=deb, gitsim=gitsim)
-    #}
-    # 
-    ### To save space Studio recycles BRemacs folder
-    #if((what=='all' || what=='studio') && !sndpass) {
-    #    makeBloomR(work=work, tight=TRUE,  
-    #               ndown=ndown, bundle=bundle, ask=ask,     
-    #               what="studio", sndpass=TRUE,
-    #               deb=deb, gitsim=gitsim)
-    #}
     
 }
 
@@ -330,10 +318,10 @@ downloads.core <- function(overwrite){
     
 
     ## CRAN packages
-    existMake("@packs", overwrite=overwrite, ask=FALSE, "packages dir:")# @ to distinguish from unzipped dir
+    existMake.dd("rlibs", overwrite=overwrite, ask=FALSE, "packages dir:")
     packs <- getDeps.format(G$packlist)    
     for(pack in unique(packs)) # Loop over packs and download them 
-        download.nice(cran.geturl(pack), makePath("@packs", pack), overwrite,
+        download.nice(cran.geturl(pack), makePath("rlibs", pack), overwrite,
                   pack)
         
     ## Eikon
@@ -352,7 +340,7 @@ downloads.lab <- function(overwrite){
     cback <- function(){
         dir <- web.greplink("emacs-../", pos=-1, G$emacsurl, abs=TRUE)
         zip <- web.greplink("emacs.*?64.zip$", pos=-1, dir)
-        p0(G$emacsurl, rurl, zip)            
+        p0(dir, zip)
     }
     download.nice(cback, G$emacszip, overwrite,
                   "Emacs files")
@@ -389,27 +377,50 @@ downloads.lab <- function(overwrite){
 
 downloads.studio <- function(overwrite){
 ### BloomR Studio downloads
-        
-    ## MiKTeX
+    
+    ## MiKTeX 
+    message("Downloading MiKTeX packages")
     from <- web.greplink("*.zip$", pos=-1, G$mikurl, abs=TRUE)
     download.nice(from, G$mikzip, overwrite, "MiKTeX installer")
 
-    miktex.exe <- p0(G$mikzip,'.d/miktexsetup_standalone.exe')
-    if(!file.exists(work.pt(miktex.exe))) {
-        uzip(G$mikzip, p0(G$mikzip,'.d'), 
-             "Preparing MiKTeX installer")
+    ## MiKTeX (expand installer)
+    uzip(G$mikzip, G$mikzip, 
+             "MiKTeX installer")
+
+    ## Downloading MiKTeX packages
+    miktex.exe <- makePath(G$mikzip, 'miktexsetup_standalone.exe')
+    cmd <- p0(winwork.pt(miktex.exe),
+              " --verbose --local-package-repository=", windown.pt(p0(G$mikzip,'.d')), 
+              " --package-set=basic download")
+
+    if(!G$alttex){
+        message("Downloading MiKTeX packages using the suggested repository for your location")    
+        shell.ps(cmd, winwork.pt("ps.latexdown.txt"))
         
-        message("Downloading MiKTeX packages")
-        cmd <- p0(awin.pt(miktex.exe),
-                  " --verbose --local-package-repository=", awin.pt(p0(G$mikzip,'.d')), 
-                  " --package-set=basic download")
-        shell.ps(cmd, awin.pt("ps.latexdown.txt"))
+    } else {
+        message("Downloading MiKTeX packages using alternative repositories on failures")    
+
+        ## Get repo list
+        cmd.list <- paste(winwork.pt(miktex.exe), "--list-repositories")
+        repos <- system(cmd.list, intern=TRUE)
+
+        ## Loop on repos until success 
+        for(repo in repos) {
+            message("\n\n", "Trying repository:\n", repo)
+            repo.opt <- p0("--remote-package-repository=", repo)
+            cmd.repo <- paste(cmd, repo.opt)
+            ret <- shell.ps(cmd.repo, winwork.pt("ps.latexdown.txt"), stop = FALSE)  
+            if(ret==0) break
+        }
+        if(ret) {
+            stop("Despite trying ", length(repos), ", errors persist")
+            } else message("Repo\n", repo, "proved successful")
     }
-        
+            
     ## Pandoc        
     from <- p0("https://github.com",
                web.greplink("pandoc-[.0-9]+-windows-x86_64.zip$", pos=1, G$panurl)) 
-    download.nice(cback, G$panzip, overwrite, "Pandoc")
+    download.nice(from, G$panzip, overwrite, "Pandoc")
 
     ## Strawberry Perl
     download.nice(G$perlurl, G$perlzip, overwrite, "Perl")
@@ -430,77 +441,61 @@ expand <- function(){
 expand.core <- function(){
     
     ## Peazip
-    uzip(G$pzip, p0(G$pzip,'.d'), 
-          "Peazip binaries")
+    uzip(G$pzip, G$pzip, "Peazip binaries")
     
     ## innoextract
-    uzip(G$innozip, p0(G$innozip,'.d'), 
-          "innoextract binaries")
+    uzip(G$innozip, G$innozip, "innoextract binaries")
     
     ## R files
-    innoextract(G$rzip, p0(G$rzip,'.d'),
-                "R files")
+    innoextract(G$rzip, G$rzip, "R files")
 
     ## NSIS files
-    uzip.7z(G$nsiszip, p0(G$nsiszip, '.d'), 
-            "NSIS files")
+    uzip.7z(G$nsiszip, G$nsiszip, "NSIS files")
     
     ## Eikon
-    uzip(G$eikonzip, p0(G$eikonzip,'.d'), 
-          "Eikon binaries")
+    uzip(G$eikonzip, G$eikonzip, "Eikon binaries")
     
     ## CRAN packages
     message('\nExpanding packages', '...')
-    from <- "@packs"
+    from <- "rlibs"
     del.path("lib.d")
     ## Loop and extract packs
-    for(pack in  dir(work.pt(from)))
-        uzip(makePath('@packs', pack), 'lib.d',
+    for(pack in  dir(down.pt(from)))
+        uzip(makePath('rlibs', pack), 'rlibs',
               paste('R package', pack), delTarget=FALSE)    
     
     ## ahkscript
-    uzip(G$ahkzip, p0(G$ahkzip,'.d'),
-          "ahkscript")
+    uzip(G$ahkzip, G$ahkzip, "ahkscript")
 
 }
 
 expand.lab <- function(){
 ### Expand BloomR Lab
 
-    uzip(G$emacszip, p0(G$emacszip,'.d'),
-         "BRemacs files")
+    uzip(G$emacszip, G$emacszip, "BRemacs files")
 
-    utar(G$esszip, p0(G$esszip,'.d'),
-         "ESS")
+    utar(G$esszip, G$esszip, "ESS")
 
-    uzip(G$markzip, p0(G$markzip,'.d'),
-         "Markdown mode")
+    uzip(G$markzip, G$markzip, "Markdown mode")
     
-    uzip(G$polyzip, p0(G$polyzip,'.d'),
-         "Polymode")
+    uzip(G$polyzip, G$polyzip, "Polymode")
 
-    uzip(G$polymarkzip, p0(G$polymarkzip,'.d'),
-         "Polymode for markdown")
+    uzip(G$polymarkzip, G$polymarkzip, "Polymode for markdown")
 
-    uzip(G$nowebzip, p0(G$nowebzip,'.d'),
-         "Polymode for noweb")
+    uzip(G$nowebzip, G$nowebzip, "Polymode for noweb")
 
-    uzip(G$polyrzip, p0(G$polyrzip,'.d'),
-         "Polymode for R")
+    uzip(G$polyrzip, G$polyrzip, "Polymode for R")
     
-    uzip(G$bmzip, p0(G$bmzip,'.d'),
-         "BM mode")
+    uzip(G$bmzip, G$bmzip, "BM mode")
 }
  
 expand.studio <- function(){
 
     ## Expand Straberry Perl
-    perlsource <- p0(G$perlzip,'.d')
-    uzip(G$perlzip, perlsource, 
-         "Perl binaries")
+    uzip(G$perlzip, G$perlzip, "Perl binaries")
 
     ## Expand Pandoc
-    uzip(G$panzip, p0(G$panzip,'.d'), "Pandoc binaries")
+    uzip(G$panzip, G$panzip, "Pandoc binaries")
 
 }
 
@@ -512,32 +507,29 @@ bloomrTree <- function(){
 ### However, to save space/time Lab and Studio share a common `brEmacs' branch dir,
 ### i.e., in a multi-build, Studio recycles previous Lab `brEmacs' dir rather than build a new dir from scratch
 
-    if(is.core()) bloomrTree.Core()
+    switch(get.edition(),
 
-    if(is.lab()) {
+           core= bloomrTree.Core(),
 
-        bloomrTree.Core()
-        bloomrTree.brEmacs()
-
-    }
+           lab= {
+               bloomrTree.Core()
+               bloomrTree.brEmacs()               
+           },
     
-    if(is.studio()) {
+           studio={
 
-        ## For a Studio build, after a Lab build, we recycle the dir and skip else we go    
-        if (was.lab()){
-            messagev("This is a Studio Edition build, but a previous Lab Edition has been bundled,",
-                     "\nso we are recycling its branch folder.")
-            bloomrTree.Studio()
+               ## For a Studio build, after a Lab build, we recycle the dir and skip else we go    
+               if (was.lab()){
+                   messagev("This is a Studio Edition build, but a previous Lab Edition has been bundled,",
+                            "\nso we are recycling its branch folder.")
+                   bloomrTree.Studio()
 
-        } else {
-        
-            bloomrTree.Core()
-            bloomrTree.brEmacs()
-            bloomrTree.Studio()
-        
-        }
-
-    }
+               } else {
+                   bloomrTree.Core()
+                   bloomrTree.brEmacs()
+                   bloomrTree.Studio()
+               }
+           })
 }
 
 bloomrTree.Core <- function(){
@@ -553,7 +545,7 @@ bloomrTree.Core <- function(){
     download.git("curver.txt",  app.pt("bloomr.txt")) 
 
     ## Copy R and make site directory
-    from <- p0(G$rzip , '.d/app')
+    from <- p0(G$rzip , '/app')
     to <- app.pt("R")
     copy.dir(from, to, "main R files")
     makeDir(app.pt('R/site-library'), "BloomR library:")
@@ -562,16 +554,16 @@ bloomrTree.Core <- function(){
     message("Install Eikon API")
     ## In Windows R CMD invokes cmd.exe, which is incompatible with a UNC build workdir.
     ## So we'll use a local workdir when invoking it and absolute paths  
-    exe <- awin.pt(app.pt('R/bin/R.exe'))
-    from <-  awin.pt(p0(G$eikonzip,'.d/eikonapir-master'))
-    to <-  awin.pt(app.pt('R/library'))
+    exe <- winwork.pt(app.pt('R/bin/R.exe'))
+    from <-  winwork.pt(p0(G$eikonzip,'/eikonapir-master'))
+    to <-  winwork.pt(app.pt('R/library'))
     to <- p0("--library=", to)
     cmd <- c(exe, "--no-site-file --no-environ --no-save --no-restore --quiet CMD INSTALL", from, to)
     shell.cd(cmd, wd="c:") # In Windows cmd.exe is invoked, so we need to set wd to a non-UNC path 
         
     ## Copy libs
     message("\nAdding R libraries")
-    lib.from <- 'lib.d'
+    lib.from <- 'rlibs'
     lib.to <- app.pt("R/library")
     for(lib in dir(work.pt(lib.from))){
         from <- makePath(lib.from, lib)  
@@ -607,14 +599,14 @@ bloomrTree.brEmacs <- function(){
 
     ## Copy Emacs
     message("Copying main BRemacs files")
-    from <- p0(G$emacszip, '.d/')
+    from <- G$emacszip
     dirs <- c('bin', 'libexec', 'share/emacs', 'share/icons', 'share/info', 'share/man')
     copy.glob(from, bremacs, dirs)
     
     
     ## Copy ESS
     message("Adding ESS files")
-    from <- p0(G$esszip, '.d')
+    from <- G$esszip
     # git version now Melpa
     #from <- globpaths(from, '/ESS-ESSR*')
     #to <- slisp.pt(G$esszip)
@@ -629,7 +621,7 @@ bloomrTree.brEmacs <- function(){
 
     ## Copy Markdown mode
     message("Adding Markdown mode files")
-    from <- p0(G$markzip, '.d')
+    from <- G$markzip
     from <- makePath(from, 'markdown-mode-master')
     to <- slisp.pt(G$markzip)
     makeDir(to)
@@ -638,7 +630,7 @@ bloomrTree.brEmacs <- function(){
     
     ## Copy Polymode
     message("Adding Polymode files")
-    from <- p0(G$polyzip, '.d')
+    from <- G$polyzip
     from <- globpaths(from, '/polymode*')    
     to <- slisp.pt(G$polyzip)
     makeDir(to)
@@ -646,7 +638,7 @@ bloomrTree.brEmacs <- function(){
 
     ## Copy Poly-markdown mode
     message("Adding Poly-markdown files")
-    from <- p0(G$polymarkzip, '.d')
+    from <- G$polymarkzip
     from <- globpaths(from, '/poly-markdown*')
     to <- slisp.pt(G$polymarkzip)
     makeDir(to)
@@ -654,7 +646,7 @@ bloomrTree.brEmacs <- function(){
 
     ## Copy Poly-noweb mode
     message("Adding Poly-noweb files")
-    from <- p0(G$nowebzip, '.d')
+    from <- G$nowebzip
     from <- globpaths(from, '/poly-noweb*')
     to <- slisp.pt(G$nowebzip)
     makeDir(to)
@@ -662,14 +654,14 @@ bloomrTree.brEmacs <- function(){
    
     ## Copy Poly-R mode
     message("Adding Poly-R files")
-    from <- p0(G$polyrzip, '.d')
+    from <- G$polyrzip
     from <- globpaths(from, '/poly-R*')
     to <- slisp.pt(G$polyrzip)
     makeDir(to)
     copy.glob(from, to, "*.el")
     
     ## Copy BM mode
-    from <- p0(G$bmzip, '.d/bm-master')              
+    from <- p0(G$bmzip, '/bm-master')              
     to <- slisp.pt(G$bmzip)
     copy.dir(from, to, "BM mode")
     
@@ -801,12 +793,12 @@ makeStudio.addLatex <- function(){
 
     ## Expand MiKTeX 
     message("Adding MiKTeX files")
-    miktex.exe <- p0(G$mikzip,'.d/miktexsetup_standalone.exe')       
-    cmd <- p0(awin.pt(miktex.exe),
-                  " --verbose --local-package-repository=", awin.pt(p0(G$mikzip,'.d')),
-                  " --portable=", awin.pt(app.pt("latex")), 
-                  " --package-set=basic install")
-    shell.ps(cmd, awin.pt("ps.latexexpn.txt"))
+    miktex.exe <- p0(G$mikzip,'/miktexsetup_standalone.exe')       
+    cmd <- p0(winwork.pt(miktex.exe),
+              " --verbose --local-package-repository=", windown.pt(p0(G$mikzip,'.d')),
+              " --portable=", winwork.pt(app.pt("latex")), 
+              " --package-set=basic install")
+    shell.ps(cmd, winwork.pt("ps.latexexpn.txt"))
     
     if(!file.exists(work.pt(latbin.pt)))
         stop(paste("An error occurred while extracting\n", G$mikinst,
@@ -832,17 +824,41 @@ makeStudio.addLatex <- function(){
     
     mpm <- app.pt("latex/texmfs/install/miktex/bin/x64/mpm.exe")
     if(!file.exists(work.pt(mpm))) stop(paste('Unable to find:\n', mpm))
-    cmd <- p0(awin.pt(mpm), " --verbose --require=", toinstall)
-    shell.ps(cmd, awin.pt("ps.addpacks.txt"))
+    cmd <- p0(winwork.pt(mpm), " --verbose --require=", toinstall)
 
-    ## Update distro, necessary to avoid: 'major issue: So far, you have not checked for MiKTeX updates'
-    cmd <- p0(awin.pt(mpm), "  --update --verbose")
-    shell.ps(cmd, awin.pt("ps.latexupd.txt"))
+
+    if(!G$alttex){
+        message("Updating using the suggested repository for your location")
+        shell.ps(cmd, winwork.pt("ps.addpacks.txt"))
+        
+    } else {
+        message("Updating using alternative repositories on failures")    
+
+        ## Get repo list
+        cmd.list <- paste(winwork.pt(miktex.exe), "--list-repositories")
+        repos <- system(cmd.list, intern=TRUE)
+
+        ## Loop on repos until success 
+        for(repo in repos) {
+            message("\n\n", "Trying repository:\n", repo)
+            repo.opt <- p0("--repository=", repo)
+            cmd.repo <- paste(cmd, repo.opt)
+            ret <- shell.ps(cmd.repo, winwork.pt("ps.latexdown.txt"), stop = FALSE)  
+            if(ret==0) break
+        }
+        if(ret) stop("Despite trying ", length(repos), ", errors persist")        
+    }
+ 
+
+    ## Update+report necessary to avoid: 'major issue: So far, you have not checked for MiKTeX updates'
+    ## because there is nothing to actually update we do not use alttex repo
+    cmd <- p0(winwork.pt(mpm), "  --update --verbose")
+    shell.ps(cmd, winwork.pt("ps.latexupd.txt"))
 
     initexmf <- app.pt("latex/texmfs/install/miktex/bin/x64/initexmf.exe")
     if(!file.exists(work.pt(initexmf))) stop(paste('Unable to find:\n', initexmf))
-    cmd <- p0(awin.pt(initexmf), " --report")
-    shell.ps(cmd, awin.pt("ps.latexrpt.txt"))
+    cmd <- p0(winwork.pt(initexmf), " --report")
+    shell.ps(cmd, winwork.pt("ps.latexrpt.txt"))
 
     ## Restore previous drive mapping
     if(!is.null(G$tempmap)) unc.mapdel(G$tempmap)
@@ -868,8 +884,8 @@ latex.autopackages  <- function(){
 
     ## Activate AutoInstall packages
     initexmf <- app.pt("latex/texmfs/install/miktex/bin/initexmf.exe")
-    cmd <- paste0(awin.pt(initexmf), " --set-config-value=[MPM]AutoInstall=yes")
-    shell.ps(cmd, awin.pt("ps.latexautop.txt"))
+    cmd <- paste0(winwork.pt(initexmf), " --set-config-value=[MPM]AutoInstall=yes")
+    shell.ps(cmd, winwork.pt("ps.latexautop.txt"))
 
     ## Find auto-installed packages
     latlog.path <- paste0("c:/Users/kvm/Desktop/", "brEmacs/main/latex/texmfs/data/miktex/log/pdflatex.log")
@@ -890,7 +906,7 @@ latex.packList <- function(inst=FALSE){ # NOT USED
 
     mpm <- app.pt("latex/texmfs/install/miktex/bin/x64/mpm.exe")
     if(!file.exists(work.pt(mpm))) stop(paste('Unable to find:\n', mpm))
-    out <- system(paste(win.pt(mpm), '--list'), intern = TRUE, invisible = FALSE)
+    out <- system(paste(winwork.pt(mpm), '--list'), intern = TRUE, invisible = FALSE)
     if(inst) {
         x <- grep('^i', out, value=TRUE)
         sapply(strsplit(x, ' +'), `[`, 4)
@@ -908,7 +924,7 @@ makeStudio.addPandoc <- function(){ # NOT USED
     ## Create Pandoc dir
     existMake(pandir, TRUE, FALSE, "Pandoc dir:")
 
-    from <- Sys.glob(work.pt(p0(G$panzip,'.d/pandoc*')))
+    from <- Sys.glob(work.pt(p0(G$panzip,'/pandoc*')))
     file.rename(from, work.pt(makePath(pandir, "/bin")))
     
 }
@@ -917,7 +933,7 @@ makeStudio.addPerl <- function(){
     
     message("Making Perl tiny")
     
-    perlsource <- p0(G$perlzip,'.d')
+    perlsource <- G$perlzip
     perldir <- app.pt("perl")
     perlbins <- makePath(perldir, "bin")
     perllibs <- makePath(perldir, "lib")
@@ -1064,12 +1080,12 @@ makeLauncher_ <- function(script.cont, edition){
 
    
     ## Make boot file
-    ahkdir <- work.pt(p0(G$ahkzip, '.d/Compiler'))
+    ahkdir <- work.pt(p0(G$ahkzip, '/Compiler'))
     cat(script.cont, file=makePath(ahkdir, p0(edition, ".run")))
    
     ## Get icon from GitHub
     icon <- if(edition=="core") "bloomr" else "bremacs" 
-    to <- makePath(p0(G$ahkzip, '.d/Compiler'), p0(edition, ".ico"))
+    to <- makePath(p0(G$ahkzip, '/Compiler'), p0(edition, ".ico"))
     download.git(makePath("res", p0(icon, ".ico")), to)
 
     ## Core icon is currently as setup icon too. It is named bloomr.ico, should it change style in the future
@@ -1077,15 +1093,23 @@ makeLauncher_ <- function(script.cont, edition){
     to <- makePath(ahkdir, "bloomr.ico")
     if(edition =="core")  file.copy(from, to, overwrite=TRUE) 
 
-    exename <-
-        if(edition=="core") "bloomr-core.exe" 
-        else if(edition=="bremacs") 
-            if(is.lab()) "bloomr-lab.exe"
-            else if (is.studio()) {
+    exename <- switch(
+        edition,
+        
+        core="bloomr-core.exe",
+        
+        bremacs = switch(
+            get.edition(),
+                         
+            lab =  "bloomr-lab.exe",
+            
+            studio = {
                 ## if it a multi build, then we have the Lab launcher too, to delete
-                (function(x) if(file.exists(x)) file.remove(x))(work.pt(makePath(G$branch,"bloomr-lab.exe")))
+                (function(x) if(file.exists(x)) file.remove(x))(work.pt(root.pt("bloomr-lab.exe")))
                 "bloomr-studio.exe"
             }
+        )
+    )
     
     ## Make exe
     message("\nMaking executable: ", exename)
@@ -1100,7 +1124,7 @@ makeLauncher_ <- function(script.cont, edition){
 
     ## Move exe
     from <- makePath(ahkdir, exename)
-    to <- work.pt(makePath(G$branch, exename))
+    to <- work.pt(root.pt(exename))
     file.rename(from, to)        
 }
 
@@ -1135,18 +1159,20 @@ makeBundle <- function(bundle, # 'exe'/'zip'/'all'/'none'
 makeInst <- function(ask){
 
     message('\nCreating BloomR green installer')
-    ## Set name (nsi name is "BRsetup.exe")
-    to <- "BloomR-Core_setup_.exe"
-    if(is.lab()) to <- "BloomR-Lab_setup_.exe"
-    if(is.studio()) to <- "BloomR-Studio_setup_.exe"
+    ## Set name (nsi name is "BRsetup.exe")    
+    to <- switch(get.edition(), 
+                 core = "BloomR-Core_setup_.exe",
+                 lab = "BloomR-Lab_setup_.exe", 
+                 studio = "BloomR-Studio_setup_.exe")
+    
     if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)
     download.git("bloomr.nsi", "bloomr.nsi")
     message('Creating green installer ', to, '\nThis may take a bit...')
     nsi <- 'bloomr.nsi'
-    nexe <- p0(G$nsiszip,'.d/App/NSIS/makensis.exe')
+    nexe <- p0(G$nsiszip,'/App/NSIS/makensis.exe')
     nsrc <- p0("/dSRCDIR=", G$branch)
-    cmd <- c(win.pt(nexe), "/v2", nsrc, win.pt(nsi))
+    cmd <- c(winwork.pt(nexe), "/v2", nsrc, winwork.pt(nsi))
     shell.cd(cmd)    
     file.rename(work.pt("BRsetup.exe"), work.pt(to))
 }
@@ -1155,14 +1181,17 @@ makeInst <- function(ask){
 makeZip <- function(ask){
 
     message('\nCreating BloomR.zip')
-    to <- "BloomR-Core_setup_.zip"
-    if(is.lab()) to <- "BloomR-Lab_setup_.zip"
-    if(is.studio()) to <- "BloomR-Studio_setup_.zip"
-    if(is.path(to)) del.ask(to, ask, "already exists")    
+    to <- switch(get.edition(), 
+                 core = "BloomR-Core_setup_.zip",
+                 lab = "BloomR-Lab_setup_.zip",
+                 studio = "BloomR-Studio_setup_.zip")
+    
+    if(is.path(to)) del.ask(to, ask, "already exists")
+    
     del.path(to)    
     from <- p0('./', G$branch, '/*')  # In 7z ./ removes dir prefix from archive files
     zexe <- get7zbin()
-    cmd <- paste(win.pt(zexe), "a", win.pt(to), win.pt(from))
+    cmd <- paste(winwork.pt(zexe), "a", winwork.pt(to), winwork.pt(from))
     ret <- system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 
@@ -1171,10 +1200,11 @@ makeZip <- function(ask){
 
 shell.cd <- function(
 ### Similar to system2(), but can set the work dir and stops on errors
-                      cmdvec,   # c(cmd, arg1,...) or c(cmd, agvec)
-                                # cmdvec[1] is tested for exisitance and shQuoted if necessary
-                     wd=NULL,   # optional work dir
-                     raw=FALSE  # if T, do not pretty format the output with messagev
+                     cmdvec,     # c(cmd, arg1,...) or c(cmd, agvec)
+                                 # cmdvec[1] is tested for exisitance and shQuoted if necessary
+                     wd=NULL,    # optional work dir
+                     raw=FALSE,  # if T, do not pretty format the output with pv
+                     echo=TRUE   # Echo to console via 
                       ){
 
 ### 1. system(), takes a single cmd string, in Linux prefixes with "sh -c"
@@ -1219,20 +1249,49 @@ shell.cd <- function(
         stop(paste(cmdvec[-1], collapse=" "), "\n returned:\n", tail(out, 2), "\n\nSee G$lastshell for more.")
 
     ## or return the required ouptut
-    if(raw) out else messagev(out, s='\n')
+    if(!raw) out <- pv(out, s='\n')
+    if(echo) messagev(out)
+    out
 }
 
 shell.ps <- function(
 ### Similar to shell(), but based on Powershell. tees stdout to file and console and stops on errors
-                      cmdstr,   # command string
-                     outfile    # optional work dir
+                     cmdstr,    # command string
+                     outfile,   # optional work dir
+                     stop=TRUE  # stop on errors
                       ){
 
-    pscmd <- sprintf("& {%s | Tee-Object %s; exit $LASTEXITCODE}", cmdstr, outfile)
-    psline <- paste("powershell -NoProfile -command", pscmd)
+    ## $LASTEXITCODE is for executables and "-not $?" is for cmdlets
+    cmdstr.tee <- sprintf("& %s | Tee-Object %s; exit ($LASTEXITCODE -le 1 -and -not $?)", cmdstr, outfile)
+    ## Quotes in cmdstr.tee, before passing to PS, are removed so we quote again
+    psline <- paste("powershell -NoProfile -command", shQuote(cmdstr.tee))
     ret <- system(psline)
-    if(ret) stop("The following powershell command exited with ", ret, ":\n  ", cmdstr,
-                 "\nRead ", outfile, "for the command log.")    
+    if(ret){
+        msg <- sprintf(
+            "The following PowerShell command had a nonzero exit:\n  %s \nFor the error log see:\n  %s",
+            cmdstr, outfile)
+        if(stop) stop(msg) else message(msg)
+    }
+    ret
+}
+
+shell.ps.alt <- function( # Not used 
+### Similar to shell.ps(), but exit code works for cmdlets -not $?
+                     cmdstr,    # command string
+                     outfile    # output log file
+                      ){
+
+### Try also to remove restrictions  or warn users
+    cmdstr.tee <- sprintf("%s | Tee-Object %s; exit -not $?", cmdstr, outfile)
+    psline <- paste("powershell -NoProfile -command", shQuote(cmdstr.tee))
+    ret <- system(psline)
+    if(ret){
+        msg <- sprintf(
+            "The following PowerShell command had a nonzero exit:\n  %s \nFor the error log see:\n  %s",
+            cmdstr, outfile)
+        if(stop) stop(msg) else warning(msg)
+    }
+    ret
 }
 
 ###== Website helpers ==
@@ -1318,7 +1377,7 @@ download.nice <- function(from, to, overwrite, desc=""){
 ### Download relative to the build workdir with nice user info and overwrite management
 
     if(desc=="") desc <- sub('.+/', '', to)
-    to <- work.pt(to)
+    to <- down.pt(to)
     message("\nDownloading ", desc) 
 
     if(is.path_(to)) {
@@ -1401,31 +1460,38 @@ makePath <- function(parent, child){
 
 }
 
-work.pt <- function(dir=""){    
-### Prefix dir path with work dir path
-### Work dir path is set with global G$work
+work.pt <- function(path=""){    
+### Prefix path with the build workdir
+### The build workdir is by global G$work
 
     if(is.null(G$work)) stop("`G$work' build workdir is not set!") 
-    if(is.abspath(dir))
-        stop("The path you provided:\n", dir, "\nis absolute, but it should be relative to:\n", G$work)
-    makePath(G$work, dir)
+    if(is.abspath(path))
+        stop("The path you provided:\n", path, "\nis absolute, but it should be relative to:\n", G$work)
+    makePath(G$work, path)
 }
 
-root.pt <- function(dir=""){
-### Prefix dir path with BloomR distro root path relative to the build workdir.
-### Depends on distro under build: e.g. path/to/workdir/brCore
+down.pt <- function(path=""){    
+### Prefix path with downloads directory 
+### The downloads directory is set by global G$downdir
+    
+    if(is.null(G$downdir)) stop("`G$downdir' downloads directory is not set!")
+    if(is.abspath(path))
+        stop("The path you provided:\n", path, "\nis absolute, but it should be relative to:\n", G$downdir)
+    makePath(G$downdir, path)
+}
 
-    makePath(G$branch, dir)
+root.pt <- function(path=""){
+### Prefix path with current branch name, e.g 'brStudio'
+    makePath(G$branch, path)
 }
 
 
-app.pt <- function(dir=""){
-### Prefix dir path with BloomR apps' path relative to the build workdir.
-### App dir name depends on G$appname, its parent is BloomR root dir
-### E.g. path/to/workdir/current-distro/G$appname
+app.pt <- function(path=""){
+### Prefix path with BloomR app path relative to the build workdir.
+### The app directory is below the branch directory and its name is set by G$appname, e.g.: brStutio/programs
 
     x <- root.pt(G$appname)
-    makePath(x, dir)
+    makePath(x, path)
 }
 
 slisp.pt <- function(dir=""){
@@ -1437,7 +1503,7 @@ slisp.pt <- function(dir=""){
 
 
 
-win.pt <- function(path){
+win.pt <- function(path){ # not used 
 ### Given a Unix path relative to G$work build workdir, quote, windows-ize, and prefix with wordir
 ### If G$work=="./workdir", "foo/bar" -> "\".\\wordir\\foo\\bar\""
 ### This function is used to send paths Windows shell (e.g. with shell)
@@ -1447,10 +1513,18 @@ win.pt <- function(path){
     chartr("/", "\\", path)
 }
 
-awin.pt <- function(path){
-### Convert a Unix path, relative to G$work build workdir, to a shell-quoted absolute Windows path. 
+winwork.pt <- function(path){
+### Convert a Unix path, relative to the build workdir, to a shell-quoted absolute Windows path. 
 
     path <- work.pt(path)            
+    path <- normalizePath(path, mustWork=FALSE)
+    shQuote(path)
+}
+
+windown.pt <- function(path){
+### Convert a Unix path, relative to the downloads dir, to a shell-quoted absolute Windows path. 
+
+    path <- down.pt(path)            
     path <- normalizePath(path, mustWork=FALSE)
     shQuote(path)
 }
@@ -1500,6 +1574,13 @@ chk.dir <- function(dir){ # Break if path relative to the build workdir not a di
     if(!is.path(dir)) stop(dir, "\nis not a valid path")
     if(!is.dir(dir))  stop(dir, "is a file")
 }
+
+
+chk.colon <- function(path){ # Test a path does not end with a colon
+    if(grepl(":$", path))
+        stop("In ", path, "\n ending with a colon (:) is ambiguous and not allowed as a working directory.",
+             "\nFor a USB drive root append a slash to it.")
+    }
 
 dirtype_ <- function(file){ # File relative to the build workdir is of type dir
     file.info(work.pt(file))$isdir
@@ -1582,7 +1663,7 @@ del.ask.abs_ <- function(path, ask, desc){
     
     ## Confirmation not required
     if(!ask) {
-        message("It will be deleted ...")
+        message("It will be deleted ...\n")
         return()
     }
     ## Require confirmation
@@ -1716,7 +1797,7 @@ copy.dir_ <- function(from, to){ # copy.dir work horse
     file.rename(tempdir, to)
 }
 
-existMake <- function(dir, overwrite, ask, desc=""){
+existMake.old <- function(dir, overwrite, ask, desc=""){
 ### If dir relative to the build workdir does not exist make it, otherwise might ask and skip creation 
 ### An empty-dir is considered non-existent. Note: if dir="", it is the build workdir 
 
@@ -1729,7 +1810,7 @@ existMake <- function(dir, overwrite, ask, desc=""){
         return(invisible())
     }
     ## Dirty, and not overwritable 
-    else if(!overwrite) message("Skipping action, to preserve existing downloads!")
+    else if(!overwrite) message("Skipping action, due to 'tight = TRUE' argument!")
     ## Dirty, but overwritable 
     else {
         del.ask(dir, ask, "exists non-empty")
@@ -1738,6 +1819,86 @@ existMake <- function(dir, overwrite, ask, desc=""){
     }             
 }
 
+
+
+
+existMake <- function(dir, overwrite, ask, desc=""){
+### If dir (relative to the build workdir) does not exist make it, otherwise might ask and skip creation.
+### An empty-dir is considered non-existent. Note: if dir="", it is the build workdir.
+
+    existMake_(dir, overwrite=overwrite, ask=ask, desc=desc, isdown=FALSE)    
+}
+
+existMake.dd <- function(dir, overwrite, ask, desc=""){
+### If dir (relative to the downloads dir) does not exist make it, otherwise might ask and skip creation.
+### An empty-dir is considered non-existent. Note: if dir="", it is the downloads dir.
+
+    existMake_(dir, overwrite=overwrite, ask=ask, desc=desc, isdown=TRUE)
+    
+  # wouldbe symlinks linka are fs specific,  better to avoid 
+  #  ## https://superuser.com/questions/1307360/how-do-you-create-a-new-symlink-in-windows-10-using-powershell-not-mklink-exe
+  #  if(!is.subdir_gen(G$downdir, G$work)){  
+  #      mklink  <- sprintf("new-item -itemtype symboliclink -path %s -name 'downloads.lnk' -Target %s",
+  #                         shQuote(G$work), shQuote(G$downdir))
+  #      psline <- paste("powershell -NoProfile -command", shQuote(mklink))
+  #      ret <- system(psline) 
+  #      if(ret) stop("Creating a symlink to the downloads dir inside ", G$work, " was not possible.\n",
+  #                   "Note that in old Windows versions (before circa 2017), you need admin privileges to create symlinks")
+  #  }
+
+}
+
+existMake_ <- function(dir, overwrite, ask, desc="", isdown=FALSE){
+### This is the workhorse for 'existMake', if isdown=FALSE, or 'existMake.dd', isdown=TRUE.
+    
+    ## Inform user with desc if any
+    if(nzchar(desc)) message("\nCreating ", desc, '\n',  dir)
+
+    ## Who are we serving?
+    dir <- if(isdown) down.pt(dir) else work.pt(dir)
+    dir <- normalizePath(dir, mustWork = FALSE)
+
+    emsg <- paste("\nUnable to access/create\n", dir)
+    exist    <- function() length(Sys.glob(dir)) # even if it is a file
+    nondirty <- function() !length(Sys.glob(makePath(dir, "/*"))) # inexistent or empty
+    delete   <- function() unlink(dir, recursive=TRUE, force=TRUE) # missing's not a failure
+    make     <- function() dir.create(dir)
+    isborn   <- function() if(!exist())  stop(emsg)
+    isdead   <- function() if(exist()) {
+                               Sys.sleep(2)
+                               if(exist()) stop(emsg)
+                           }
+    ## delete-check-make-check
+    dcmc <- function(){
+        delete(); isdead(); make(); isborn()
+    }
+   
+    ## Not a dirty dir
+    if(nondirty()) dcmc()
+           
+    ## Dirty and not overwritable 
+    else if(!overwrite) message("Skipping action, to preserve existing downloads!")
+
+    ## Dirty but overwritable 
+    else{
+        del.ask.abs_(dir, ask, "exists non-empty") # ask if required         
+        dcmc()
+    }    
+}
+
+is.subdir_gen <- function(sub, par){
+### Is sub a subdir of par? Paths are absolute or getwd()-relative, rather than G$work
+
+    par <- normalizePath(par, mustWork = FALSE)
+    sub <- normalizePath(sub, mustWork = FALSE)
+    
+    prefix <- substr(par, 1, nchar(sub))
+    prefix == sub
+    
+}
+
+
+
 file.read <- function( # Read file  
                    fpath # File path relative to the build workdir
                    )    
@@ -1745,11 +1906,11 @@ file.read <- function( # Read file
 
 
 uzip <- function(from, to, desc, delTarget=TRUE){
-### Unzip making path relative to the build workdir
+### Unzip FROM and TO relative resp. to the downloads dir and the build workdir
 ### Stops on errors and inform used with a desc argument
 
-    message('\nExpanding ', desc, '...') 
-    chk.file(from)
+    message('\nExpanding ', desc, '...')
+    if(!file.exists(down.pt(from))) stop("Cannot find the file\n", down.pt(from))
     if(delTarget) del.path(to)
     uzip_(from, to)
     
@@ -1757,7 +1918,7 @@ uzip <- function(from, to, desc, delTarget=TRUE){
 
 uzip_ <- function(from, to){ # uzip workhorse    
 
-    from <- work.pt(from)
+    from <- down.pt(from)
     to <- work.pt(to)
     if(length(unzip(from, exdir= to))==0)
         stop('\nUnable to perform extraction')  
@@ -1768,7 +1929,7 @@ utar <- function(from, to, desc, delTarget=TRUE){
 ### Stops on errors and inform used with a desc argument
 
     message('\nExpanding ', desc, '...') 
-    chk.file(from)
+    if(!file.exists(down.pt(from))) stop("Cannot find the file\n", down.pt(from))
     if(delTarget) del.path(to)
     utar_(from, to)
     
@@ -1784,7 +1945,7 @@ utar_ <- function(from, to){ # uzip workhorse
         G$work <- unc.subs(G$work)
     }
 
-    from <- work.pt(from)
+    from <- down.pt(from)
     to <- work.pt(to)
     tryCatch(untar(from, exdir= to), finally={    
         ## Restore previous drive mapping
@@ -1803,14 +1964,14 @@ uzip.7z <- function(from, to, desc, delTarget=TRUE){
     }    
     message('\nExpanding (w/ 7zip) ', desc)
     message('This may take a bit ...')
-    cmd <- paste(win.pt(to), win.pt(from))
-    cmd <- p0(win.pt(zexe), ' x -aoa -r -o', cmd)
+    cmd <- paste(winwork.pt(to), windown.pt(from))
+    cmd <- p0(winwork.pt(zexe), ' x -aoa -r -o', cmd)
     ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 }
 
 get7zbin <- function(){ # Get 7z.exe relative to the build workdir
-    zipdir <- p0(G$pzip,'.d')
+    zipdir <- G$pzip
     versiondir <- get7zbin.ver_(zipdir)
     subpath <- '/res/7z/7z.exe'
     makePath(zipdir, p0(versiondir, subpath))
@@ -1830,15 +1991,17 @@ innoextract <- function(from, to, desc, delTarget=TRUE){
     }    
     message('\nExpanding (w/ innoextract) ', desc)
     message('This may take a bit ...')
-    cmd <- paste(win.pt(exe), win.pt(from),  "--output-dir", win.pt(to))
-    ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
-    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+    cmd <- c(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
+    ret <- shell.cd(cmd, echo = FALSE)
+    # cmd <- paste(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
+    # ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    # if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 }
 
 
 getInnobin <- function(){ # Get 7z.exe relative to the build workdir
-    innodir <- p0(G$innozip,'.d')
-    makePath(innodir, "innoextract.exe")
+#    innodir <- p0(G$innozip,'.d')
+    makePath(G$innozip, "innoextract.exe")
 }
 
 
@@ -2006,7 +2169,7 @@ unc._maps <- function(){
 ### == Messages ==
 
 warn.path <- function(path, mess){
-    message("Warning:\n", path, "\n", mess)
+    message("\n", path, "\n  ", mess)
 }
 
 messagev <- function(..., s=" ") { # message() converting argument to a single vector and separating elements with `s'
@@ -2050,12 +2213,12 @@ chk.write <- function(path, over, desc="", stop=TRUE){
 
 ### Exsisting paths warn
 warn.p <- function(path, mess){
-    messagev("Warning:", mess.p(path, mess))
+    messagev(" ", mess.p(path, mess))
 }
 
 ### Exisintg paths
 mess.p <- function(path,  mess){
-    p0("\n", path, "\n", mess)
+    p0("\n", path, "\n  ", mess)
 }
 
 ### Exisintg paths stop

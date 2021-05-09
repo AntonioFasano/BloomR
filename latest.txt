@@ -1,8 +1,23 @@
-1.4.2
+1.5.0 beta -- "Lakmé"
 
-R version 3.5.1 (2018-07-02) -- "Feather Spray"
+R version 4.0.5
 
-Bug Fixes
+New edition system. MiKTeX standalone installer.
+Minimal Perl for rmarkdown pdfcrop. UNC build support.
+Updated utility URLs.
+Byte compilation with autoloads.
+New masking quit().
 
-Wrong help dir shipped in Studio
-Added some LaTeX dependencies
+_Change details_
+
+    build: UNC build support makeStudio (with miktex, mpm, initexmf), minimal Perl, user downloads folder,
+          switch-based branching, find alternative TeX repos, removed refs to old Java API, 
+    br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown,
+                +declare br-init-simple-menu, +br-init-autoloads.
+    br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
+    br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign
+    bloomr.init.R: +q/quit
+    bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, +buildenv
+    xlx.R: plyr:::rbind.fill without loading package to avoid conflicts
+    ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el
+
