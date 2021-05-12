@@ -1,4 +1,4 @@
-## ----store, opts.label='purlme'-----------------------------------------------
+## ----store, opts.label='purlme'----------------------------------------------------------------------------------------------------
 ## Purl this first
 ## Store br.* objects in bloomr env in base namespace
 assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
@@ -18,7 +18,7 @@ store=function(sym){
 }
 
 
-## ----br.bdh, opts.label='purlme'----------------------------------------------
+## ----br.bdh, opts.label='purlme'---------------------------------------------------------------------------------------------------
 br.bdh=function(
     con, securities, fields="PX_LAST", start.date, end.date = NULL,
     option.names = NULL, option.values = NULL,
@@ -32,7 +32,7 @@ br.bdh=function(
 }
 store(br.bdh)
 
-## ----br.bulk.csv, opts.label='purlme'-----------------------------------------
+## ----br.bulk.csv, opts.label='purlme'----------------------------------------------------------------------------------------------
 br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
     price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
@@ -77,7 +77,7 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
 }
 store(br.bulk.csv)
 
-## ----br.bulk.desc, opts.label='purlme'----------------------------------------
+## ----br.bulk.desc, opts.label='purlme'---------------------------------------------------------------------------------------------
 br.bulk.desc=function(con, tiks) {
 
     LL = lapply(tiks, function(tik){
@@ -89,7 +89,7 @@ br.bulk.desc=function(con, tiks) {
 }
 store(br.bulk.desc)
 
-## ----br.bulk.idx, opts.label='purlme'-----------------------------------------
+## ----br.bulk.idx, opts.label='purlme'----------------------------------------------------------------------------------------------
 br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
     include.idx=TRUE, use.xts=TRUE,
     nsec=10, price=TRUE, nrow=5,
@@ -139,7 +139,7 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
 }
 store(br.bulk.idx)
 
-## ----br.bulk.tiks, opts.label='purlme'----------------------------------------
+## ----br.bulk.tiks, opts.label='purlme'---------------------------------------------------------------------------------------------
 br.bulk.tiks=function(
     con,  
     tiks, 
@@ -223,7 +223,7 @@ br.bulk.tiks=function(
 }
 store(br.bulk.tiks)
 
-## ----br.desc, opts.label='purlme'---------------------------------------------
+## ----br.desc, opts.label='purlme'--------------------------------------------------------------------------------------------------
 br.desc=function(con, tik)
 {
 
@@ -252,7 +252,7 @@ br.desc=function(con, tik)
 }
 store(br.desc)
 
-## ----rmd-internal, opts.label='purlme'----------------------------------------
+## ----rmd-internal, opts.label='purlme'---------------------------------------------------------------------------------------------
 .br.addpaths <- function(pandonly = FALSE, quiet=TRUE){
 ### Add to Windows System Path the executable directories of LaTeX, Pandoc, and Perl with this search priority, and
 ### return invisibly the original path. If "pandonly" is true, add only Pandoc. If "quiet" is false, print the new path.
@@ -299,7 +299,7 @@ store(br.desc)
 
 
 
-## ----br.md2pdf, opts.label='purlme'-------------------------------------------
+## ----br.md2pdf, opts.label='purlme'------------------------------------------------------------------------------------------------
 br.md2pdf=function(md.file, pdf.file, quiet=TRUE){
 ### Make a markdown file into a PDF
 ### You need the proper BloomR version
@@ -324,10 +324,10 @@ br.md2pdf=function(md.file, pdf.file, quiet=TRUE){
 }
 store(br.md2pdf)
 
-## ----br.rmd2html, opts.label='purlme'-----------------------------------------
+## ----br.rmd2html, opts.label='purlme'----------------------------------------------------------------------------------------------
 br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
-### Make an R Markdown file into an HTML self-contained file
-### You need  BloomR LaTeX addons or the proper BloomR version
+### Make an R Markdown file into a HTML self-contained file
+### You need the proper BloomR edition
 
     
     ## Test arguments
@@ -355,7 +355,40 @@ br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
 }
 store(br.rmd2html)
 
-## ----br.rmd2pdf, opts.label='purlme'------------------------------------------
+## ----br.rmd2slides, opts.label='purlme'--------------------------------------------------------------------------------------------
+br.rmd2slides <- function(rmd.file, html.file, quiet=TRUE){
+### Make an R Markdown file into a Google Slides self-contained HTML file
+### You need proper BloomR edition
+
+    
+    ## Test arguments
+    if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
+    if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(rmd.file), '.html')
+
+    library(knitr)
+    library(rmarkdown)
+
+    ## Set executable paths and render
+    old.path <- .br.addpaths(pandonly = TRUE, quiet = TRUE)  
+    tryCatch(
+        ## Render Rmd to HTML
+        out <- render(rmd.file,
+                      output_format = ioslides_presentation(
+                          md_extensions="-tex_math_single_backslash"
+                                                  ),
+                      output_file=html.file,
+                      clean=quiet, quiet=quiet),
+        finally = {
+            ## Restore original system Path
+            Sys.setenv(Path=old.path)
+        })
+
+    invisible(out)
+}
+store(br.rmd2slides)    
+    
+
+## ----br.rmd2pdf, opts.label='purlme'-----------------------------------------------------------------------------------------------
 br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
 ### Make an R Markdown file into a PDF
 ### You need BloomR LaTeX addons or the proper BloomR version
@@ -384,7 +417,7 @@ br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
 }
 store(br.rmd2pdf)
 
-## ----br.rmd2both, opts.label='purlme'-----------------------------------------
+## ----br.rmd2both, opts.label='purlme'----------------------------------------------------------------------------------------------
 br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
 ### Make an R Markdown file into a PDF and an HTML self-contained file
 ### You need  BloomR LaTeX addons or the proper BloomR version
@@ -434,7 +467,7 @@ br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
 store(br.rmd2both)
 
 
-## ----br.sample, opts.label='purlme'-------------------------------------------
+## ----br.sample, opts.label='purlme'------------------------------------------------------------------------------------------------
 br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
     jitter=0, same.dates=FALSE, no.na=FALSE, df=FALSE, empty.sec=0, sec.names=NULL)
 {
@@ -501,13 +534,13 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
 }
 store(br.sample)
 
-## ----deprecated, opts.label='purlme'------------------------------------------
+## ----deprecated, opts.label='purlme'-----------------------------------------------------------------------------------------------
 bbg.open=function() stop("Sorry 'bbg.open' is now deprecated. Please use br.open().")
 bbg.close=function(con) stop("Sorry 'bbg.close' is now deprecated. Please use br.close().")
 store(bbg.open)
 store(bbg.close)
 
-## ----bbg-internal, opts.label='purlme'----------------------------------------
+## ----bbg-internal, opts.label='purlme'---------------------------------------------------------------------------------------------
 
 ## Check connection token
 .br.is.con=function(con) identical(attr(con, 'jclass'), "org/findata/blpwrapper/Connection")
@@ -544,14 +577,14 @@ store(.br.check.type)
 store(.br.cuttype)
 store(.br.jar)
 
-## ----connections, opts.label='purlme'-----------------------------------------
+## ----connections, opts.label='purlme'----------------------------------------------------------------------------------------------
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
 br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
 
 store(br.open)
 store(br.close)
 
-## ----miscfunc, opts.label='purlme'--------------------------------------------
+## ----miscfunc, opts.label='purlme'-------------------------------------------------------------------------------------------------
 
 #Clean up
 ## Remove visible and invisible objects
@@ -565,7 +598,7 @@ rm.var=function()
 store(rm.all)
 store(rm.var)
 
-## ----betafun, opts.label='purlme'---------------------------------------------
+## ----betafun, opts.label='purlme'--------------------------------------------------------------------------------------------------
 
 br.beta=function(){
     f=paste0(R.home("share"), "/bloomr/bloomr.beta.R")    
@@ -575,7 +608,7 @@ br.beta=function(){
 store(br.beta)
 
 
-## ----time, opts.label='purlme'------------------------------------------------
+## ----time, opts.label='purlme'-----------------------------------------------------------------------------------------------------
 `%+%` <- function(x,y) UseMethod("%+%")
 `%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
 `%-%` <- function(x,y) UseMethod("%-%")
@@ -631,7 +664,7 @@ store(last.day)
 store(day.us)
 
 
-## ----attach, opts.label='purlme'----------------------------------------------
+## ----attach, opts.label='purlme'---------------------------------------------------------------------------------------------------
 ### Make visible br.* in bloomr env and base ns
 attach(bloomr)
 rm(store)

@@ -77,6 +77,8 @@ Added a mini Perl distro to improve the cropping.
 
 Switched from Thomson Reuters to Refinitiv Eikon.
 
+HTML-slides support.
+
 Byte compilation with autoloads improving Lab and Studio speed
  
 Bug fix: Fixed conflicts in plyr:::rbind. 

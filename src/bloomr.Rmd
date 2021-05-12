@@ -926,8 +926,8 @@ If there are no errors, it returns invisibly the absolute path of the output fil
 
 ```{r br.rmd2html, opts.label='purlme'}
 br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
-### Make an R Markdown file into an HTML self-contained file
-### You need  BloomR LaTeX addons or the proper BloomR version
+### Make an R Markdown file into a HTML self-contained file
+### You need the proper BloomR edition
 
     
     ## Test arguments
@@ -954,6 +954,70 @@ br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
     invisible(out)
 }
 store(br.rmd2html)
+```
+br.rmd2slides{#br.rmd2slides} 
+============================
+
+Description
+-----------
+Make an R Markdown file into a [Google Slides](https://github.com/googleworkspace/md2googleslides) self-contained HTML file
+
+Usage
+-----
+    br.rmd2slides(rmd.file, html.file, quiet=TRUE)
+
+Arguments
+---------
+rmd.file
+:   path to the R markdown file to be converted.  
+
+html.file
+:   path to the HTML file to be generated. If missing, change extension of rmd.file to html.  
+
+quiet
+:   FALSE to show the system PATH variable and intermediate files.  
+
+Details
+-------
+You need proper BloomR edition. 
+ 
+Value
+-----
+If there are no errors, it returns invisibly the absolute path of the output file.
+
+
+```{r br.rmd2slides, opts.label='purlme'}
+br.rmd2slides <- function(rmd.file, html.file, quiet=TRUE){
+### Make an R Markdown file into a Google Slides self-contained HTML file
+### You need proper BloomR edition
+
+    
+    ## Test arguments
+    if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
+    if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(rmd.file), '.html')
+
+    library(knitr)
+    library(rmarkdown)
+
+    ## Set executable paths and render
+    old.path <- .br.addpaths(pandonly = TRUE, quiet = TRUE)  
+    tryCatch(
+        ## Render Rmd to HTML
+        out <- render(rmd.file,
+                      output_format = ioslides_presentation(
+                          md_extensions="-tex_math_single_backslash"
+                                                  ),
+                      output_file=html.file,
+                      clean=quiet, quiet=quiet),
+        finally = {
+            ## Restore original system Path
+            Sys.setenv(Path=old.path)
+        })
+
+    invisible(out)
+}
+store(br.rmd2slides)    
+    
 ```
 
 

@@ -9,6 +9,7 @@ R topics documented:
 [br.desc](#br.desc)   
 [br.md2pdf](#br.md2pdf)    
 [br.rmd2html](#br.rmd2html)    
+[br.rmd2slides](#br.rmd2slides)    
 [br.rmd2pdf](#br.rmd2pdf)    
 [br.rmd2both](#br.rmd2both)    
 [br.sample](#br.sample)   
@@ -345,27 +346,26 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2021-05-04      NA     NA    11.583     NA   9.277
-## 2021-05-05      NA     NA        NA  9.246   6.903
-## 2021-05-06   9.109     NA        NA 10.091  11.011
-## 2021-05-07      NA 10.130        NA 11.924  10.980
-## 2021-05-08      NA 11.156        NA     NA  10.277
+## 2021-05-05  10.497 10.771        NA     NA   8.055
+## 2021-05-06   9.308     NA        NA  9.398      NA
+## 2021-05-07  10.273     NA        NA  9.331      NA
+## 2021-05-08      NA     NA        NA  9.856  11.088
+## 2021-05-09  10.869  9.514     9.513 10.976      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2021-05-04      NA   9.893     NA     NA   9.741
-## 2021-05-05      NA      NA     NA     NA  10.325
-## 2021-05-06  10.544      NA 11.625     NA  10.870
-## 2021-05-07  12.036      NA     NA   9.65  10.014
-## 2021-05-08      NA  10.945     NA     NA      NA
+## 2021-05-05      NA   9.114     NA  9.954   8.368
+## 2021-05-06      NA      NA     NA  9.984      NA
+## 2021-05-07   8.602  10.365     NA     NA      NA
+## 2021-05-09      NA  10.032 10.423     NA      NA
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2021-05-04 10.254  9.250     NA
-## 2021-05-05 11.294 10.915     NA
-## 2021-05-06     NA  9.982     NA
-## 2021-05-07     NA 11.225 10.882
-## 2021-05-08  9.560  9.156 10.171
+## 2021-05-05     NA 10.258 10.791
+## 2021-05-06     NA  9.697  9.249
+## 2021-05-07 10.129     NA     NA
+## 2021-05-08 10.027  6.311  9.819
+## 2021-05-09     NA 11.074  9.884
 ```
 
 Note:
@@ -701,11 +701,9 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2021-05-04  11.592  10.958
-## 2021-05-05      NA  11.012
-## 2021-05-06   9.166   9.647
-## 2021-05-07      NA   8.681
-## 2021-05-08   8.269   7.876
+## 2021-05-05  10.457      NA
+## 2021-05-06   8.769      NA
+## 2021-05-09      NA  10.755
 ```
 
 ```r
@@ -807,6 +805,38 @@ Details
 -------
 You need BloomR LaTeX addons or the proper BloomR version. 
 
+Value
+-----
+If there are no errors, it returns invisibly the absolute path of the output file.
+
+
+
+br.rmd2slides{#br.rmd2slides} 
+============================
+
+Description
+-----------
+Make an R Markdown file into a [Google Slides](https://github.com/googleworkspace/md2googleslides) self-contained HTML file
+
+Usage
+-----
+    br.rmd2slides(rmd.file, html.file, quiet=TRUE)
+
+Arguments
+---------
+rmd.file
+:   path to the R markdown file to be converted.  
+
+html.file
+:   path to the HTML file to be generated. If missing, change extension of rmd.file to html.  
+
+quiet
+:   FALSE to show the system PATH variable and intermediate files.  
+
+Details
+-------
+You need proper BloomR edition. 
+ 
 Value
 -----
 If there are no errors, it returns invisibly the absolute path of the output file.

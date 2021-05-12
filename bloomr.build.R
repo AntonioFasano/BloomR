@@ -1,16 +1,15 @@
 ###  BloomR source
 
-## For commit
-## Fixed br.md2, br.rnw2pdf, ~q/quit, -.br.testBR, -br.getLatexAddons, -br.getPandoc, -.br.getPandoc.release, -download.bin
-
 ##  TODO
+##  Fix download.git remote, file are expected in workdir, so rename to here could be a solution
 ##  Remove "requestInfo" from R global env at start due to eikonapir
-##  auto find last ess on melpa
+##  Finalise dir temp-help docs source dir
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
 ##  Custom polimode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
 ##  Byte compile is async. "0" can be removed in tha case stadard emacs elisp files
 ##  Automatically identify knit/rmarkdown needed LaTeX packages. See scatch latex.autopackages
 ##  NSIS does not delete an existing dir, but silently overwrites it
+##  melpa.getpak check if other packages can benefit from it otehr than ESS
 ##  Repurpose src\bloomr.beta.*
 ##  Repurpose tests and test data 
 ##  Change app path from main to programs?
@@ -92,12 +91,9 @@ G$nsiszip <- 'nsis'
 # G$emacs <- 'emacsbinw64'
 # G$emacs.type <- 'Og' # e.g.: emacs-w64-25.1-Og.7z
 
-## ESS, Polymode, Poly-markdown, Poly-noweb  BM
-#G$essurl <- 'http://ess.r-project.org/downloads/ess/ess-17.11.zip'
-                                        # consider now melpa
-G$essurl <- "https://melpa.org/packages/ess-20210414.2354.tar"
-G$essurl <- "https://melpa.org/packages/ess-20210505.1651.tar"
-#G$essurl <- 'https://github.com/emacs-ess/ESS/archive/refs/tags/ESSRv1.7.zip'
+## ESS, Polymode, Poly-markdown, Poly-noweb, BM
+G$melpalibs <- NULL # melpa.org packages' names/version
+G$essurl <- 'ess.tar'
 G$esszip <- 'ess'
 #G$polyurl <- 'https://github.com/vspinu/polymode/archive/master.zip'
 G$polyurl <- 'https://github.com/polymode/polymode/archive/refs/tags/v0.2.2.zip'
@@ -162,7 +158,6 @@ makeBloomR <- function( # Build BloomR
                     gitsim=FALSE, # local path (abs. or relative)to simulate github downloads.
                     reset=TRUE    # FALSE to allow multi-builds calls and keep globals
 ){
-
     
     ## Set work dir
     if(!nzchar(work)) stop("Please, specify a work directory as first arg!")
@@ -282,7 +277,7 @@ downloads <- function(tight){
 
 
 downloads.core <- function(overwrite){
-    
+
     ## PeaZip
     cback <- function(){
         url <- sfFirstbyProject(G$pzip, '[[:digit:]]') #get release dir 
@@ -332,10 +327,12 @@ downloads.core <- function(overwrite){
                    "ahkscript")
 }
 
-
 downloads.lab <- function(overwrite){   
 ### BloomR Lab downloads
-    
+
+    ## Download Melpa name/version 
+    melpa.getvers()    
+
     cback <- function(){
         dir <- web.greplink("emacs-../", pos=-1, G$emacsurl, abs=TRUE)
         zip <- web.greplink("emacs.*?64.zip$", pos=-1, dir)
@@ -345,7 +342,8 @@ downloads.lab <- function(overwrite){
                   "Emacs files")
     
     ## ESS
-    download.nice(G$essurl, G$esszip, overwrite,
+    url <- melpa.getpak("ess.tar")
+    download.nice(url, G$esszip, overwrite,
                   "ESS files")
     
     ## Markdown mode
@@ -582,7 +580,13 @@ bloomrTree.Core <- function(){
     download.git("src/xlx/xlx.help.pdf",      root.pt("help/xlx.help.pdf"))
     download.git("reports/reporting.pdf",     root.pt("help/reporting.pdf"))     
 
-
+    ## These docs are not uploaded on git, so they are added only with gitsim != FALSE
+    if(nzchar(G$github.local)){
+        download.git("temp-help/BloomR.pdf",               root.pt("help/BloomR.pdf"))     
+        download.git("temp-help/frontier.pdf",             root.pt("help/frontier.pdf"))     
+        download.git("temp-help/Introducing Rblpapi.pdf",  root.pt("Introducing Rblpapi.pdf"))
+    }
+    
     ## Environment diagnostic
     message("\nAdding ED tools")
     makeDir(app.pt('ed'), "ED tools:")
@@ -625,7 +629,6 @@ bloomrTree.brEmacs <- function(){
     to <- slisp.pt(G$markzip)
     makeDir(to)
     copy.glob(from, to, "*.el")
-
     
     ## Copy Polymode
     message("Adding Polymode files")
@@ -1350,7 +1353,6 @@ sfDirLink <- function (url, quiet=FALSE){
     return (url)
 }
 
-
 cran.geturl <- function(pack){
 ## Get  CRAN Windows binaries release for a package 
 
@@ -1365,6 +1367,34 @@ cran.geturl <- function(pack){
     ## Get bin url: the first occurence on page is the dev version, second is release
     url <- regmatches(page, gregexpr("windows/contrib.*?\\.zip", page))[[1]][2]
     p0(cranbin, url)   
+}
+
+melpa.getvers <- function(){ # Store MELPA packages names/version as a data frame in G$melpa.vers
+
+    ## Get JSON package list and vectorise it
+    melpa.json <- rawToChar(curl_fetch_memory("https://melpa.org/archive.json")$content)
+    melpa.json <- substr(melpa.json, 2, nchar(melpa.json))
+    melpa.vec <- strsplit(melpa.json, "}},", fixed = TRUE)[[1]]
+
+    ## Extract only package name and version as a data frame 
+    melpa.vers <- strsplit(melpa.vec, ":")
+    melpa.vers <- t(sapply(melpa.vers, `[`, c(1,3)))
+    x <- melpa.vers[,2]
+    x <- sub("\\[", "", regmatches(x, regexpr("\\[[^]]*", x)))
+    x <- sub(",", ".", x)
+    melpa.vers[, 2] <- x
+    G$melpalibs <- setNames(as.data.frame(melpa.vers), c("name", "version"))
+}
+
+melpa.getpak <- function(pakname.ext){ # Build a package from G$melpa.vers given its name and extension
+
+    qname <- dQuote(tools:::file_path_sans_ext(pakname.ext), q=FALSE)
+    extension <- tools:::file_ext(pakname.ext)
+    
+    pos <- grep(qname, G$melpalibs$name, fixed=TRUE)
+    version  <- G$melpalibs$version[pos]
+    sprintf("https://melpa.org/packages/%s-%s.%s", pakname, version, extension)
+  
 }
 
 
@@ -1427,6 +1457,7 @@ download.git <- function(file, to, overwrite=TRUE, desc=""){
     if(!nzchar(G$github.local)) {
         from <- makePath(G$github, file)
         download.nice(from, to, overwrite=TRUE, desc)
+        file.rename(down.pt(to), work.pt(to))
         
     ## local git
     } else {

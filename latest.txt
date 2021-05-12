@@ -11,14 +11,14 @@ New masking quit().
 _Change details_
 
     build: UNC build support makeStudio (with miktex, mpm, initexmf), minimal Perl, user downloads folder,
-          switch-based branching, find alternative TeX repos, removed refs to old Java API, 
+          switch-based branching, find alternative TeX repos, removed refs to old Java API, +melpa.getvers, +melpa.getpak 
     br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown,
                 +declare br-init-simple-menu, +br-init-autoloads.
     br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
     br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign
     bloomr.sys.R: +q/quit, -.br.testBR, -br.getLatexAddons, -br.getPandoc,
                   -.br.getPandoc.release, -download.bin
-    bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, ~br.rmd2html, ~br.md2pdf, +buildenv
+    bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, ~br.rmd2html, ~br.md2pdf, +buildenv, +br.rmd2slides
     xlx.R: plyr:::rbind.fill without loading package to avoid conflicts
     ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el
 
