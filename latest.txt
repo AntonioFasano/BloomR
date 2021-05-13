@@ -7,6 +7,7 @@ Minimal Perl for rmarkdown pdfcrop. UNC build support.
 Updated utility URLs.
 Byte compilation with autoloads.
 New masking quit().
+"main" is now "apps" folder.
 
 _Change details_
 

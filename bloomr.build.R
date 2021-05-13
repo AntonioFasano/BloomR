@@ -1160,7 +1160,7 @@ makeBundle <- function(bundle, # 'exe'/'zip'/'all'/'none'
 makeInst <- function(ask){
 
     message('\nCreating BloomR green installer')
-    ## Set name (nsi name is "BRsetup.exe")    
+    ## Set name (nsi name is "bloomr-setup.exe")    
     to <- switch(get.edition(), 
                  core = "BloomR-Core_setup_.exe",
                  lab = "BloomR-Lab_setup_.exe", 
@@ -1174,8 +1174,8 @@ makeInst <- function(ask){
     nexe <- p0(G$nsiszip,'/App/NSIS/makensis.exe')
     nsrc <- p0("/dSRCDIR=", G$branch)
     cmd <- c(winwork.pt(nexe), "/v2", nsrc, winwork.pt(nsi))
-    shell.cd(cmd)    
-    file.rename(work.pt("BRsetup.exe"), work.pt(to))
+    shell.cd(cmd)
+    file.rename(work.pt("bloomr-setup.exe"), work.pt(to))
 }
 
 

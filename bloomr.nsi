@@ -19,7 +19,7 @@
   Name "BloomR"
 
   Caption "BloomR File Extraction"
-  OutFile "BRsetup.exe"
+  OutFile "bloomr-setup.exe"
 
   ;Default installation folder
   InstallDir $DESKTOP\BloomR
