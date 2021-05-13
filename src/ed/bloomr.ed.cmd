@@ -20,8 +20,8 @@ Echo Current dir set to:
 cd   %HOME%
 Echo %CD%
 
-Echo Start ..\apps\R\bin\x64\Rgui.exe --quiet LANGUAGE=en
-     Start ..\apps\R\bin\x64\Rgui.exe --quiet LANGUAGE=en
+Echo Start ..\apps\R\bin\x64\Rgui.exe LANGUAGE=en
+     Start ..\apps\R\bin\x64\Rgui.exe LANGUAGE=en
 Pause
 
 

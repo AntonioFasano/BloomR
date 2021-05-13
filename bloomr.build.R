@@ -540,7 +540,8 @@ bloomrTree.Core <- function(){
     # download.git("curver.txt",  app.pt("bloomr.txt")) 
     download.git("curver.txt",  "curver.txt") 
     ver <- file.read("curver.txt")[1]
-    file.write(p0(ver, "\n", makeBuildnum()), app.pt("bloomr.txt"))
+    edt <- paste(get.edition(), "edition")
+    file.write(p0(ver, "\n", makeBuildnum(), "\n", edt), app.pt("bloomr.txt"))
     
     ## Copy R and make site directory
     from <- p0(G$rzip , '/app')
@@ -1080,7 +1081,6 @@ Run, %AppDir%\\bremacs\\bin\\runemacs.exe -q --no-splash
 
 
 makeLauncher_ <- function(script.cont, edition){
-
    
     ## Make boot file
     ahkdir <- work.pt(p0(G$ahkzip, '/Compiler'))
