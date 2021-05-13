@@ -39,17 +39,18 @@ local({
     if(!file.exists(infofile)) stop(paste("I cannot find:\n", x, "\nConsider to reinstall the product."))
 
     info <- readLines(infofile)
+    info <- paste(info, collapse = "\n")
     info.ex <- paste0("This is BloomR version ", info)
     
     rver <- paste0("Based on ", R.version.string)
-    info.ex <- paste0(info.ex, "\n",  rver, "\n")
+    info.ex <- paste0(info.ex, "\n",  rver)
 
     homedir <- normalizePath(R.home("../../mybloomr"), winslash="/", mustWork=FALSE)
     if(!dir.exists(homedir)) stop(paste("I cannot find 'mybloomr' directory with the path:\n", homedir,
                               "\nIf you cannot fix it, consider to reinstall the product."))
     setwd(homedir)
     cdir <- paste0("Current working directory is\n", getwd())
-    info.ex <- paste0(info.ex, cdir, "\n")
+    info.ex <- paste0(info.ex, "\n", cdir)
     
     linelen <- max(nchar(strsplit(info.ex, "\n")[[1]]))
     linedraw <- paste0(rep("=", linelen), collapse="")

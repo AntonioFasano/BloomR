@@ -540,7 +540,7 @@ bloomrTree.Core <- function(){
     # download.git("curver.txt",  app.pt("bloomr.txt")) 
     download.git("curver.txt",  "curver.txt") 
     ver <- file.read("curver.txt")[1]
-    file.write(paste(ver, "\n", makeBuildnum()), app.pt("bloomr.txt"))
+    file.write(p0(ver, "\n", makeBuildnum()), app.pt("bloomr.txt"))
     
     ## Copy R and make site directory
     from <- p0(G$rzip , '/app')
