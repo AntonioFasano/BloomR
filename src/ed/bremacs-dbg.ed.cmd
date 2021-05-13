@@ -5,14 +5,14 @@
 @Echo off
 SETLOCAL
 
-:: Up from bloomR\main\ed\
+:: Up from bloomR\apps\ed\
 cd /D %~dp0\..\..
 
 Set "BLOOMR=%CD%"
 Echo BLOOMR env var is:
 Echo %BLOOMR%
 
-Set "HOME=%BLOOMR%\main"
+Set "HOME=%BLOOMR%\apps"
 Echo Temp HOME env var is (reset in site-start.el):
 Echo %HOME%
 
@@ -23,11 +23,11 @@ Echo %CD%
 set "BREMACSDBG=1"
 
 :: Breamcs site-start.el calls br-init(-dbg)
-Echo Start main\bremacs\bin\runemacs.exe -q --no-splash %%*
-     Start main\bremacs\bin\runemacs.exe -q --no-splash %*
+Echo Start apps\bremacs\bin\runemacs.exe -q --no-splash %%*
+     Start apps\bremacs\bin\runemacs.exe -q --no-splash %*
 Pause
 
 :: Call directly br-init.el, removing site-start.el
-:: ..\main\bremacs\bin\runemacs.exe  -q --load %~dp0share\emacs\site-lisp\br-init-dbg.el %*
+:: ..\apps\bremacs\bin\runemacs.exe  -q --load %~dp0share\emacs\site-lisp\br-init-dbg.el %*
 
 

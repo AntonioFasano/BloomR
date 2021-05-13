@@ -5,7 +5,7 @@
 @Echo off
 SETLOCAL
 
-:: Up from bloomR\main\ed\
+:: Up from bloomR\apps\ed\
 cd /D %~dp0\..\..
 
 Set "BLOOMR=%CD%"
@@ -20,8 +20,8 @@ Echo Current dir set to:
 cd   %HOME%
 Echo %CD%
 
-Echo Start ..\main\R\bin\x64\Rgui.exe  LANGUAGE=en
-     Start ..\main\R\bin\x64\Rgui.exe  LANGUAGE=en
+Echo Start ..\apps\R\bin\x64\Rgui.exe --quiet LANGUAGE=en
+     Start ..\apps\R\bin\x64\Rgui.exe --quiet LANGUAGE=en
 Pause
 
 

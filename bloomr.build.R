@@ -1071,7 +1071,7 @@ makeLauncher.brEmacs <- function(){
 
     bremacs.run <-  "
 EnvSet,  BLOOMR,     %A_ScriptDir%
-EnvSet,  HOME,       %A_ScriptDir%\\main\\bremacs
+EnvSet,  HOME,       %A_ScriptDir%\\apps\\bremacs
 Run, %AppDir%\\bremacs\\bin\\runemacs.exe -q --no-splash
 "        
     bremacs.run <- gsub("%AppDir%", G$appname, bremacs.run)
