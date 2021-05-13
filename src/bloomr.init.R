@@ -32,18 +32,20 @@ local({r <- getOption("repos")
    })    
 
 
-## Set and test work directory
+## Set  work directory and show user info
 local({    
     infofile <- file.path(dirname(R.home()), "bloomr.txt")
     if(!file.exists(infofile)) stop(paste("I cannot find:\n", x, "\nConsider to reinstall the product."))
 
     info <- readLines(infofile)
-    info <- paste(info, collapse = "\n")
     edition <- info[3]
-    if(tolower(edition) == "core editon")
-        system("powershell -ExecutionPolicy Bypass -command (New-Object -ComObject Wscript.Shell).SendKeys([string][char]12)")
+    info <- paste(info[-3], collapse = "\n")
 
-    info.ex <- paste0("This is BloomR version ", info[-3])
+    ## Clean vanilla console
+    if(tolower(edition) == "core edition")
+        system("powershell -ExecutionPolicy Bypass -command (New-Object -ComObject Wscript.Shell).SendKeys([string][char]12)")
+    
+    info.ex <- paste0("This is BloomR version ", info)
     rver <- paste0("Based on ", R.version.string)
     info.ex <- paste0(info.ex, "\n",  rver)
     homedir <- normalizePath(R.home("../../mybloomr"), winslash="/", mustWork=FALSE)

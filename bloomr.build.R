@@ -586,7 +586,7 @@ bloomrTree.Core <- function(){
     if(nzchar(G$github.local)){
         download.git("temp-help/BloomR.pdf",               root.pt("help/BloomR.pdf"))     
         download.git("temp-help/frontier.pdf",             root.pt("help/frontier.pdf"))     
-        download.git("temp-help/Introducing Rblpapi.pdf",  root.pt("Introducing Rblpapi.pdf"))
+        download.git("temp-help/Introducing Rblpapi.pdf",  root.pt("help/Bloomberg API intro.pdf"))
     }
     
     ## Environment diagnostic
