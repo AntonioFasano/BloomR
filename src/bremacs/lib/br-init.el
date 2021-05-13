@@ -5,8 +5,7 @@ It is set at init time based on \"BLOOMR\" environment variable.
 \"BLOOMR\" variable is dynamical set by the BRemacs launcher, i.e. \"bremacs.exe\", based on its invocation directory.")
 
 (defvar br-app-dir nil 
-  "Absolute path to BloomR/BRemacs directory designed to host BloomR applications.
-Currently its name is \"main\"; it could be \"apps\".")
+  "Absolute path to BRemacs \"apps\" directory designed to host BloomR applications.")
 
 (defvar br-bremacs-dir nil 
   "Absolute path to BloomR/BRemacs directory designed to host BRemacs distro files.")
@@ -47,7 +46,7 @@ Currently default location of Sumatra viewer")
 
   ;; Set BloomR specific paths
   ;; -------------------------
-  (setq br-app-dir  (br-locate-bloomr-path "main"))
+  (setq br-app-dir  (br-locate-bloomr-path "apps"))
   (setq br-bremacs-dir  (br-locate-app-path "bremacs"))
 
   (setq br-pdf-viewer (br-locate-app-path "Sumatra/SumatraPDF.exe")) 

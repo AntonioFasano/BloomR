@@ -2,16 +2,15 @@
 
 ##  TODO
 ##  Remove "requestInfo" from R global env at start due to eikonapir
+##  Byte compile is async. "0" can be removed in tha case stadard emacs elisp files
+##  NSIS does not delete an existing dir, but silently overwrites it
 ##  Finalise dir temp-help docs source dir
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
-##  Custom polimode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
-##  Byte compile is async. "0" can be removed in tha case stadard emacs elisp files
+##  Custom polymode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
 ##  Automatically identify knit/rmarkdown needed LaTeX packages. See scatch latex.autopackages
-##  NSIS does not delete an existing dir, but silently overwrites it
 ##  melpa.getpak check if other packages can benefit from it otehr than ESS
 ##  Repurpose src\bloomr.beta.*
 ##  Repurpose tests and test data 
-##  Change app path from main to programs?
 ##  RCurl find and remove references everywhere 
 
 ##
@@ -124,7 +123,7 @@ G$perlurl <- "https://strawberryperl.com/download/5.32.1.1/strawberry-perl-5.32.
 ## Local paths
 G$work <-    "" # This is the build workdir, not to be confused wtih R getwd()
 G$downdir <- "" # This is the downloads dir. 
-G$appname <- "main" # BloomR application folder name. Used by app.pt() 
+G$appname <- "apps" # BloomR application folder name. Used by app.pt() 
 G$branch <- NULL # Branch dir. The value can be "brCore" or "brEmacs" (for non-Core editions)
 
 ## Arguments
