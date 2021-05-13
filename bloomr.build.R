@@ -1,7 +1,6 @@
 ###  BloomR source
 
 ##  TODO
-##  Fix download.git remote, file are expected in workdir, so rename to here could be a solution
 ##  Remove "requestInfo" from R global env at start due to eikonapir
 ##  Finalise dir temp-help docs source dir
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
@@ -539,8 +538,11 @@ bloomrTree.Core <- function(){
     makeDir(app.pt(), "BloomR app dir:")
 
     ## Id files
-    download.git("curver.txt",  app.pt("bloomr.txt")) 
-
+    # download.git("curver.txt",  app.pt("bloomr.txt")) 
+    download.git("curver.txt",  "curver.txt") 
+    ver <- file.read("curver.txt")[1]
+    file.write(paste(ver, "\n", makeBuildnum()), app.pt("bloomr.txt"))
+    
     ## Copy R and make site directory
     from <- p0(G$rzip , '/app')
     to <- app.pt("R")
@@ -1144,8 +1146,6 @@ PROF <- function(){ #Keep this on separate line
 
 
 
-###== Utilities ==
-
 ### Exe and Zip distro
 makeBundle <- function(bundle, # 'exe'/'zip'/'all'/'none'
                     ask
@@ -1199,6 +1199,24 @@ makeZip <- function(ask){
 
 }
 
+makeBuildnum <- function(){
+
+    ## today
+    td <- format(Sys.time(), "Build %Y%m%d%H%M")
+
+    # days from 2015 
+    diff <- as.numeric( as.POSIXct(Sys.time()) - as.POSIXct("2015/01/01") )
+    rnd <- round(diff, 2) * 100  # About 13 min rounding  
+    paste(td, rnd)
+    
+}
+
+
+### ===============
+### == Utilities ==
+### ===============
+
+### === Shell helpers ===
 
 shell.cd <- function(
 ### Similar to system2(), but can set the work dir and stops on errors
@@ -1209,12 +1227,13 @@ shell.cd <- function(
                      echo=TRUE   # Echo to console via 
                       ){
 
-### 1. system(), takes a single cmd string, in Linux prefixes with "sh -c"
-### 2. system2() wants cmd + args. In Linux wraps system() adding "2>&1" if stderr = T.
-### 3. shell(), Windows-only, wraps system() and prefixes the command string with "cmd.exe /c".  
-### Don't invoke cmd.exe (so shell()) as it breaks on UNC paths. Prefer PowerShell, direct calls to exes or R builtins
-### The best seems x <- suppressWarnings(system2(cmd, ags, stdout=T, stderr=T)); attr(x, "status")
-### In Linux also suppressWarnings(tryCatch(system(paste(cmdstring, "2>&1"), intern=TRUE)))
+    
+## 1. system(), takes a single cmd string, in Linux prefixes with "sh -c"
+## 2. system2() wants cmd + args. In Linux wraps system() adding "2>&1" if stderr = T.
+## 3. shell(), Windows-only, wraps system() and prefixes the command string with "cmd.exe /c".  
+## Don't invoke cmd.exe (so shell()) as it breaks on UNC paths. Prefer PowerShell, direct calls to exes or R builtins
+## The best seems x <- suppressWarnings(system2(cmd, ags, stdout=T, stderr=T)); attr(x, "status")
+## In Linux also suppressWarnings(tryCatch(system(paste(cmdstring, "2>&1"), intern=TRUE)))
 
 
     ## Set temporary wd
@@ -1283,7 +1302,6 @@ shell.ps.alt <- function( # Not used
                      outfile    # output log file
                       ){
 
-### Try also to remove restrictions  or warn users
     cmdstr.tee <- sprintf("%s | Tee-Object %s; exit -not $?", cmdstr, outfile)
     psline <- paste("powershell -NoProfile -command", shQuote(cmdstr.tee))
     ret <- system(psline)
@@ -1296,7 +1314,7 @@ shell.ps.alt <- function( # Not used
     ret
 }
 
-###== Website helpers ==
+### === Website helpers ===
 
 
 web.greplink <- function(regexp, pos=0, url, abs=FALSE){
@@ -1388,10 +1406,11 @@ melpa.getvers <- function(){ # Store MELPA packages names/version as a data fram
 
 melpa.getpak <- function(pakname.ext){ # Build a package from G$melpa.vers given its name and extension
 
-    qname <- dQuote(tools:::file_path_sans_ext(pakname.ext), q=FALSE)
+    pakname <- tools:::file_path_sans_ext(pakname.ext)
+    qpakname <- dQuote(pakname, q=FALSE)
     extension <- tools:::file_ext(pakname.ext)
     
-    pos <- grep(qname, G$melpalibs$name, fixed=TRUE)
+    pos <- grep(qpakname, G$melpalibs$name, fixed=TRUE)
     version  <- G$melpalibs$version[pos]
     sprintf("https://melpa.org/packages/%s-%s.%s", pakname, version, extension)
   
@@ -1399,7 +1418,7 @@ melpa.getpak <- function(pakname.ext){ # Build a package from G$melpa.vers given
 
 
 
-###== Donwload helpers ==
+### === Donwload helpers ===
 
 
 download.nice <- function(from, to, overwrite, desc=""){
@@ -1456,8 +1475,9 @@ download.git <- function(file, to, overwrite=TRUE, desc=""){
     ## remote git
     if(!nzchar(G$github.local)) {
         from <- makePath(G$github, file)
-        download.nice(from, to, overwrite=TRUE, desc)
-        file.rename(down.pt(to), work.pt(to))
+        to.temp <- basename(to)
+        download.nice(from, to.temp, overwrite=TRUE, desc)
+        file.rename(down.pt(to.temp), work.pt(to))
         
     ## local git
     } else {
@@ -1472,7 +1492,7 @@ download.git <- function(file, to, overwrite=TRUE, desc=""){
 
 
 
-###== File System ==
+### === File System ===
 makePath <- function(parent, child){    
 ### Chain parent-child paths managing '/' middle slashes 
 ## You don't have to rememeber if you need to add or not that slash
@@ -1610,7 +1630,32 @@ chk.colon <- function(path){ # Test a path does not end with a colon
     if(grepl(":$", path))
         stop("In ", path, "\n ending with a colon (:) is ambiguous and not allowed as a working directory.",
              "\nFor a USB drive root append a slash to it.")
+}
+
+
+chk.write <- function(path, over, desc="", stop=TRUE){ # Not Used!!
+### Check if we can overwrite non-empty dir and possibly stop
+### Empty dir are overwritten without prompt
+### File is considered a non-empty dir
+     
+    if(nzchar(desc)) desc <- paste(desc, '\n')
+
+    ## Ret if non-exisitng path
+    if(!is.path(path)) return(TRUE)
+    
+    ## Stop/warn if dir is non-empty and no right to overwrite
+    if(is.path(path) && !is.empty(path)){   
+        if(over){
+            warn.p(path, "already exists")}
+        else {
+            if(stop)  exit.p(path, desc, "already exists")
+            warn.p(path, "already exists\nSkipping action!")
+            return(FALSE)
+        }
     }
+    return(TRUE)
+}
+       
 
 dirtype_ <- function(file){ # File relative to the build workdir is of type dir
     file.info(work.pt(file))$isdir
@@ -1850,8 +1895,6 @@ existMake.old <- function(dir, overwrite, ask, desc=""){
 }
 
 
-
-
 existMake <- function(dir, overwrite, ask, desc=""){
 ### If dir (relative to the build workdir) does not exist make it, otherwise might ask and skip creation.
 ### An empty-dir is considered non-existent. Note: if dir="", it is the build workdir.
@@ -1934,163 +1977,15 @@ file.read <- function( # Read file
                    )    
     readLines(work.pt(fpath))
 
-
-uzip <- function(from, to, desc, delTarget=TRUE){
-### Unzip FROM and TO relative resp. to the downloads dir and the build workdir
-### Stops on errors and inform used with a desc argument
-
-    message('\nExpanding ', desc, '...')
-    if(!file.exists(down.pt(from))) stop("Cannot find the file\n", down.pt(from))
-    if(delTarget) del.path(to)
-    uzip_(from, to)
-    
-}
-
-uzip_ <- function(from, to){ # uzip workhorse    
-
-    from <- down.pt(from)
-    to <- work.pt(to)
-    if(length(unzip(from, exdir= to))==0)
-        stop('\nUnable to perform extraction')  
-}
-
-utar <- function(from, to, desc, delTarget=TRUE){
-### Untar making path relative to the build workdir
-### Stops on errors and inform used with a desc argument
-
-    message('\nExpanding ', desc, '...') 
-    if(!file.exists(down.pt(from))) stop("Cannot find the file\n", down.pt(from))
-    if(delTarget) del.path(to)
-    utar_(from, to)
-    
-}
-
-utar_ <- function(from, to){ # uzip workhorse    
+file.write <- function( # Write file
+                       text,
+                       fpath # File path relative to the build workdir
+                   )    
+    writeLines(text, work.pt(fpath))
 
 
-    ## Untar requires mapping a UNC build workdir do a drive
-    orig.work <- G$work
-    if(unc.is(G$work)) {
-        message(G$work, " is a UNC path, which is not supported by untar, a mapped drive will be used.")
-        G$work <- unc.subs(G$work)
-    }
 
-    from <- down.pt(from)
-    to <- work.pt(to)
-    tryCatch(untar(from, exdir= to), finally={    
-        ## Restore previous drive mapping
-        if(!is.null(G$tempmap)) unc.mapdel(G$tempmap)
-        G$work <- orig.work
-    })
-     
-}
-
-
-uzip.7z <- function(from, to, desc, delTarget=TRUE){
-    zexe <- get7zbin()
-    if(is.path(to)) {
-        message('\nDeleting exisiting ', desc)
-        del.path(to)
-    }    
-    message('\nExpanding (w/ 7zip) ', desc)
-    message('This may take a bit ...')
-    cmd <- paste(winwork.pt(to), windown.pt(from))
-    cmd <- p0(winwork.pt(zexe), ' x -aoa -r -o', cmd)
-    ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
-    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
-}
-
-get7zbin <- function(){ # Get 7z.exe relative to the build workdir
-    zipdir <- G$pzip
-    versiondir <- get7zbin.ver_(zipdir)
-    subpath <- '/res/7z/7z.exe'
-    makePath(zipdir, p0(versiondir, subpath))
-}
-
-get7zbin.ver_ <- function(zipdir){ # get7zbin workhorse
-    zipdir <- work.pt(zipdir)
-    dir(zipdir)
-}
-
-
-innoextract <- function(from, to, desc, delTarget=TRUE){
-    exe <- getInnobin()
-    if(is.path(to)) {
-        message('\nDeleting exisiting ', desc)
-        del.path(to)
-    }    
-    message('\nExpanding (w/ innoextract) ', desc)
-    message('This may take a bit ...')
-    cmd <- c(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
-    ret <- shell.cd(cmd, echo = FALSE)
-    # cmd <- paste(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
-    # ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
-    # if(ret) stop(paste('\n', cmd, '\nreported a problem'))
-}
-
-
-getInnobin <- function(){ # Get 7z.exe relative to the build workdir
-#    innodir <- p0(G$innozip,'.d')
-    makePath(G$innozip, "innoextract.exe")
-}
-
-
-getDeps <- function(pnames){
-### Get recursively a package depenecies/imports
-
-    myCRAN <- "http://cran.r-project.org"
-    
-    ## Set package repository, unless already set 
-    repOpt <- getOption("repos")
-    if(repOpt["CRAN"] == "@CRAN@")  repOpt["CRAN"] <- myCRAN
-    options(repos=repOpt)       
-
-    sort(unique(unlist(utils:::.make_dependency_list(pnames, available.packages(), recursive=TRUE))))
-
-}
-
-
-getDeps.format <- function(packstring){
-### Format space separated package string and get packs+deps vector
-    
-    pnames <- strsplit(gsub('(^ +)|( +$)', '', packstring), split=' +')[[1]]
-    unique(c(pnames, getDeps(pnames)))
-}
-
-getImports <- function(pnames, available=NULL){
-### Get recursively package imports
-### NOT USED. Replaced by getDeps
-
-    myCRAN <- "http://cran.r-project.org"
-    
-    ## Get available CRAN packages
-    if(is.null(available)) {
-        ## Set default repository (to install packaes)
-        repOpt <- getOption("repos")
-        if(repOpt["CRAN"] == "@CRAN@")  repOpt["CRAN"] <- myCRAN
-        options(repos=repOpt)       
-        available <- available.packages()
-    }
-    udeps <- unique(unlist(lapply(pnames, function(pname){       
-        deps <- NA
-        if(pname %in% rownames(available)){
-            deps <- available[pname,"Imports"]
-            deps <- gsub("\\(.+?\\)", "", deps)
-            deps <- gsub("\\n", "", deps)
-            deps <- gsub(" +", "", deps)
-            deps <- strsplit(deps, ",")[[1]]
-        }
-
-        if(!any(is.na(deps))) deps <- c(deps, getImports(deps, available))
-     })))
-
-    ## Remove initial
-    setdiff(udeps, pnames)
-
-}
-
-
-###== UNC Paths ==
+### === UNC Paths ===
 
 unc.is <- function(path){
 ### Check if a path is a UNC path
@@ -2195,8 +2090,165 @@ unc._maps <- function(){
     mps       
 }
 
+### === Extaction utils ===
+uzip <- function(from, to, desc, delTarget=TRUE){
+### Unzip FROM and TO relative resp. to the downloads dir and the build workdir
+### Stops on errors and inform used with a desc argument
 
-### == Messages ==
+    message('\nExpanding ', desc, '...')
+    if(!file.exists(down.pt(from))) stop("Cannot find the file\n", down.pt(from))
+    if(delTarget) del.path(to)
+    uzip_(from, to)
+    
+}
+
+uzip_ <- function(from, to){ # uzip workhorse    
+
+    from <- down.pt(from)
+    to <- work.pt(to)
+    if(length(unzip(from, exdir= to))==0)
+        stop('\nUnable to perform extraction')  
+}
+
+utar <- function(from, to, desc, delTarget=TRUE){
+### Untar making path relative to the build workdir
+### Stops on errors and inform used with a desc argument
+
+    message('\nExpanding ', desc, '...') 
+    if(!file.exists(down.pt(from))) stop("Cannot find the file\n", down.pt(from))
+    if(delTarget) del.path(to)
+    utar_(from, to)
+    
+}
+
+utar_ <- function(from, to){ # uzip workhorse    
+
+
+    ## Untar requires mapping a UNC build workdir do a drive
+    orig.work <- G$work
+    if(unc.is(G$work)) {
+        message(G$work, " is a UNC path, which is not supported by untar, a mapped drive will be used.")
+        G$work <- unc.subs(G$work)
+    }
+
+    from <- down.pt(from)
+    to <- work.pt(to)
+    tryCatch(untar(from, exdir= to), finally={    
+        ## Restore previous drive mapping
+        if(!is.null(G$tempmap)) unc.mapdel(G$tempmap)
+        G$work <- orig.work
+    })
+     
+}
+
+
+uzip.7z <- function(from, to, desc, delTarget=TRUE){
+    zexe <- get7zbin()
+    if(is.path(to)) {
+        message('\nDeleting exisiting ', desc)
+        del.path(to)
+    }    
+    message('\nExpanding (w/ 7zip) ', desc)
+    message('This may take a bit ...')
+    cmd <- paste(winwork.pt(to), windown.pt(from))
+    cmd <- p0(winwork.pt(zexe), ' x -aoa -r -o', cmd)
+    ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+}
+
+get7zbin <- function(){ # Get 7z.exe relative to the build workdir
+    zipdir <- G$pzip
+    versiondir <- get7zbin.ver_(zipdir)
+    subpath <- '/res/7z/7z.exe'
+    makePath(zipdir, p0(versiondir, subpath))
+}
+
+get7zbin.ver_ <- function(zipdir){ # get7zbin workhorse
+    zipdir <- work.pt(zipdir)
+    dir(zipdir)
+}
+
+
+innoextract <- function(from, to, desc, delTarget=TRUE){
+    exe <- getInnobin()
+    if(is.path(to)) {
+        message('\nDeleting exisiting ', desc)
+        del.path(to)
+    }    
+    message('\nExpanding (w/ innoextract) ', desc)
+    message('This may take a bit ...')
+    cmd <- c(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
+    ret <- shell.cd(cmd, echo = FALSE)
+    # cmd <- paste(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
+    # ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    # if(ret) stop(paste('\n', cmd, '\nreported a problem'))
+}
+
+
+getInnobin <- function(){ # Get 7z.exe relative to the build workdir
+#    innodir <- p0(G$innozip,'.d')
+    makePath(G$innozip, "innoextract.exe")
+}
+
+
+
+### === R dependencies ===
+
+getDeps <- function(pnames){
+### Get recursively a package depenecies/imports
+
+    myCRAN <- "http://cran.r-project.org"
+    
+    ## Set package repository, unless already set 
+    repOpt <- getOption("repos")
+    if(repOpt["CRAN"] == "@CRAN@")  repOpt["CRAN"] <- myCRAN
+    options(repos=repOpt)       
+
+    sort(unique(unlist(utils:::.make_dependency_list(pnames, available.packages(), recursive=TRUE))))
+
+}
+
+getDeps.format <- function(packstring){
+### Format space separated package string and get packs+deps vector
+    
+    pnames <- strsplit(gsub('(^ +)|( +$)', '', packstring), split=' +')[[1]]
+    unique(c(pnames, getDeps(pnames)))
+}
+
+getImports <- function(pnames, available=NULL){
+### Get recursively package imports
+### NOT USED. Replaced by getDeps
+
+    myCRAN <- "http://cran.r-project.org"
+    
+    ## Get available CRAN packages
+    if(is.null(available)) {
+        ## Set default repository (to install packaes)
+        repOpt <- getOption("repos")
+        if(repOpt["CRAN"] == "@CRAN@")  repOpt["CRAN"] <- myCRAN
+        options(repos=repOpt)       
+        available <- available.packages()
+    }
+    udeps <- unique(unlist(lapply(pnames, function(pname){       
+        deps <- NA
+        if(pname %in% rownames(available)){
+            deps <- available[pname,"Imports"]
+            deps <- gsub("\\(.+?\\)", "", deps)
+            deps <- gsub("\\n", "", deps)
+            deps <- gsub(" +", "", deps)
+            deps <- strsplit(deps, ",")[[1]]
+        }
+
+        if(!any(is.na(deps))) deps <- c(deps, getImports(deps, available))
+     })))
+
+    ## Remove initial
+    setdiff(udeps, pnames)
+
+}
+
+
+### === Messages ===
 
 warn.path <- function(path, mess){
     message("\n", path, "\n  ", mess)
@@ -2211,53 +2263,27 @@ pv <- function(..., s=" ") { # paste() converting argument to a single vector an
    paste(c(...), collapse=s)
 }
 
-### no more paste0 ever
-p0 <- paste0
+p0 <- paste0 # no more paste0 ever
 
 
-### probably not used
    
-### Check if we can overwrite non-empty dir and possibly stop
-chk.write <- function(path, over, desc="", stop=TRUE){
-    ## Empty dir are overwritten without prompt
-    ## File is considered a non-empty dir
-     
-    if(nzchar(desc)) desc <- paste(desc, '\n')
-
-    ## Ret if non-exisitng path
-    if(!is.path(path)) return(TRUE)
-    
-    ## Stop/warn if dir is non-empty and no right to overwrite
-    if(is.path(path) && !is.empty(path)){   
-        if(over){
-            warn.p(path, "already exists")}
-        else {
-            if(stop)  exit.p(path, desc, "already exists")
-            warn.p(path, "already exists\nSkipping action!")
-            return(FALSE)
-        }
-    }
-    return(TRUE)
-}
-       
-
-### Exsisting paths warn
 warn.p <- function(path, mess){
+### Exsisting paths warn
     messagev(" ", mess.p(path, mess))
 }
 
-### Exisintg paths
 mess.p <- function(path,  mess){
+### Exisintg paths
     p0("\n", path, "\n  ", mess)
 }
 
-### Exisintg paths stop
 exit.p <- function(path,  mess){ 
+### Exisintg paths stop
     stop(mess.p(path,  mess))
 }
 
-### Generic download info for custom download
 mess.down <- function(desc){
+### Generic download info for custom download
     messagev("\nDownloading", desc)
 }
 

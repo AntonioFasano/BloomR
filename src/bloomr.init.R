@@ -33,28 +33,26 @@ local({r <- getOption("repos")
 
 
 ## Set and test work directory
-x=file.path(dirname(R.home()), "bloomr.txt")
-if(!file.exists(x))stop(paste("I cannot find:\n", x, "\nConsider to reinstall the product."))
+local({
+    
+    infofile <- file.path(dirname(R.home()), "bloomr.txt")
+    if(!file.exists(infofile)) stop(paste("I cannot find:\n", x, "\nConsider to reinstall the product."))
 
-x=readLines(x)
-x=paste0("This is BloomR version ", x)
-xx=paste0(x, "\n")
+    info <- readLines(infofile)
+    info.ex <- paste0("This is BloomR version ", info)
+    
+    rver <- paste0("Based on ", R.version.string)
+    info.ex <- paste0(info.ex, "\n",  rver, "\n")
 
-x=paste0("Based on ", R.version.string)
-xx=paste0(xx,  x, "\n")
-
-x=normalizePath(R.home("../../mybloomr"), winslash="/", mustWork=FALSE)
-if(!dir.exists(x)) stop(paste("I cannot find 'mybloomr' directory with the path:\n", x,
+    homedir <- normalizePath(R.home("../../mybloomr"), winslash="/", mustWork=FALSE)
+    if(!dir.exists(homedir)) stop(paste("I cannot find 'mybloomr' directory with the path:\n", homedir,
                               "\nIf you cannot fix it, consider to reinstall the product."))
-setwd(x)
-x=paste0("Current working directory is\n", getwd())
-xx=paste0(xx, x, "\n")
-
-x=max(nchar(strsplit(xx, "\n")[[1]]))
-x=paste0(rep("=", x), collapse="")
-xx=paste0(x, "\n", xx)
-xx=paste0(xx, x)
-
-message(xx)
-rm(x,xx)
-
+    setwd(homedir)
+    cdir <- paste0("Current working directory is\n", getwd())
+    info.ex <- paste0(info.ex, cdir, "\n")
+    
+    linelen <- max(nchar(strsplit(info.ex, "\n")[[1]]))
+    linedraw <- paste0(rep("=", linelen), collapse="")
+    info.ex <- paste0(linedraw, "\n", info.ex, "\n", linedraw)
+    message(info.ex)
+})

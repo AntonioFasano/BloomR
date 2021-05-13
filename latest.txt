@@ -11,7 +11,8 @@ New masking quit().
 _Change details_
 
     build: UNC build support makeStudio (with miktex, mpm, initexmf), minimal Perl, user downloads folder,
-          switch-based branching, find alternative TeX repos, removed refs to old Java API, +melpa.getvers, +melpa.getpak 
+          switch-based branching, find alternative TeX repos, removed refs to old Java API,
+	  +melpa.getvers, +melpa.getpak, ~download.git, +makeBuildnum 
     br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown,
                 +declare br-init-simple-menu, +br-init-autoloads.
     br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
