@@ -42,7 +42,7 @@ local({
     info <- paste(info[-3], collapse = "\n")
 
     ## Clean vanilla console
-    if(tolower(edition) == "core edition")
+    if(nzchar(Sys.getenv("vanilla"))) 
         system("powershell -ExecutionPolicy Bypass -command (New-Object -ComObject Wscript.Shell).SendKeys([string][char]12)")
     
     info.ex <- paste0("This is BloomR version ", info)

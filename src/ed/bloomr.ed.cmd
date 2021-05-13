@@ -20,6 +20,9 @@ Echo Current dir set to:
 cd   %HOME%
 Echo %CD%
 
+Set "vanilla=true"
+Echo vanilla is  %vanilla%
+
 Echo Start ..\apps\R\bin\x64\Rgui.exe LANGUAGE=en
      Start ..\apps\R\bin\x64\Rgui.exe LANGUAGE=en
 Pause

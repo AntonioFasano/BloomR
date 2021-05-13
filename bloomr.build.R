@@ -1061,6 +1061,7 @@ makeLauncher.Core <- function(){
     bloomr.run <- "
 EnvSet,  BLOOMR,     %A_ScriptDir%
 EnvSet,  HOME,       %A_ScriptDir%\\mybloomr
+EnvSet,  vanilla,    true
 Run, %AppDir%\\R\\bin\\x64\\Rgui.exe LANGUAGE=en
 "
     bloomr.run <- gsub("%AppDir%", G$appname, bloomr.run)
