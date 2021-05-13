@@ -8,19 +8,21 @@ Updated utility URLs.
 Byte compilation with autoloads.
 New masking quit().
 "main" is now "apps" folder.
+Installer warns on existing install dir and low space.
 
 _Change details_
 
     build: UNC build support makeStudio (with miktex, mpm, initexmf), minimal Perl, user downloads folder,
           switch-based branching, find alternative TeX repos, removed refs to old Java API, apps dir,
-	  +melpa.getvers, +melpa.getpak, ~download.git, +makeBuildnum
+	  +melpa.getvers, +melpa.getpak, ~download.git, +makeBuildnum.
     br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown,
-                +declare br-init-simple-menu, +br-init-autoloads, ~br-app-dir(basename is "apps")
+                +declare br-init-simple-menu, +br-init-autoloads, ~br-app-dir(basename is "apps").
     br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
-    br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign
+    br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign.
     bloomr.sys.R: +q/quit, -.br.testBR, -br.getLatexAddons, -br.getPandoc,
-                  -.br.getPandoc.release, -download.bin
-    bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, ~br.rmd2html, ~br.md2pdf, +buildenv, +br.rmd2slides
-    xlx.R: plyr:::rbind.fill without loading package to avoid conflicts
-    ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el
+                  -.br.getPandoc.release, -download.bin.
+    bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, ~br.rmd2html, ~br.md2pdf, +buildenv, +br.rmd2slides.
+    xlx.R: plyr:::rbind.fill without loading package to avoid conflicts.
+    ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el.
+    bloomr.nsi: Warn on existing install dir and low space.
 

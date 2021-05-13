@@ -1,9 +1,9 @@
 ###  BloomR source
+###  Commit Installer warns on existing install dir and low space
 
 ##  TODO
 ##  Remove "requestInfo" from R global env at start due to eikonapir
-##  Byte compile is async. "0" can be removed in tha case stadard emacs elisp files
-##  NSIS does not delete an existing dir, but silently overwrites it
+##  Byte compile is async. "0" can be removed in case of standard emacs elisp files
 ##  Finalise dir temp-help docs source dir
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
 ##  Custom polymode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
