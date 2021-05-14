@@ -6,7 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2   # checkout repo in VM  
       - run: |  # Log  virtenv 
-          cd    > build-artifact.txt
+          cd    > build-artifact.txt  # D:\a\name\reponame
+          set  >> build-artifact.txt
           dir  >> build-artifact.txt
         shell: cmd
 
