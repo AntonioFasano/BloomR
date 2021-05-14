@@ -5,9 +5,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2   # checkout repo in VM  
-      - run: |  
+      - run: |  # Log  virtenv 
           cd    > build-artifact.txt
-          
+          dir  >> build-artifact.txt
+        shell: cmd
+
       ##  Upload in github the file generated
       - uses: actions/upload-artifact@v2
         with:
