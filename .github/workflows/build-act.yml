@@ -6,9 +6,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - run: |  # Log  virtenv 
-            $R=(dir $env:ProgramFiles\R).Name
-            & $env:ProgramFiles\R\$R\bin\Rscript --version 
-  
+          pwd     > build-artifact.txt # D:\a\reponame\reponame or $GITHUB_WORKSPACE or $RUNNER_WORKSPACE\reponame
+          ls $env >> build-artifact.txt
+          $R=(dir $env:ProgramFiles\R).Name
+          & $env:ProgramFiles\R\$R\bin\Rscript --version build-artifact.txt          
+          dir  >> build-artifact.txt
+          dir $RUNNER_WORKSPACE >> build-artifact.txt
+          dir $RUNNER_WORKSPACE\..     >> build-artifact.txt # D:\a\
+          dir $RUNNER_WORKSPACE\.. \.. >> build-artifact.txt # D:\
+          
         shell: powershell
 
       ##  Upload in github the file generated
@@ -18,3 +24,5 @@ jobs:
           path: build-artifact.txt
           retention-days: 1
 
+
+      
