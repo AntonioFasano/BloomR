@@ -12,8 +12,8 @@ jobs:
           & $env:ProgramFiles\R\$R\bin\Rscript --version >> build-artifact.txt          
           dir  >> build-artifact.txt
           dir $RUNNER_WORKSPACE >> build-artifact.txt
-          dir $RUNNER_WORKSPACE\..     >> build-artifact.txt # D:\a\
-          dir $RUNNER_WORKSPACE\..\.. >> build-artifact.txt # D:\
+          dir $RUNNER_WORKSPACE\..     >> build-artifact.txt 
+          dir $RUNNER_WORKSPACE\..\.. >> build-artifact.txt 
 
 
         shell: powershell
