@@ -6,3 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: echo ciao
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-artifact
+          path: build-artifact.txt
+          retention-days: 1
+
