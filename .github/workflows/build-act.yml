@@ -10,7 +10,7 @@ jobs:
           pwd     > build-artifact.txt         
           ls env: >> build-artifact.txt
           $R=(dir $env:ProgramFiles\R).Name
-          echo $env:ProgramFiles\R\$R\bin\Rscript >> build-artifact.txt          
+          Start-Process -File "$env:ProgramFiles\R\$R\bin\Rscript" --version -RedirectStandardError .\build-artifact.txt  
 
         shell: powershell
 
