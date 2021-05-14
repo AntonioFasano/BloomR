@@ -12,6 +12,7 @@ jobs:
           $R=(dir $env:ProgramFiles\R).Name
           $R="$env:ProgramFiles\R\$R\bin\Rscript"
           Start-Process -File $R --version -RedirectStandardError .\temp123.txt 
+          Start-Process -File $R --help -RedirectStandardError .\temp123.txt 
           cat .\temp123.txt >> .\build-artifact.txt
           dir  >> build-artifact.txt
           dir $RUNNER_WORKSPACE >> build-artifact.txt
