@@ -9,9 +9,6 @@ jobs:
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
           pwd     > build-artifact.txt         
           ls $env >> build-artifact.txt
-          # $R=(dir $env:ProgramFiles\R).Name
-          # & $env:ProgramFiles\R\$R\bin\Rscript --version 2>&1 >> build-artifact.txt          
-
 
         shell: powershell
 
