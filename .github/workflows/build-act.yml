@@ -7,7 +7,9 @@ jobs:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - run: |  # Log  virtenv 
           pwd     > build-artifact.txt 
-          
+          ls $env >> build-artifact.txt
+          $R=(dir $env:ProgramFiles\R).Name
+
         shell: powershell
 
       ##  Upload in github the file generated
