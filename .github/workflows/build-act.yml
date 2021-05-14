@@ -6,7 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - run: |  # Log  virtenv 
-                dir "C:\Program Files" > build-artifact.txt         
+          for /F %a in ('dir /b "C:\Program Files\R"') do set R=%a
+          "C:\Program Files\R\%R%\bin\Rscript" --version >> build-artifact.txt
+  
         shell: cmd
 
       ##  Upload in github the file generated
