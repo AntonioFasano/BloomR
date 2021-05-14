@@ -9,7 +9,7 @@ jobs:
           pwd     > build-artifact.txt # D:\a\reponame\reponame or $GITHUB_WORKSPACE or $RUNNER_WORKSPACE\reponame
           ls $env >> build-artifact.txt
           $R=(dir $env:ProgramFiles\R).Name
-          & $env:ProgramFiles\R\$R\bin\Rscript --version build-artifact.txt          
+          & $env:ProgramFiles\R\$R\bin\Rscript --version >> build-artifact.txt          
           dir  >> build-artifact.txt
           dir $RUNNER_WORKSPACE >> build-artifact.txt
           dir $RUNNER_WORKSPACE\..     >> build-artifact.txt # D:\a\
