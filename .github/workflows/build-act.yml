@@ -1,0 +1,8 @@
+name: build-act
+on: [workflow_dispatch]  # manual 
+jobs:
+  main:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: echo ciao
