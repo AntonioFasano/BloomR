@@ -6,8 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2   # checkout repo in VM  
       - run: |  
-          dir  > build-artifact.txt
-
+          cd    > build-artifact.txt
+          dir  >> build-artifact.txt
+          
       ##  Upload in github the file generated
       - uses: actions/upload-artifact@v2
         with:
