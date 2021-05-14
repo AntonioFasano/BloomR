@@ -11,9 +11,9 @@ jobs:
           ls env: >> build-artifact.txt
           $R=(dir $env:ProgramFiles\R).Name
           $R="$env:ProgramFiles\R\$R\bin\Rscript"
-          Start-Process -File $R --version -RedirectStandardError .\temp123.txt 
-          Start-Process -File $R --help -RedirectStandardError .\temp123.txt 
-          cat .\temp123.txt >> .\build-artifact.txt
+          Start-Process -File $R --version -RedirectStandardError .\temp-file.txt
+          Start-Process -File $R --help -RedirectStandardError .\temp-file.txt
+          cat .\temp-file.txt >> .\build-artifact.txt
           dir  >> build-artifact.txt
           dir $RUNNER_WORKSPACE >> build-artifact.txt
 
@@ -25,7 +25,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: build-artifact
-          path: build-artifact.txt
+          path: |
+            build-artifact.txt
+            temp-file.txt
           retention-days: 1
 
 
