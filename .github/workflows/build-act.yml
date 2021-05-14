@@ -6,14 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - run: |  # Log  virtenv 
-          cd    > build-artifact.txt # D:\a\reponame\reponame or %GITHUB_WORKSPACE% or %RUNNER_WORKSPACE%\reponame
-          set  >> build-artifact.txt
-          Rscript --version >> build-artifact.txt
-          dir  >> build-artifact.txt
-          dir  %RUNNER_WORKSPACE% >> build-artifact.txt
-          dir  %RUNNER_WORKSPACE%\..     >> build-artifact.txt # D:\a\
-          dir  %RUNNER_WORKSPACE%\.. \.. >> build-artifact.txt # D:\
-          
+                dir "C:\Program Files" > build-artifact.txt         
         shell: cmd
 
       ##  Upload in github the file generated
