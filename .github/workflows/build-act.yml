@@ -7,9 +7,9 @@ jobs:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - run: |  # Log  virtenv 
             $R=(dir $env:ProgramFiles\R).Name
-          & $env:ProgramFiles\R\$R\bin\Rscript --version 
+            & $env:ProgramFiles\R\$R\bin\Rscript --version 
   
-        shell: PowerShell
+        shell: powershell
 
       ##  Upload in github the file generated
       - uses: actions/upload-artifact@v2
