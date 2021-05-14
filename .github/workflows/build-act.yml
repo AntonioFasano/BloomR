@@ -1,13 +1,18 @@
 name: build-act
-on: [workflow_dispatch]  # manual 
+on: [workflow_dispatch]  # manual trigger 
 jobs:
   main:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: echo ciao > build-artifact.txt
+      - uses: actions/checkout@v2   # checkout repo in VM  
+      - run: | #
+          echo cd    > build-artifact.txt
+          echo dir  >> build-artifact.txt
+
+      ##  Upload in github the file generated
       - uses: actions/upload-artifact@v2
         with:
           name: build-artifact
           path: build-artifact.txt
           retention-days: 1
+
