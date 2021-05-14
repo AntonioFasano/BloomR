@@ -7,7 +7,7 @@ jobs:
       # - uses: actions/checkout@v2  # checkout repo in VM  
       - run: |  # Log  virtenv 
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
-          ls "$env" 
+          ls "$env" | Out-File -FilePath build-artifact.txt 
 
         shell: powershell
 
