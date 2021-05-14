@@ -13,7 +13,7 @@ jobs:
           $R="$env:ProgramFiles\R\$R\bin\Rscript"
           Start-Process -File $R --version -RedirectStandardError .\build-artifact.txt
 
-          cat .\temp >> .\build-artifact.txt
+#          cat .\temp >> .\build-artifact.txt
           
 
 
