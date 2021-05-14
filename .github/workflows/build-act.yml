@@ -11,9 +11,8 @@ jobs:
           ls env: >> build-artifact.txt
           $R=(dir $env:ProgramFiles\R).Name
           $R="$env:ProgramFiles\R\$R\bin\Rscript"
-          Start-Process -File $R --version -RedirectStandardError .\build-artifact.txt
-
-#          cat .\temp >> .\build-artifact.txt
+          Start-Process -File $R --version -RedirectStandardError  .\temp.txt 
+          cat .\temp.txt >> .\build-artifact.txt
           
 
 
