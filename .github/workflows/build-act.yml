@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - name: Log virtenv info to build-artifact.txt
-      - run: |  # Log  virtenv 
+        run: |  # Log  virtenv 
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
           pwd     > build-artifact.txt         
           $R=(dir $env:ProgramFiles\R).Name
