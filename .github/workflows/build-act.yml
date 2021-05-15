@@ -11,12 +11,11 @@ jobs:
           ls env: >> build-artifact.txt
           $R=(dir $env:ProgramFiles\R).Name
           $R="$env:ProgramFiles\R\$R\bin\Rscript"
-          Start-Process -File $R --version -Wait -RedirectStandardError .\temp-file.txt
-          cat .\temp-file.txt >> .\build-artifact.txt
+          Start-Process -File $R --version -Wait -RedirectStandardError .\temp.txt
+          cat .\temp.txt >> .\build-artifact.txt
           dir  >> build-artifact.txt
           dir $RUNNER_WORKSPACE >> build-artifact.txt
-
-
+          dir $RUNNER_WORKSPACE\.. \.. >> build-artifact.txt 
 
         shell: powershell
 
@@ -26,7 +25,6 @@ jobs:
           name: build-artifact
           path: |
             build-artifact.txt
-            temp-file.txt
           retention-days: 1
 
 
