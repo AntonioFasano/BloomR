@@ -8,14 +8,14 @@ jobs:
       - run: |  # Log  virtenv 
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
           pwd     > build-artifact.txt         
-          ls env: >> build-artifact.txt
           $R=(dir $env:ProgramFiles\R).Name
           $R="$env:ProgramFiles\R\$R\bin\Rscript"
           Start-Process -File $R --version -Wait -RedirectStandardError .\temp.txt
           cat .\temp.txt >> .\build-artifact.txt
+          ls env: >> build-artifact.txt
           dir  >> build-artifact.txt
-          dir $RUNNER_WORKSPACE >> build-artifact.txt
-          ## dir $RUNNER_WORKSPACE\..\.. >> build-artifact.txt 
+          dir $env:RUNNER_WORKSPACE >> build-artifact.txt
+          dir $env:RUNNER_WORKSPACE\.. >> build-artifact.txt 
 
         shell: powershell
 
