@@ -14,10 +14,10 @@ jobs:
           Start-Process -File $R --version -Wait -RedirectStandardError .\temp.txt
           cat .\temp.txt >> .\build-artifact.txt
           ls env: >> build-artifact.txt
-          dir  >> build-artifact.txt   # D:\a\BloomR\BloomR or $env:GITHUB_WORKSPACE
-          dir $env:RUNNER_WORKSPACE    >> build-artifact.txt  # D:\a\BloomR  
-          dir $env:RUNNER_WORKSPACE\.. >> build-artifact.txt  # D:\a\
-          dir $env:RUNNER_WORKSPACE\.. >> build-artifact.txt  # D:\
+          dir  >> build-artifact.txt      # D:\a\BloomR\BloomR or $env:GITHUB_WORKSPACE
+          dir $env:RUNNER_WORKSPACE       >> build-artifact.txt  # D:\a\BloomR  
+          dir $env:RUNNER_WORKSPACE\..    >> build-artifact.txt  # D:\a\
+          dir $env:RUNNER_WORKSPACE\..\.. >> build-artifact.txt  # D:\
 
         shell: powershell
 
@@ -30,4 +30,4 @@ jobs:
           retention-days: 1
 
 
-      
+  
