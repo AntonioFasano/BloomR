@@ -15,7 +15,7 @@ jobs:
           cat .\temp.txt >> .\build-artifact.txt
           dir  >> build-artifact.txt
           dir $RUNNER_WORKSPACE >> build-artifact.txt
-          dir $RUNNER_WORKSPACE\.. \.. >> build-artifact.txt 
+          dir $RUNNER_WORKSPACE\..\.. >> build-artifact.txt 
 
         shell: powershell
 
