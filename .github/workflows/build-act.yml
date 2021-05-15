@@ -5,6 +5,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2  # checkout repo in VM  
+      - name: Log virtenv info to build-artifact.txt
       - run: |  # Log  virtenv 
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
           pwd     > build-artifact.txt         
@@ -13,9 +14,9 @@ jobs:
           Start-Process -File $R --version -Wait -RedirectStandardError .\temp.txt
           cat .\temp.txt >> .\build-artifact.txt
           ls env: >> build-artifact.txt
-          dir  >> build-artifact.txt
-          dir $env:RUNNER_WORKSPACE >> build-artifact.txt
-          dir $env:RUNNER_WORKSPACE\.. >> build-artifact.txt 
+          dir  >> build-artifact.txt  # 1 2 3
+          dir $env:RUNNER_WORKSPACE >> build-artifact.txt     # 1 2 3
+          dir $env:RUNNER_WORKSPACE\.. >> build-artifact.txt   # 1 2 3
 
         shell: powershell
 
