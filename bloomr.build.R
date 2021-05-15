@@ -1,5 +1,4 @@
 ###  BloomR source
-###  Commit Installer warns on existing install dir and low space
 
 ##  TODO
 ##  Remove "requestInfo" from R global env at start due to eikonapir
@@ -147,12 +146,12 @@ makeBloomR <- function( # Build BloomR
                     tight=FALSE,  # Reuse the downloads directory and build workdir 
                     ndown=2,      # num of download attempts
                     what='all',   # what edition: all/core/lab/studio
-                                  # 'all' requires deb==1:6. Else only core is built
+
                     ## For debug/test:
                     bundle='exe', # exe/zip/all/none make the related installer for distribution
                     ask=TRUE,     # asks if to overwrite the existent build workdir and installer
                     alttex=FALSE, # Try alternative LaTeX repos on failures, beyond the suggested one 
-                    deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug.
+                    deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug, avoid with what=all
                     gitsim=FALSE, # local path (abs. or relative)to simulate github downloads.
                     reset=TRUE    # FALSE to allow multi-builds calls and keep globals
 ){
@@ -540,8 +539,7 @@ bloomrTree.Core <- function(){
     # download.git("curver.txt",  app.pt("bloomr.txt")) 
     download.git("curver.txt",  "curver.txt") 
     ver <- file.read("curver.txt")[1]
-    edt <- paste(get.edition(), "edition")
-    file.write(p0(ver, "\n", makeBuildnum(), "\n", edt), app.pt("bloomr.txt"))
+    file.write(p0(ver, "\n", makeBuildnum()), app.pt("bloomr.txt"))
     
     ## Copy R and make site directory
     from <- p0(G$rzip , '/app')
@@ -586,14 +584,21 @@ bloomrTree.Core <- function(){
     if(nzchar(G$github.local)){
         download.git("temp-help/BloomR.pdf",               root.pt("help/BloomR.pdf"))     
         download.git("temp-help/frontier.pdf",             root.pt("help/frontier.pdf"))     
-        download.git("temp-help/Introducing Rblpapi.pdf",  root.pt("help/Bloomberg API intro.pdf"))
+        download.git("temp-help/Bloomberg API Intro.pdf",  root.pt("help/Bloomberg API Intro.pdf"))
+        unlink(root.pt("help/bloomr.html"))
     }
     
     ## Environment diagnostic
     message("\nAdding ED tools")
     makeDir(app.pt('ed'), "ED tools:")
-    download.git("src/ed/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd")) 
-    
+    download.git("src/ed/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd"))
+
+
+    ## Set the edition if this is the actual Core
+    if(is.core()){ # No if BRemacs is building the core components 
+        edt <- paste(get.edition(), "edition")
+        file.write(edt, app.pt("bloomr.txt"), append=TRUE)
+    }    
 }
 
 bloomrTree.brEmacs <- function(){
@@ -774,6 +779,14 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
     args <- sprintf("-Q -eval %s", dQuote(elisp))
     shell.cd(c(work.pt(cmd), args))        
     ## messagev(c(work.pt(cmd), args)) # To test in PS replace eval "..." with '...'
+
+
+    ## Set the edition if this is the actual Lab
+    if(is.lab()){ # No if Studio is building common BRemacs
+        ver <- file.read(app.pt("bloomr.txt"))
+        edt <- paste(get.edition(), "edition")
+        file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
+    }
     
 }
 
@@ -784,6 +797,11 @@ bloomrTree.Studio <- function(){
     makeStudio.addLatex()
     makeStudio.addPerl()
     makeStudio.addPandoc()
+
+    ## Set the edition
+    ver <- file.read(app.pt("bloomr.txt"))
+    edt <- paste(get.edition(), "edition")
+    file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
 }
 
 
@@ -991,6 +1009,9 @@ XSLoader.pm
 initScripts <- function(){
 ### Make R and BloomR etc files (configs such as Rprofile.site from PROF()) and the launchers
 ### Etc. files are currently the same for all the editions while launchers differ 
+
+    ## Test deb/what mismatch 
+    debug.mismatch()
     
     initScripts.etc()
 
@@ -1070,6 +1091,8 @@ Run, %AppDir%\\R\\bin\\x64\\Rgui.exe LANGUAGE=en
 
 makeLauncher.brEmacs <- function(){
 ### Make launcher of Lab and Studio editions
+
+
 
     bremacs.run <-  "
 EnvSet,  BLOOMR,     %A_ScriptDir%
@@ -1152,15 +1175,18 @@ makeBundle <- function(bundle, # 'exe'/'zip'/'all'/'none'
                     ){
 ### Create create exe, zip, both, or nothing   
 ### Every bundle value not 'exe'/'zip'/'all' means 'none'
+
+    ## Test deb/what mismatch 
+    debug.mismatch()
     
     if(bundle=='all' || bundle=='exe') makeInst(ask)
     if(bundle=='all' || bundle=='zip') makeZip(ask)    
 }
 
 
-makeInst <- function(ask){
+makeInst <- function(ask){ # not used since long
 
-    message('\nCreating BloomR green installer')
+    message('\nCreating BloomR green installer')        
     ## Set name (nsi name is "bloomr-setup.exe")    
     to <- switch(get.edition(), 
                  core = "BloomR-Core_setup_.exe",
@@ -1209,6 +1235,28 @@ makeBuildnum <- function(){
     rnd <- round(diff, 2) * 100  # About 13 min rounding  
     paste(td, rnd)
     
+}
+
+debug.mismatch <- function(){ # Test and stop on deb & what args consistence
+### When you use step by step build via 'deb'", this function checks that 'what' matches previous steps 
+
+    wmess <- 
+"\nEdition Mismatch!
+
+You are building %s, but %s refers to %s.
+Perhaps you are using a step by step build via 'deb' and 'what' does not match,
+or you are using 'deb' with what='all'."
+
+    ver <- file.read(app.pt("bloomr.txt"))
+    edt.file <- unlist(regmatches(ver, regexec("(core|lab|studio) +edition", ver, ignore.case = TRUE)))[2]
+    edt.file <- paste(sub("(.)", "\\U\\1", edt.file,      perl=TRUE), "Edition")
+    edt.code <- paste(sub("(.)", "\\U\\1", get.edition(), perl=TRUE), "Edition")
+    if(edt.code == edt.file) return()
+    
+    wmess <- sprintf(wmess, edt.code, app.pt("bloomr.txt"), edt.file)
+
+    stop(wmess)
+
 }
 
 
@@ -1979,10 +2027,10 @@ file.read <- function( # Read file
 
 file.write <- function( # Write file
                        text,
-                       fpath # File path relative to the build workdir
+                       fpath, # File path relative to the build workdir
+                       append =FALSE
                    )    
-    writeLines(text, work.pt(fpath))
-
+    write(text, work.pt(fpath), append = append)
 
 
 ### === UNC Paths ===
