@@ -5,20 +5,20 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2  # checkout repo in VM  
-      - name: Log virtenv info to build-artifact.txt
+      - name: Build BloomR core
         run: |   
           print(1)
           getwd()
-          write(1, "build-artifact.txt")
+          write(1, "BloomR-Core_setup_.exe")
           dir()
         shell: Rscript {0}
 
       ##  Upload in github the file generated
       - uses: actions/upload-artifact@v2
         with:
-          name: build-artifact
+          name: BloomR-Core_setup_.exe
           path: |
-            build-artifact.txt
+            BloomR-Core_setup_.exe
           retention-days: 1
 
 
