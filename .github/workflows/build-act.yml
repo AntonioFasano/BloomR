@@ -11,6 +11,9 @@ jobs:
           getwd()
           write(1, "BloomR-Core_setup_.exe")
           dir()
+          source("bloomr.build.R")
+          warn.p("hello", "world")
+          p0("hello", " world2")          
         shell: Rscript {0}
 
       ##  Upload in github the file generated
