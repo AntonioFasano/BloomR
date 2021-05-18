@@ -9,7 +9,7 @@ jobs:
         run: |   
           print(1)
           getwd()
-          write(1, "build-artifact")
+          write(1, "build-artifact.txt")
           dir()
         shell: Rscript {0}
 
