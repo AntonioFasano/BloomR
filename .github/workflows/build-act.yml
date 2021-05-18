@@ -16,7 +16,7 @@ jobs:
         with:
           name: BloomR-Core_setup_.exe
           path: |
-            BloomR-Core_setup_.exe
+            ../lastbuild/BloomR-Core_setup_.exe
           retention-days: 5
 
 
