@@ -6,22 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - name: Log virtenv info to build-artifact.txt
-        run: |  # Log  virtenv 
-          $PSDefaultParameterValues['*:Encoding'] = 'utf8'
-          echo test
-          pwd     > build-artifact.txt         
-          $R=(dir $env:ProgramFiles\R).Name
-          $R="$env:ProgramFiles\R\$R\bin\Rscript"
-          Start-Process -File $R --version -Wait -RedirectStandardError .\temp.txt
-          cat .\temp.txt >> .\build-artifact.txt
-          gh --version   >> .\build-artifact.txt
-          ls env: >> build-artifact.txt
-          dir  >> build-artifact.txt      # D:\a\BloomR\BloomR or $env:GITHUB_WORKSPACE
-          dir $env:RUNNER_WORKSPACE       >> build-artifact.txt  # D:\a\BloomR  
-          dir $env:RUNNER_WORKSPACE\..    >> build-artifact.txt  # D:\a\
-          dir $env:RUNNER_WORKSPACE\..\.. >> build-artifact.txt  # D:\
-
-        shell: powershell
+        run: |   
+          write(1, "build-artifact")
+        shell: Rscript {0}
 
       ##  Upload in github the file generated
       - uses: actions/upload-artifact@v2
