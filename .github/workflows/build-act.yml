@@ -8,6 +8,9 @@ jobs:
       - name: Log virtenv info to build-artifact.txt
         run: |   
           print(1)
+          getwd()
+          write(1, "build-artifact")
+          dir()
         shell: Rscript {0}
 
       ##  Upload in github the file generated
