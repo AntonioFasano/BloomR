@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - name: Log virtenv info to build-artifact.txt
         run: |   
-          write(1, "build-artifact")
+          print(1)
         shell: Rscript {0}
 
       ##  Upload in github the file generated
