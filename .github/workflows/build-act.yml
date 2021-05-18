@@ -8,6 +8,7 @@ jobs:
       - name: Log virtenv info to build-artifact.txt
         run: |  # Log  virtenv 
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+          echo test
           pwd     > build-artifact.txt         
           $R=(dir $env:ProgramFiles\R).Name
           $R="$env:ProgramFiles\R\$R\bin\Rscript"
