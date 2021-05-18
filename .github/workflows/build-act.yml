@@ -8,7 +8,7 @@ jobs:
       - name: Build BloomR core
         run: |
           source("bloomr.build.R")
-          makeBloomR("../lastbuild",  gitsim = '.', ask=FALSE, what="core")
+          makeBloomR("../lastbuild",  ask=FALSE, what="core")
         shell: Rscript {0}
 
       ##  Upload in github the file generated
