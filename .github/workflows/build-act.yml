@@ -6,14 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2  # checkout repo in VM  
       - name: Build BloomR core
-        run: |   
-          print(1)
-          getwd()
-          write(1, "BloomR-Core_setup_.exe")
-          dir()
-          source("bloomr.build.R")
-          warn.p("hello", "world")
-          p0("hello", " world2")          
+        run: |
+          makeBloomR("../lastbuild",  gitsim = '.', ask=FALSE, what="core")
         shell: Rscript {0}
 
       ##  Upload in github the file generated
@@ -22,7 +16,7 @@ jobs:
           name: BloomR-Core_setup_.exe
           path: |
             BloomR-Core_setup_.exe
-          retention-days: 1
+          retention-days: 5
 
 
   
