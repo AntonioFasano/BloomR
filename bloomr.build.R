@@ -1419,20 +1419,21 @@ sfDirLink <- function (url, quiet=FALSE){
     return (url)
 }
 
-cran.geturl <- function(pack){
-## Get  CRAN Windows binaries release for a package 
+cran.geturl <- function(pack){ # Get CRAN Windows binaries relative to current release for a package
+### Make sure the R release is current too  
 
     ## CRAN links
-    cranpage <- "http://cran.r-project.org/web/packages/"
-    cranbin <- "http://cran.r-project.org/bin/"
+    cranpage <- "https://cran.r-project.org/web/packages/"
+    cranwin <- "https://cran.r-project.org/bin/windows/"
 
     ## Get package page 
     url <- p0(cranpage, pack, "/index.html")
-    page <- download.html(url)    
+    page <- download.html(url)
 
     ## Get bin url: the first occurence on page is the dev version, second is release
-    url <- regmatches(page, gregexpr("windows/contrib.*?\\.zip", page))[[1]][2]
-    p0(cranbin, url)   
+    url <- regmatches(page, gregexpr("../../../bin/windows/contrib/.*?\\.zip", page))[[1]][2]
+    url <- regmatches(url, regexec("contrib/.*?\\.zip", url))   
+    p0(cranwin, url)
 }
 
 melpa.getvers <- function(){ # Store MELPA packages names/version as a data frame in G$melpa.vers
