@@ -2207,7 +2207,7 @@ uzip.7z <- function(from, to, desc, delTarget=TRUE){
 get7zbin <- function(){ # Get 7z.exe relative to the build workdir
     zipdir <- G$pzip
     versiondir <- get7zbin.ver_(zipdir)
-    subpath <- '/res/7z/7z.exe'
+    subpath <- '/res/bin/7z/7z.exe'
     makePath(zipdir, p0(versiondir, subpath))
 }
 

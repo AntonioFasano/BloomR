@@ -14,6 +14,7 @@ _Change details_
 
     build: UNC build support makeStudio (with miktex, mpm, initexmf), minimal Perl, user downloads folder,
           switch-based branching, find alternative TeX repos, removed refs to old Java API, apps dir,
+          ~get7zbin adapted to new installer content,
 	  +melpa.getvers, +melpa.getpak, ~download.git, +makeBuildnum, +debug.mismatch.
     br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown,
                 +declare br-init-simple-menu, +br-init-autoloads, ~br-app-dir(basename is "apps").
