@@ -153,7 +153,7 @@ makeBloomR <- function( # Build BloomR
                     alttex=FALSE, # Try alternative LaTeX repos on failures, beyond the suggested one 
                     deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug, avoid with what=all
                     gitsim=FALSE, # local path (abs. or relative)to simulate github downloads.
-                    reset=TRUE    # FALSE to allow multi-builds calls and keep globals
+                    reset=TRUE    # Only set FALSE internally to allow multi-builds calls and keep globals
 ){
     
     ## Set work dir
@@ -720,7 +720,7 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
   (kill-emacs 0))
 "
     elisp <- sprintf(elisp.t,  l(work.pt(eldir)))
-    args <- sprintf("-Q -eval %s", dQuote(elisp))
+    args <- sprintf("-Q -eval %s", dquoteu(elisp))
     shell.cd(c(work.pt(cmd), args))   
     ## messagev(c(work.pt(cmd), args)) # To test in PS replace eval "..." with '...'
 
@@ -776,7 +776,7 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
 #  (kill-emacs 0))
 #"
     elisp <- sprintf(elisp.t,  l(work.pt(eldir)))
-    args <- sprintf("-Q -eval %s", dQuote(elisp))
+    args <- sprintf("-Q -eval %s", dquoteu(elisp))
     shell.cd(c(work.pt(cmd), args))        
     ## messagev(c(work.pt(cmd), args)) # To test in PS replace eval "..." with '...'
 
@@ -1272,7 +1272,7 @@ shell.cd <- function(
                                  # cmdvec[1] is tested for exisitance and shQuoted if necessary
                      wd=NULL,    # optional work dir
                      raw=FALSE,  # if T, do not pretty format the output with pv
-                     echo=TRUE   # Echo to console via 
+                     echo=TRUE   # Echo to console via messagev
                       ){
 
     
@@ -1456,7 +1456,7 @@ melpa.getvers <- function(){ # Store MELPA packages names/version as a data fram
 melpa.getpak <- function(pakname.ext){ # Build a package from G$melpa.vers given its name and extension
 
     pakname <- tools:::file_path_sans_ext(pakname.ext)
-    qpakname <- dQuote(pakname, q=FALSE)
+    qpakname <- dquoteu(pakname)
     extension <- tools:::file_ext(pakname.ext)
     
     pos <- grep(qpakname, G$melpalibs$name, fixed=TRUE)
@@ -2312,10 +2312,8 @@ pv <- function(..., s=" ") { # paste() converting argument to a single vector an
    paste(c(...), collapse=s)
 }
 
-p0 <- paste0 # no more paste0 ever
+p0 <- paste0 # no more paste0
 
-
-   
 warn.p <- function(path, mess){
 ### Exsisting paths warn
     messagev(" ", mess.p(path, mess))
@@ -2335,4 +2333,13 @@ mess.down <- function(desc){
 ### Generic download info for custom download
     messagev("\nDownloading", desc)
 }
+
+### No fancy quotes errors for shell commands 
+squoteu <- function( # Undirectional sQuote
+                    x) sQuote(x, q = FALSE)
+
+dquoteu <- function( # Undirectional dQuote
+                    x) dQuote(x, q = FALSE)
+
+
 
