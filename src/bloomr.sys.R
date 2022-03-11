@@ -4,6 +4,14 @@
 quit <- function(save = "no", status = 0, runLast = TRUE) base:::quit(save, status, runLast)
 q    <- function(save = "no", status = 0, runLast = TRUE) base:::quit(save, status, runLast)
 
+dbr.brmain <- function(dir=""){ # TODO replace with .br.home
+### Return "apps-path/dir",
+### where "apps-path" is the directory hosting BloomR apps, e.g. R, BRemacs.
+### because the apps path host R, the function is based on `R.home()` 
+
+    file.path(dirname(R.home()), dir) 
+    
+}
 
 .br.getLatex.pack=function(pname, ipacks=NULL){
 ### Install a LaTeX Package, via  MiKTeX mpm --install
