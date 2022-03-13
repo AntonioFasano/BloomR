@@ -40,7 +40,7 @@ source_github <- function(u) {
 
 main <- function(){
 
-    buildscript <- "https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.build.R"
+    buildscript <- "https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.download.build.R"
     
     ## Load curl package
     if(!loadLib("curl")) return(1)
