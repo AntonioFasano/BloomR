@@ -26,7 +26,7 @@ source_github <- function(u) {
 
     req <- curl_fetch_memory(u)
     if(req$status_code >= 400){
-        message("\The download of the build script from GitHub failed with status code ", req$status_code)
+        message("The download of the build script from GitHub failed with status code ", req$status_code)
         return (FALSE)
     } else {
         script <- rawToChar(req$content)
