@@ -1,4 +1,4 @@
-## ----store, opts.label='brfuncs'-----------------------------------------
+## ----store, opts.label='brfuncs'---------------------------------------------------------------------------------------------------
 ## Store br.* objects in bloomr env in base namespace
 #if( ! grepl("^bloomr\\.beta\\.", current_input()))
 #    assign('bloomr',  new.env(parent=asNamespace("base")), envir=asNamespace("base"))
@@ -13,12 +13,12 @@ store=function(sym){
         val=get(sym)
     }
     
-    assign(name, val, envir=bloomr)
+    assign(name, val, envir=bloomr.usr)
     rm( list=name, envir=parent.frame())
 }
 
 
-## ----br.bdh, opts.label='brfuncs'----------------------------------------
+## ----br.bdh, opts.label='brfuncs'--------------------------------------------------------------------------------------------------
 br.bdh=function(
                 con, security, fields="PX_LAST",
                 start.date=Sys.Date() - 7, end.date=Sys.Date(), 
@@ -68,7 +68,7 @@ br.bdh=function(
 }
 store(br.bdh)
 
-## ----br.hist.csv, opts.label='brfuncs'-----------------------------------
+## ----br.hist.csv, opts.label='brfuncs'---------------------------------------------------------------------------------------------
 br.hist.csv=function(
                      #' the connection token returned from br.open().
                      #' If `NULL` simulated values are generated.   
@@ -175,7 +175,7 @@ br.hist.csv=function(
 store(br.hist.csv)
 
 
-## ----br.bulk.desc, opts.label='brfuncs'----------------------------------
+## ----br.bulk.desc, opts.label='brfuncs'--------------------------------------------------------------------------------------------
 br.bulk.desc=function(con, tiks) {
 
     LL = lapply(tiks, function(tik){
@@ -187,7 +187,7 @@ br.bulk.desc=function(con, tiks) {
 }
 store(br.bulk.desc)
 
-## ----br.idx, opts.label='brfuncs'----------------------------------------
+## ----br.idx, opts.label='brfuncs'--------------------------------------------------------------------------------------------------
 br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Date(),
 
                 include.idx=TRUE, showtype=FALSE,
@@ -248,7 +248,7 @@ br.idx=function(con, index, field="PX_LAST", start=Sys.Date()-7, end.date=Sys.Da
 store(br.idx)
 
 
-## ----br.hist, opts.label='brfuncs'---------------------------------------
+## ----br.hist, opts.label='brfuncs'-------------------------------------------------------------------------------------------------
 br.hist=function(con,
                  
                  #' Character vector of the tickers queried for data
@@ -538,7 +538,7 @@ store(.br.convert.to.type)
 store(.br.choose.testdata)
 
 
-## ----br.desc, opts.label='brfuncs'---------------------------------------
+## ----br.desc, opts.label='brfuncs'-------------------------------------------------------------------------------------------------
 br.desc=function(con, tik)
 {
 
@@ -568,7 +568,7 @@ br.desc=function(con, tik)
 }
 store(br.desc)
 
-## ----br.md2pdf, opts.label='brfuncs'-------------------------------------
+## ----br.md2pdf, opts.label='brfuncs'-----------------------------------------------------------------------------------------------
 br.md2pdf=function(md.file, pdf.file){
 ### Make a markdown file into a PDF
     ## It assumes that you have installed the BloomR LaTeX addons
@@ -608,7 +608,7 @@ br.md2pdf=function(md.file, pdf.file){
 }
 store(br.md2pdf)
 
-## ----br.sample, opts.label='brfuncs'-------------------------------------
+## ----br.sample, opts.label='brfuncs'-----------------------------------------------------------------------------------------------
 br.sample=function(nrow=NULL,  price=TRUE,
                    start=Sys.Date() - 7, end.date=Sys.Date(), 
                    field="FIELD",
@@ -667,7 +667,7 @@ br.sample=function(nrow=NULL,  price=TRUE,
 store(br.sample)
 
 
-## ----bbg-internal, opts.label='brfuncs'----------------------------------
+## ----bbg-internal, opts.label='brfuncs'--------------------------------------------------------------------------------------------
 
 ## Check connection token
 .br.is.con=function(con) identical(attr(con, 'jclass'), "org/findata/blpwrapper/Connection")
@@ -679,14 +679,14 @@ store(br.sample)
 .br.check.type=function(type) {
     if(is.character(type)){
 	x=toupper(type)
-	xx=toupper(get(".br.types", pos = "bloomr"))
+	xx=toupper(get(".br.types", pos = "bloomr.usr"))
 	if(!any(xx %in% x)) stop(paste(x, 'not in', paste(xx, collapse=' ')))
     }
 }
 
 ## Cut trailing security type from character vector 
 .br.cuttype=function(type){
-    p=paste0(' +', get(".br.types", pos = "bloomr"), '$|', collapse='')
+    p=paste0(' +', get(".br.types", pos = "bloomr.usr"), '$|', collapse='')
     p=sub('\\|$', '', p)
     sub(p, '', type, ignore.case=TRUE)
 }
@@ -739,7 +739,7 @@ store(br.sample)
 .br.session$tokenasked=FALSE 
 .br.session$tokensuccess=FALSE
 .br.session$set=function(lab, val) assign(".br.session",
-                                          `[[<-`(.br.session, lab, val), pos = "bloomr")
+                                          `[[<-`(.br.session, lab, val), pos = "bloomr.usr")
 
 .br.developer=function(mode=TRUE) { # Set developer, modifying some function behaviour for debugging
     .br.session$set("usetest", mode)
@@ -748,7 +748,7 @@ store(br.sample)
 }
 
 .br.is.dev=function() { # Test if in developer mode
-    get(".br.session", pos = "bloomr")$usetest
+    get(".br.session", pos = "bloomr.usr")$usetest
 }
 
 
@@ -766,7 +766,7 @@ store(.br.developer)
 store(.br.is.dev)
 
 
-## ----connections, opts.label='brfuncs'-----------------------------------
+## ----connections, opts.label='brfuncs'---------------------------------------------------------------------------------------------
 br.open=function() {
 
     ## Simulation mode
@@ -796,7 +796,7 @@ br.simulate=function(is=TRUE) {
 }
 
 br.is.sim=function() {
-    get(".br.session", pos = "bloomr")$simulated
+    get(".br.session", pos = "bloomr.usr")$simulated
 }
 
 
@@ -806,7 +806,7 @@ store(br.simulate)
 store(br.is.sim)
 
 
-## ----miscfunc, opts.label='brfuncs'--------------------------------------
+## ----miscfunc, opts.label='brfuncs'------------------------------------------------------------------------------------------------
 
 #Clean up
 ## Remove visible and invisible objects
@@ -820,7 +820,7 @@ rm.var=function()
 store(rm.all)
 store(rm.var)
 
-## ----betafun, opts.label='brfuncs'---------------------------------------
+## ----betafun, opts.label='brfuncs'-------------------------------------------------------------------------------------------------
 
 br.beta=function(){
     f=paste0(R.home("share"), "/bloomr/bloomr.beta.R")    
@@ -830,7 +830,7 @@ br.beta=function(){
 store(br.beta)
 
 
-## ----MISCFUNC, opts.label='brfuncs'--------------------------------------
+## ----MISCFUNC, opts.label='brfuncs'------------------------------------------------------------------------------------------------
 
 br.try.date=function(d){ # convert vector d to a date vector if possible or return null
 ### Any element should be POSIXlt, POSIXct, Date, "%Y/%m/%d", or "%Y-%m-%d"
@@ -867,7 +867,7 @@ store(br.is.same.class)
 
 
 
-## ----deprecated, opts.label='brfuncs'------------------------------------
+## ----deprecated, opts.label='brfuncs'----------------------------------------------------------------------------------------------
 
 .br.sample.deprecated=function(nsec=NULL, no.na=NULL, df=NULL,
                                sec.names=NULL, empty.sec=NULL, same.dates=NULL){
@@ -895,7 +895,7 @@ store(br.is.same.class)
 }
 
 
-## ----time, opts.label='brfuncs'------------------------------------------
+## ----time, opts.label='brfuncs'----------------------------------------------------------------------------------------------------
 `%+%` <- function(x,y) UseMethod("%+%")
 `%+%.Date` <- function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
 `%-%` <- function(x,y) UseMethod("%-%")
@@ -951,8 +951,8 @@ store(last.day)
 store(day.us)
 
 
-## ----attach, opts.label='brfuncs'----------------------------------------
+## ----attach, opts.label='brfuncs'--------------------------------------------------------------------------------------------------
 ### Make visible br.* in bloomr env and base ns
-attach(bloomr)
+attach(bloomr.usr)
 rm(store)
 

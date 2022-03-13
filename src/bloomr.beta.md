@@ -260,17 +260,6 @@ data=br.hist.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```
-## 
-## Attaching package: 'zoo'
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-```
-
-```
 ## Loading 3988 HK Equity
 ```
 
@@ -342,22 +331,25 @@ data
 
 ```
 ## $Financial
-##            3988 HK C US 601288 CH BAC US HSBA LN
-## 2017-11-17      NA   NA        NA  9.202      NA
-## 2017-11-20      NA   NA        NA 10.582  10.379
-## 2017-11-21      NA   NA        NA  9.566  11.474
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2022-03-08      NA 10.068    10.896     NA      NA
+## 2022-03-09      NA     NA        NA 10.701      NA
+## 2022-03-10      NA 10.173    10.624     NA      NA
+## 2022-03-11  10.871 11.379        NA 10.100  11.634
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2017-11-17  10.551   9.317  9.572     NA   9.941
-## 2017-11-20  11.523  12.777  8.863     NA   9.710
-## 2017-11-21      NA  12.341 10.060     NA   8.206
+## 2022-03-08      NA      NA     NA 10.056      NA
+## 2022-03-09      NA      NA  9.582 10.791  10.831
+## 2022-03-10    9.42      NA  9.665     NA   9.109
+## 2022-03-11      NA   9.516  9.845  9.209      NA
 ## 
 ## $Indices
 ##              DJI DJUSFN W1TEC
-## 2017-11-17    NA 10.611    NA
-## 2017-11-20    NA 10.508    NA
-## 2017-11-21 9.174 10.456 8.935
+## 2022-03-08 9.283     NA    NA
+## 2022-03-09 9.367     NA    NA
+## 2022-03-10    NA  9.725    NA
+## 2022-03-11 9.659 10.021    NA
 ```
 
 Note:
@@ -450,7 +442,7 @@ class(data$Financial$`BAC US`)
 ```
 
 ```
-## [1] "matrix"
+## [1] "matrix" "array"
 ```
 
 By defaults time series list values from the Bloomberg "PX_LAST" field. To change the default field use:
@@ -745,11 +737,10 @@ br.hist(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2017-11-15      NA  10.053
-## 2017-11-16      NA   9.764
-## 2017-11-17      NA   9.614
-## 2017-11-20      NA   8.796
-## 2017-11-21  10.261      NA
+## 2022-03-07   8.681   7.592
+## 2022-03-08   9.705      NA
+## 2022-03-09  11.211  11.178
+## 2022-03-11  12.689   9.423
 ```
 
 ```r
