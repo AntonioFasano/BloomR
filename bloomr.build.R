@@ -1054,7 +1054,7 @@ initScripts.etc <- function(){
     makeDir(to,"BloomR share directory:")
     download.git("src/bloomr.init.R", app.pt("R/share/bloomr/bloomr.init.R"))
     download.git("src/bloomr.beta.R", app.pt("R/share/bloomr/bloomr.beta.R"))
-    download.git("src/bloomr.api.R",  app.pt("R/share/bloomr/bloomr.api.R"))
+    ## download.git("src/bloomr.api.R",  app.pt("R/share/bloomr/bloomr.api.R"))
     download.git("src/bloomr.R",      app.pt("R/share/bloomr/bloomr.R"))
     download.git("src/bloomr.sys.R",  app.pt("R/share/bloomr/bloomr.sys.R"))
     download.git("src/bloomr.test.R", app.pt("R/site-library/bloomr.test.R"))
