@@ -1913,7 +1913,7 @@ parseargs=function(rmdfile, tmpfile){
 ## Description comments have the format "HQ comment...". They can be in line with or precede the related arguments.
 ##    Standalone desc comments (i.e. non-inline) should immediately precede their argument, i.e. no-blank lines.
 ##    To break long lines, you can stack standalone comments above the argument, again without blank lines in the middle.
-## Once extracted from comments, the actual markdown description is written when a special placeholder is meet.
+## Once extracted from comments, the actual markdown description is written when a special placeholder is met.
 ##    The placeholder is "HQ @args". You are expected to insert it in the markdown following the function and 
 ##    it will be replaced with the descriptions extracted from the comments in the function definition
 ##    HQ tag is always followed by a space (not a tab). Pay attention to casual use to avoid side effects. 

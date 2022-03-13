@@ -11,6 +11,9 @@
 ##  Repurpose src\bloomr.beta.*
 ##  Repurpose tests and test data 
 ##  RCurl find and remove references everywhere 
+##  bloomr.beta.Rmd introduces a system to auto extract args desc from comment and more. 
+##  Separate code (e.g. in bloomr.Rmd) requiring a Bloomberg or Refinitive to test from knitting, time, system code. 
+##  In bloomr.Rmd bdh always.display.ticker, dates.as.row.names and perhaps more relate to old java package.
 
 ##
 ##  Usage:
