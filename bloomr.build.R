@@ -531,7 +531,8 @@ bloomrTree <- function(){
 
 bloomrTree.Core <- function(){
 ### Make BloomR Core tree
-### The only difference from the Core and Bremacs edition is the name that we give to the folder tree 
+### All editions contain Core edition files, so  this function output differs only in the name given to the build folder, which is
+### G$branch, that is "brCore" or "brEmacs" (for non-Core editions)
     
     message("\nCreating BloomR tree")
     desc <- if(is.core()) "BloomR Core" else "Common BloomR Lab/Studio"
@@ -598,7 +599,7 @@ bloomrTree.Core <- function(){
 
 
     ## Set the edition if this is the actual Core
-    if(is.core()){ # No if BRemacs is building the core components 
+    if(is.core()){ # No, if a BRemacs edition is building the core components 
         edt <- paste(get.edition(), "edition")
         file.write(edt, app.pt("bloomr.txt"), append=TRUE)
     }    
@@ -785,10 +786,11 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
 
 
     ## Set the edition if this is the actual Lab
-    if(is.lab()){ # No if Studio is building common BRemacs
-        ver <- file.read(app.pt("bloomr.txt"))
+    if(is.lab()){ # No, if Studio is building common BRemacs
+        ## ver <- file.read(app.pt("bloomr.txt"))
         edt <- paste(get.edition(), "edition")
-        file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
+        ## file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
+        file.write(edt, app.pt("bloomr.txt"), append=TRUE)
     }
     
 }
@@ -802,9 +804,10 @@ bloomrTree.Studio <- function(){
     makeStudio.addPandoc()
 
     ## Set the edition
-    ver <- file.read(app.pt("bloomr.txt"))
+    ## ver <- file.read(app.pt("bloomr.txt"))
     edt <- paste(get.edition(), "edition")
-    file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
+    ## file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
+    file.write(edt, app.pt("bloomr.txt"), append=TRUE)
 }
 
 
