@@ -797,18 +797,18 @@ store(br.desc)
         stop("Sorry, Bloomberg Terminal only exists for Windows and so BloomR functions.")
         
   ## Find executables
-  panexe=dbr.brmain("pandoc/bin/pandoc.exe")
+  panexe=.br.home("pandoc/bin/pandoc.exe")
   if(!file.exists(panexe))
     stop(paste("Unable to find:", panexe, '\nYour BloomR edition might not support it.'))
   pandir=normalizePath(dirname(panexe))
     
-  latbin=dbr.brmain("latex/texmfs/install/miktex/bin/x64/latex.exe")
+  latbin=.br.home("latex/texmfs/install/miktex/bin/x64/latex.exe")
   if(!file.exists(latbin) && !pandonly){
     stop(paste("Unable to find:", latbin, '\nYour BloomR edition might not support it.'))
   }
   latdir=normalizePath(dirname(latbin))
 
-  perlexe <- dbr.brmain("perl/bin/perl.exe")
+  perlexe <- .br.home("perl/bin/perl.exe")
   if(!file.exists(perlexe) && !pandonly){
     stop(paste("Unable to find:", perlexe, '\nYour BloomR edition might not support it.'))
   }
@@ -1436,7 +1436,7 @@ Details
 
 
 .br.jar=function(){
-    jarpath=dbr.brmain("/blpapi/bin")
+    jarpath=.br.home("/blpapi/bin")
     Sys.glob(file.path(jarpath,  "blpapi-[0-9]*.jar"))
     }
 

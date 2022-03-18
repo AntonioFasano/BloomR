@@ -388,25 +388,25 @@ If there is only one group, the first (and unique) element of the list will be r
 <p>If you want to have detailed ticker descriptions, see <a href="#br.bulk.desc.exem">br.bulk.desc Example</a>. Downloaded data look like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2022-03-08      NA 10.068    10.896     NA      NA
-## 2022-03-09      NA     NA        NA 10.701      NA
-## 2022-03-10      NA 10.173    10.624     NA      NA
-## 2022-03-11  10.871 11.379        NA 10.100  11.634
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2022-03-14  11.979    NA     9.131     NA      NA
+## 2022-03-15   8.632    NA        NA     NA  10.558
+## 2022-03-16   9.379    NA        NA  9.476  11.078
+## 2022-03-17  12.205 10.15        NA     NA   8.576
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2022-03-08      NA      NA     NA 10.056      NA
-## 2022-03-09      NA      NA  9.582 10.791  10.831
-## 2022-03-10    9.42      NA  9.665     NA   9.109
-## 2022-03-11      NA   9.516  9.845  9.209      NA
+## 2022-03-14      NA  10.470 11.841     NA      NA
+## 2022-03-15   9.090      NA  9.720     NA      NA
+## 2022-03-16      NA  10.850     NA     NA  11.045
+## 2022-03-17   9.662   8.902 10.643     NA  10.069
 ## 
 ## $Indices
 ##              DJI DJUSFN W1TEC
-## 2022-03-08 9.283     NA    NA
-## 2022-03-09 9.367     NA    NA
-## 2022-03-10    NA  9.725    NA
-## 2022-03-11 9.659 10.021    NA</code></pre>
+## 2022-03-14 9.651  8.804 9.663
+## 2022-03-15 8.897 11.211 8.610
+## 2022-03-16    NA 11.916    NA
+## 2022-03-17    NA 11.637    NA</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />
@@ -619,10 +619,10 @@ br.hist(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</code></
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2022-03-07   8.681   7.592
-## 2022-03-08   9.705      NA
-## 2022-03-09  11.211  11.178
-## 2022-03-11  12.689   9.423</code></pre>
+## 2022-03-11   9.791      NA
+## 2022-03-15      NA   8.924
+## 2022-03-16  10.960      NA
+## 2022-03-17   9.921      NA</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

@@ -4,7 +4,7 @@
 quit <- function(save = "no", status = 0, runLast = TRUE) base:::quit(save, status, runLast)
 q    <- function(save = "no", status = 0, runLast = TRUE) base:::quit(save, status, runLast)
 
-dbr.brmain <- function(dir=""){ # TODO replace with .br.home
+.br.home <- function(dir=""){ 
 ### Return "apps-path/dir",
 ### where "apps-path" is the directory hosting BloomR apps, e.g. R, BRemacs.
 ### because the apps path host R, the function is based on `R.home()` 
@@ -18,7 +18,7 @@ dbr.brmain <- function(dir=""){ # TODO replace with .br.home
 ## ipacks (optional) is the list of installed packages.
 ## Used to speed-up if calling the function many times 
     
-    mpm <- dbr.brmain("latex/texmfs/install/miktex/bin/x64/mpm.exe")
+    mpm <- .br.home("latex/texmfs/install/miktex/bin/x64/mpm.exe")
     if(!file.exists(mpm)) stop(paste('Unable to find:\n', mpm))
 
     if(is.null(ipacks)) ipacks=.br.getLatex.packList(inst=TRUE)
@@ -39,7 +39,7 @@ dbr.brmain <- function(dir=""){ # TODO replace with .br.home
 ### Get list of all packages from MiKTeX mpm --list
 ## If inst=TRUE, give vector of names of installed ones
 
-    mpm <- dbr.brmain("latex/texmfs/install/miktex/bin/x64/mpm.exe")
+    mpm <- .br.home("latex/texmfs/install/miktex/bin/x64/mpm.exe")
     if(!file.exists(mpm)) stop(paste('Unable to find:\n', mpm))
     out=system(paste(.br.wpath(mpm), '--list'), intern = TRUE, invisible = FALSE)
     if(inst) {
@@ -104,7 +104,7 @@ download_bin <- function(url, file){
 #    ## Latex variables 
 #    laturl="http://miktex.org/portable"
 #    latsize=700   # min space in mega
-#    latdir=dbr.brmain("latex")
+#    latdir=.br.home("latex")
 #    latinst=paste0(latdir, "/mikport.exe")
 #    latbin=paste0(latdir, "/texmfs/install/miktex/bin/latex.exe")
 #    ## Check connection
@@ -166,7 +166,7 @@ download_bin <- function(url, file){
 #    ## Pandoc variables 
 #    panurl = "https://github.com/jgm/pandoc/releases"
 #    pansize = 100
-#    pandir = dbr.brmain("pandoc")
+#    pandir = .br.home("pandoc")
 #    paninst = paste0(pandir, "/pandocSetup.exe")
 #    panbin = paste0(pandir, "/bin/pandoc.exe")
 # 

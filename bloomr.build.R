@@ -529,6 +529,16 @@ bloomrTree <- function(){
            })
 }
 
+bloomrTree.AddVersion <- function(){ # Add and possible relpace version file (ver, build, edition) to tree
+### Studio will replace the Lab version file, Lab will replace the Core file.
+
+    download.git("curver.txt",  "curver.txt") 
+    ver <- file.read("curver.txt")[1]
+    edt <- paste(get.edition(), "edition")
+    build <-  makeBuildnum()
+    file.write(p0(ver, "\n", build, "\n", edt), app.pt("bloomr.txt"))    
+}
+
 bloomrTree.Core <- function(){
 ### Make BloomR Core tree
 ### All editions contain Core edition files, so  this function output differs only in the name given to the build folder, which is
@@ -539,11 +549,12 @@ bloomrTree.Core <- function(){
     existMake(G$branch, TRUE, FALSE, p0(desc, " root dir:"))
     makeDir(app.pt(), "BloomR app dir:")
 
-    ## Id files
+    ## Add version file
+    bloomrTree.AddVersion()
     # download.git("curver.txt",  app.pt("bloomr.txt")) 
-    download.git("curver.txt",  "curver.txt") 
-    ver <- file.read("curver.txt")[1]
-    file.write(p0(ver, "\n", makeBuildnum()), app.pt("bloomr.txt"))
+    # download.git("curver.txt",  "curver.txt") 
+    # ver <- file.read("curver.txt")[1]
+    # file.write(p0(ver, "\n", makeBuildnum()), app.pt("bloomr.txt"))
     
     ## Copy R and make site directory
     from <- p0(G$rzip , '/app')
@@ -598,11 +609,11 @@ bloomrTree.Core <- function(){
     download.git("src/ed/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd"))
 
 
-    ## Set the edition if this is the actual Core
-    if(is.core()){ # No, if a BRemacs edition is building the core components 
-        edt <- paste(get.edition(), "edition")
-        file.write(edt, app.pt("bloomr.txt"), append=TRUE)
-    }    
+    ### Set the edition if this is the actual Core
+    #if(is.core()){ # No, if a BRemacs edition is building the core components 
+    #    edt <- paste(get.edition(), "edition")
+    #    file.write(edt, app.pt("bloomr.txt"), append=TRUE)
+    #}    
 }
 
 bloomrTree.brEmacs <- function(){
@@ -611,6 +622,9 @@ bloomrTree.brEmacs <- function(){
     bremacs <- app.pt("bremacs")
     existMake(bremacs, TRUE, FALSE, "BRemacs tree")
 
+    ## Replace version file
+    bloomrTree.AddVersion()
+    
     ## Copy Emacs
     message("Copying main BRemacs files")
     from <- G$emacszip
@@ -786,28 +800,31 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
 
 
     ## Set the edition if this is the actual Lab
-    if(is.lab()){ # No, if Studio is building common BRemacs
-        ## ver <- file.read(app.pt("bloomr.txt"))
-        edt <- paste(get.edition(), "edition")
-        ## file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
-        file.write(edt, app.pt("bloomr.txt"), append=TRUE)
-    }
+    #if(is.lab()){ # No, if Studio is building common BRemacs
+    #    ## ver <- file.read(app.pt("bloomr.txt"))
+    #    edt <- paste(get.edition(), "edition")
+    #    ## file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
+    #    file.write(edt, app.pt("bloomr.txt"), append=TRUE)
+    #}
     
 }
 
 
 bloomrTree.Studio <- function(){
 ### We add the to the tree created by bloomrTree.brEmacs() the LaTeX related component
+
+    ## Replace version file
+    bloomrTree.AddVersion()
     
     makeStudio.addLatex()
     makeStudio.addPerl()
     makeStudio.addPandoc()
 
     ## Set the edition
-    ## ver <- file.read(app.pt("bloomr.txt"))
-    edt <- paste(get.edition(), "edition")
-    ## file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
-    file.write(edt, app.pt("bloomr.txt"), append=TRUE)
+    # ver <- file.read(app.pt("bloomr.txt"))
+    # edt <- paste(get.edition(), "edition")
+    # file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
+    # file.write(edt, app.pt("bloomr.txt"), append=TRUE)
 }
 
 
@@ -1243,7 +1260,7 @@ makeBuildnum <- function(){
     
 }
 
-debug.mismatch <- function(){ # Test and stop on deb & what args consistence
+debug.mismatch <- function(){ # Test and stop on deb & what args inconsistence
 ### When you use step by step build via 'deb'", this function checks that 'what' matches previous steps 
 
     wmess <- 
