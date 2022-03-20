@@ -390,11 +390,6 @@ If there is only one group, the first (and unique) element of the list will be r
 <pre class="r"><code>con=NULL  #Simulated mode: replace with con=br.open() on terminal</code></pre>
 <pre class="r"><code>data=br.bulk.csv(con, &quot;mybloomr/tickers.csv&quot;) </code></pre>
 <pre><code>## Processing Financial ...</code></pre>
-<pre><code>## 
-## Attaching package: &#39;zoo&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     as.Date, as.Date.numeric</code></pre>
 <pre><code>## Loading 3988 HK Equity</code></pre>
 <pre><code>## Loading C US Equity</code></pre>
 <pre><code>## Loading 601288 CH Equity</code></pre>
@@ -414,28 +409,27 @@ If there is only one group, the first (and unique) element of the list will be r
 <p>If you want to have detailed ticker descriptions, see <a href="#br.bulk.desc.exem">br.bulk.desc Example</a>. Downloaded data look like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2022-03-13   6.806 10.732        NA 10.806      NA
-## 2022-03-14      NA 11.036    11.690  8.416      NA
-## 2022-03-15      NA 11.093        NA 10.115  12.028
-## 2022-03-16      NA 10.029        NA 10.608      NA
-## 2022-03-17      NA 10.501    10.939  9.088      NA
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2022-03-16   10.52    NA    10.309  9.270   9.730
+## 2022-03-17      NA 8.875     9.361     NA   9.934
+## 2022-03-18      NA    NA    10.865 11.844  10.624
+## 2022-03-19      NA 8.580    10.662  9.594      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2022-03-13      NA      NA 10.847     NA   9.707
-## 2022-03-14  11.601      NA  9.654     NA      NA
-## 2022-03-15      NA      NA  8.492     NA      NA
-## 2022-03-16      NA      NA 11.249     NA   8.782
-## 2022-03-17      NA  11.344  9.565  9.691  10.154
+## 2022-03-15   9.255      NA     NA 10.693  10.074
+## 2022-03-16   9.779      NA 10.310     NA  10.803
+## 2022-03-17   8.919   9.457  9.731  9.849      NA
+## 2022-03-18      NA   9.615     NA 10.387      NA
+## 2022-03-19  10.010  10.890 10.045     NA      NA
 ## 
 ## $Indices
-##               DJI DJUSFN  W1TEC
-## 2022-03-13  8.025     NA  9.453
-## 2022-03-14 10.523     NA     NA
-## 2022-03-15 11.358     NA     NA
-## 2022-03-16  8.808     NA 11.835
-## 2022-03-17 10.712   9.74     NA</code></pre>
+##               DJI DJUSFN W1TEC
+## 2022-03-15  9.738 11.342    NA
+## 2022-03-16     NA 11.145 9.763
+## 2022-03-17 11.166  9.727    NA
+## 2022-03-18 10.836  9.998 8.085
+## 2022-03-19     NA  9.236 7.908</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security type: “Equity”, “Index”, etc.<br />
@@ -612,11 +606,11 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2022-03-13      NA   8.959
-## 2022-03-14  11.066   8.376
-## 2022-03-15  11.168  10.235
-## 2022-03-16   9.946   7.980
-## 2022-03-17  10.430  10.601</code></pre>
+## 2022-03-15  10.137      NA
+## 2022-03-16   9.036      NA
+## 2022-03-17      NA  11.410
+## 2022-03-18  10.900      NA
+## 2022-03-19  11.194   9.715</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

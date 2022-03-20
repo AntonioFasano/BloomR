@@ -253,54 +253,74 @@ br.desc=function(con, tik)
 store(br.desc)
 
 ## ----rmd-internal, opts.label='purlme'---------------------------------------------------------------------------------------------
-.br.addpaths <- function(pandonly = FALSE, quiet=TRUE){
+.br.addpaths <- function(pandonly = FALSE, quiet = TRUE){
 ### Add to Windows System Path the executable directories of LaTeX, Pandoc, and Perl with this search priority, and
 ### return invisibly the original path. If "pandonly" is true, add only Pandoc. If "quiet" is false, print the new path.
 
     ## Exit in case this snippet is not exectuted in Windows
     if(.Platform$OS.type != "windows")
         stop("Sorry, Bloomberg Terminal only exists for Windows and so BloomR functions.")
+    
+    ## Find executables
+    xfind <- function(exepath){
+        exe <- .br.home(exepath)
+        if(!file.exists(exe))
+            stop(paste("Unable to find:", exe, '\nYour BloomR edition might not support it.'))
+        normalizePath(dirname(exe))
+    }
+
+    pandir <- xfind("pandoc/bin/pandoc.exe")
+    latdir <- xfind("tinytex/bin/win32/latex.exe")    
+    perldir <- xfind("tinytex/tlpkg/tlperl/bin/perl.exe")
         
-  ## Find executables
-  panexe=.br.home("pandoc/bin/pandoc.exe")
-  if(!file.exists(panexe))
-    stop(paste("Unable to find:", panexe, '\nYour BloomR edition might not support it.'))
-  pandir=normalizePath(dirname(panexe))
-    
-  latbin=.br.home("latex/texmfs/install/miktex/bin/x64/latex.exe")
-  if(!file.exists(latbin) && !pandonly){
-    stop(paste("Unable to find:", latbin, '\nYour BloomR edition might not support it.'))
-  }
-  latdir=normalizePath(dirname(latbin))
+    ## Add executable dirs to system path
+    old.path <- Sys.getenv('Path')
+    ap <- function(dir) Sys.setenv(PATH=paste0(dir, ";", Sys.getenv("PATH")))
 
-  perlexe <- .br.home("perl/bin/perl.exe")
-  if(!file.exists(perlexe) && !pandonly){
-    stop(paste("Unable to find:", perlexe, '\nYour BloomR edition might not support it.'))
-  }
-  perldir <- normalizePath(dirname(perlexe))
-    
-  ## Add executable dirs to system path
-  old.path=Sys.getenv('Path')
-  f <- function(dir) Sys.setenv(PATH=paste0(dir, ";", Sys.getenv("PATH")))
-
-  ## Wanted final order is: LaTeX;Pandoc;Perl 
-  if(!pandonly) f(perldir)
-  f(pandir)
-  if(!pandonly) f(latdir)
+    ## Wanted final order is: LaTeX;Pandoc;Perl 
+    if(!pandonly) ap(perldir)
+    ap(pandir)
+    if(!pandonly) ap(latdir)
   
-  ## Add Ghostscript environment variable   
-  if(!pandonly)  Sys.setenv(GSC="mgs.exe")   
+    ## Add Ghostscript environment variable   
+    ## if(!pandonly)  Sys.setenv(GSC="mgs.exe") # only miktex?  
 
-  if(!quiet) message(Sys.getenv("PATH"))
+    if(!quiet) message(Sys.getenv("PATH"))
 
-  invisible(old.path)
+    invisible(old.path)
   
+}
+
+.br.pathexe <- function(cmdexpr, pandonly = FALSE, quiet = TRUE){
+### Change system path with .br.addpaths(), evaluete the expression cmdexpr in parent env, restotre path.
+### See .br.addpaths() for pandonly and quiet arguments
+
+    old.path <- Sys.getenv("PATH")
+    tryCatch(
+        {
+            .br.addpaths(quiet=quiet)
+            eval(cmdexpr, parent.frame())  
+        },
+
+        error = function(cond) {
+            message(cond)
+            return(NA)
+        },
+
+        warning = function(cond) {
+            message(cond)
+            return(NULL)
+        }, 
+
+        finally = {
+            Sys.setenv(PATH = old.path)
+        })
 }
 
 
 
 ## ----br.md2pdf, opts.label='purlme'------------------------------------------------------------------------------------------------
-br.md2pdf=function(md.file, pdf.file, quiet=TRUE){
+br.md2pdf <- function(md.file, pdf.file, quiet=TRUE){
 ### Make a markdown file into a PDF
 ### You need the proper BloomR version
 
@@ -309,48 +329,35 @@ br.md2pdf=function(md.file, pdf.file, quiet=TRUE){
     if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(md.file), '.pdf')
     
     ## Set executable paths and render
-    old.path <- .br.addpaths(quiet=quiet)
     cmd <- paste("pandoc", .br.wpath(md.file), '-o', .br.wpath(pdf.file))
-    tryCatch(
-        out  <-  system(cmd, intern = TRUE, invisible = FALSE),
-        finally = {
-            ## Restore original system Path
-            Sys.setenv(Path=old.path)
-            ## Return errors if any
-            if(!is.null(attr(out, 'status')))  message(paste(out, collapse="\n"))
-        })  
-
+    cmdexpr <- quote(system(cmd, intern = TRUE, invisible = FALSE))
+    out <- .br.pathexe(cmdexpr, quiet = quiet)
     invisible(out)
 }
 store(br.md2pdf)
 
 ## ----br.rmd2html, opts.label='purlme'----------------------------------------------------------------------------------------------
-br.rmd2html=function(rmd.file, html.file, quiet=TRUE){
+br.rmd2html <- function(rmd.file, html.file, quiet=TRUE){
 ### Make an R Markdown file into a HTML self-contained file
 ### You need the proper BloomR edition
-
     
     ## Test arguments
     if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
-    if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(rmd.file), '.html')
-
+    if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.html')
+    if(html.file != basename(html.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
+    
     library(knitr)
     library(rmarkdown)
 
-    ## Set executable paths and render
-    old.path <- .br.addpaths(pandonly = TRUE, quiet = TRUE)  
-    tryCatch(
-        ## Render Rmd to HTML
-        out <- render(rmd.file,
-                      output_format=html_document(theme="cerulean", highlight="tango",
-                                                  md_extensions="-tex_math_single_backslash"),
-                      output_file=html.file,
-                      clean=quiet, quiet=quiet),
-        finally = {
-            ## Restore original system Path
-            Sys.setenv(Path=old.path)
-        })
-
+    ## Render Rmd to HTML
+    cmdexpr <- quote(
+        render(rmd.file,
+               output_format = html_document(theme="cerulean", highlight="tango",
+                                           md_extensions="-tex_math_single_backslash"),
+               output_file = html.file,
+               clean = quiet, quiet = quiet)
+    )    
+    out <- .br.pathexe(cmdexpr, pandonly = TRUE, quiet = quiet)
     invisible(out)
 }
 store(br.rmd2html)
@@ -363,26 +370,22 @@ br.rmd2slides <- function(rmd.file, html.file, quiet=TRUE){
     
     ## Test arguments
     if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
-    if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(rmd.file), '.html')
-
+    if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.html')
+    if(html.file != basename(html.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
+    
     library(knitr)
     library(rmarkdown)
 
-    ## Set executable paths and render
-    old.path <- .br.addpaths(pandonly = TRUE, quiet = TRUE)  
-    tryCatch(
-        ## Render Rmd to HTML
-        out <- render(rmd.file,
-                      output_format = ioslides_presentation(
-                          md_extensions="-tex_math_single_backslash"
-                                                  ),
-                      output_file=html.file,
-                      clean=quiet, quiet=quiet),
-        finally = {
-            ## Restore original system Path
-            Sys.setenv(Path=old.path)
-        })
-
+    ## Render Rmd to HTML
+    cmdexpr <- quote(
+        render(rmd.file,
+               output_format = ioslides_presentation(
+                   md_extensions="-tex_math_single_backslash"
+               ),
+               output_file=html.file,
+               clean=quiet, quiet=quiet)
+    )
+    out <- .br.pathexe(cmdexpr, pandonly = TRUE, quiet = quiet)    
     invisible(out)
 }
 store(br.rmd2slides)    
@@ -395,30 +398,28 @@ br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
     
     ## Test arguments
     if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
-    if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(rmd.file), '.pdf')
-
+    if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.pdf')
+    if(pdf.file != basename(pdf.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
+    
     library(knitr)
     library(rmarkdown)
     
-    ## Set executable paths and render
-    old.path <- .br.addpaths(quiet = TRUE)    
-    tryCatch(
-        ## Render Rmd to PDF
-        out <- render(rmd.file,
-                      output_format=pdf_document(highlight="tango",
-                                                  md_extensions="-tex_math_single_backslash"),
-                      output_file=pdf.file,
-                      clean=quiet, quiet=quiet),
-        finally = {
-            ## Restore original system Path
-            Sys.setenv(Path=old.path)
-        })
-    invisible(out)            
+    ## Render Rmd to PDF
+    cmdexpr <- quote(
+        render(rmd.file,
+               output_format=pdf_document(highlight="tango",
+                                          md_extensions="-tex_math_single_backslash"),
+               output_file = pdf.file,
+               clean = quiet, quiet = quiet)
+    )
+    out <- .br.pathexe(cmdexpr, quiet = quiet)
+    invisible(out)
+    
 }
 store(br.rmd2pdf)
 
 ## ----br.rmd2both, opts.label='purlme'----------------------------------------------------------------------------------------------
-br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
+br.rmd2both=function(rmd.file, quiet=TRUE){
 ### Make an R Markdown file into a PDF and an HTML self-contained file
 ### You need  BloomR LaTeX addons or the proper BloomR version
 
@@ -426,43 +427,42 @@ br.rmd2both=function(rmd.file, out.dir, quiet=TRUE){
     ## Test arguments
     if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
     
-    pdf.file=paste0(tools:::file_path_sans_ext(rmd.file), '.pdf')
-    html.file=paste0(tools:::file_path_sans_ext(rmd.file), '.html')
-    if(!missing(out.dir)){
-        out.dir <- paste0(sub("/$", "", out.dir), "/") 
-        pdf.file <- paste0(out.dir, basename(pdf.file))
-        html.file <- paste0(out.dir, basename(html.file))
-    }
+    pdf.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.pdf')
+    html.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.html')
+
+    ## render does not support directory, perhaps we can move docs at the end. 
+    ##if(!missing(out.dir)){
+    ##    out.dir <- paste0(sub("/$", "", out.dir), "/") 
+    ##    pdf.file <- paste0(out.dir, basename(pdf.file))
+    ##    html.file <- paste0(out.dir, basename(html.file))
+    ##}
     
     library(knitr)
     library(rmarkdown)
 
-    ## Set executable paths
-    old.path <- .br.addpaths(quiet = TRUE)
-    
-    tryCatch(
-        {
-            ## Render Rmd to HTML
-            out <- render(rmd.file,
-                          output_format=html_document(theme="cerulean", highlight="tango",
-                                                     md_extensions="-tex_math_single_backslash"),
-                          output_file=html.file,
-                          clean=quiet, quiet=quiet)
+    ## Render Rmd to HTML
+    cmdexpr <- quote(
+        render(rmd.file,
+               output_format=html_document(theme="cerulean", highlight="tango",
+                                           md_extensions="-tex_math_single_backslash"),
+               output_file = html.file,
+               clean = quiet, quiet = quiet)
+    )
+    out <- .br.pathexe(cmdexpr, pandonly = TRUE, quiet = quiet)
 
-            ## Render Rmd to PDF
-            out <- render(rmd.file,
-                          output_format=pdf_document(highlight="tango",
-                                                     md_extensions="-tex_math_single_backslash"),
-                          output_file=pdf.file,
-                          clean=quiet, quiet=quiet)
+    if(is.na(out)) stop("HTML generation failed.")
 
-        },
-        finally = {
-            ## Restore original system Path
-            Sys.setenv(Path=old.path)
-        })
-    
-    invisible(dirname(out))    
+    ## Render Rmd to PDF
+    cmdexpr <- quote(
+        render(rmd.file,
+               output_format = pdf_document(highlight="tango",
+                                            md_extensions = "-tex_math_single_backslash"),
+               output_file = pdf.file,
+               clean = quiet, quiet = quiet)
+    )
+
+    out <- .br.pathexe(cmdexpr, quiet = quiet)
+    invisible(out)
 }
 store(br.rmd2both)
 
