@@ -805,9 +805,12 @@ store(br.desc)
     }
 
     pandir <- xfind("pandoc/bin/pandoc.exe")
-    latdir <- xfind("tinytex/bin/win32/latex.exe")    
-    perldir <- xfind("tinytex/tlpkg/tlperl/bin/perl.exe")
-        
+    if(!pandonly){
+        latdir <- xfind("tinytex/bin/win32/latex.exe")    
+        perldir <- xfind("tinytex/tlpkg/tlperl/bin/perl.exe")
+        .br.inittex()
+    }
+    
     ## Add executable dirs to system path
     old.path <- Sys.getenv('Path')
     ap <- function(dir) Sys.setenv(PATH=paste0(dir, ";", Sys.getenv("PATH")))
@@ -850,6 +853,11 @@ store(br.desc)
         finally = {
             Sys.setenv(PATH = old.path)
         })
+}
+
+.br.inittex <- function(){
+    library('tinytex')
+    options(tinytex.tlmgr.path = file.path(.br.home(), "tinytex/bin/win32/tlmgr.bat"))
 }
 
 
@@ -898,7 +906,7 @@ br.md2pdf <- function(md.file, pdf.file, quiet=TRUE){
     ## Test arguments
     if(missing(md.file)) stop("Argument 'md.file' missing.")
     if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(md.file), '.pdf')
-    
+        
     ## Set executable paths and render
     cmd <- paste("pandoc", .br.wpath(md.file), '-o', .br.wpath(pdf.file))
     cmdexpr <- quote(system(cmd, intern = TRUE, invisible = FALSE))
