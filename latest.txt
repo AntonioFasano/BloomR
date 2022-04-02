@@ -1,9 +1,9 @@
 1.5.1 beta -- "Lakmé"
 
-R version 4.0.5
+R version 4.1.3
 
 New edition system.
-After struggling for support MiKTeX is replaced with TinyTeX
+After struggling for support, MiKTeX is replaced with TinyTeX
 UNC build support.
 Updated utility URLs.
 Byte compilation with autoloads.
@@ -17,7 +17,8 @@ _Change details_
           switch-based branching, find alternative TeX repos, removed refs to old Java API, apps dir,
           ~get7zbin adapted to new installer content, ~cran.geturl skips non-standard build (eg UCRT Rcpp),
 	  +melpa.getvers, +melpa.getpak, ~download.git, +makeBuildnum, +debug.mismatch, +squoteu, +dquoteu,
-	  +bloomrTree.AddVersion.
+	  +bloomrTree.AddVersion,
+	  build: emacs.exe for runemacs.exe (allowing wait processing) and -batch gives better output.
     br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown,
                 +declare br-init-simple-menu, +br-init-autoloads, ~br-app-dir(basename is "apps").
     br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override

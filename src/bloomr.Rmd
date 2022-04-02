@@ -830,7 +830,7 @@ store(br.desc)
 }
 
 .br.pathexe <- function(cmdexpr, pandonly = FALSE, quiet = TRUE){
-### Change system path with .br.addpaths(), evaluete the expression cmdexpr in parent env, restotre path.
+### Change system path with .br.addpaths(), evaluate the expression cmdexpr in parent env, restotre path.
 ### See .br.addpaths() for pandonly and quiet arguments
 
     old.path <- Sys.getenv("PATH")

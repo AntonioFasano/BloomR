@@ -14,8 +14,7 @@
 ##  bloomr.beta.Rmd introduces a system to auto extract args desc from comment and more. 
 ##  Separate code (e.g. in bloomr.Rmd) requiring a Bloomberg or Refinitive to test from knitting, time, system code. 
 ##  In bloomr.Rmd bdh always.display.ticker, dates.as.row.names and perhaps more relate to old java package.
-
-##  latest.txt: build: emacs.exe for runemacs.exe (allowing wait processing) and -batch gives better output.
+##  Implemented gitsim=TRUE the git simulated dir to set to bloomr.build this script dir.
 
 ##
 ##  Usage:
@@ -115,9 +114,13 @@ G$bmzip <- 'bmmode'
 G$panurl <- "https://github.com/jgm/pandoc/releases"
 #G$paninst <- "pandoc.msi" #to remove this
 G$panzip <- "pandoc"
+
+## TeX distro
+G$texurl <- "https://yihui.org/tinytex/TinyTeX-1.zip"
+G$texzip <- "tinytex"
+#old
 G$mikpaks <- c('fancyvrb', 'microtype', 'mptopdf', 'upquote', 'url',
                'parskip', 'framed', 'titling', 'booktabs', 'etoolbox')
-
 
 ## Local paths
 G$work <-    "" # This is the build workdir, not to be confused wtih R getwd()
@@ -372,16 +375,18 @@ downloads.lab <- function(overwrite){
 downloads.studio <- function(overwrite){
 ### BloomR Studio downloads
 
+    ## Download TinyTeX distro
+    download.nice(G$texurl, G$texzip , overwrite, "TinyTeX")
+
     ## Download tinytex CRAN package
-    existMake.dd("tinytex", overwrite=overwrite, ask=FALSE, "TinyTeX dir:")
-    curpacks <- getDeps.format(G$packlist)
-    tinyntex.deps <- getDeps.format("tinytex")
-    packs <- setdiff(tinyntex.deps, curpacks)
-    for(pack in unique(packs)) # Loop over packs and download them 
-        download.nice(cran.geturl(pack), makePath("tinytex", pack), overwrite,
-                  pack)
-    
-            
+    #existMake.dd("tinytex.libs", overwrite=overwrite, ask=FALSE, "tinytex lib dir:")
+    #curpacks <- getDeps.format(G$packlist)
+    #tinyntex.deps <- getDeps.format("tinytex")
+    #packs <- setdiff(tinyntex.deps, curpacks)
+    #for(pack in unique(packs)) # Loop over packs and download them 
+    #    download.nice(cran.geturl(pack), makePath("tinytex.libs", pack), overwrite,
+    #              pack)
+                
     ## Pandoc        
     from <- p0("https://github.com",
                web.greplink("pandoc-[.0-9]+-windows-x86_64.zip$", pos=1, G$panurl)) 
@@ -454,13 +459,16 @@ expand.lab <- function(){
  
 expand.studio <- function(){
 
-    ## CRAN packages
-    message('\nExpanding TinyTeX', '...')
-    from <- "tinytex"
-    ## Loop and extract packs
-    for(pack in  dir(down.pt(from)))
-        uzip(makePath('rlibs', pack), 'rlibs',
-              paste('R package', pack), delTarget=FALSE)    
+    ## Expand TinyTeX
+    uzip(G$texzip, G$texzip, "TinyTeX distro")
+    
+    ### CRAN packages
+    #message('\nExpanding tinytex R package', '...')
+    #from <- "tinytex.libs"
+    ### Loop and extract packs
+    #for(pack in  dir(down.pt(from)))
+    #    uzip(makePath('rlibs', pack), 'rlibs',
+    #          paste('R package', pack), delTarget=FALSE)    
     
     ## Expand Pandoc
     uzip(G$panzip, G$panzip, "Pandoc binaries")
@@ -790,6 +798,30 @@ makeStudio.addLatex <- function(){
 ### Install LaTeX. Currently TinyTex
 
     
+    ## Copy TinyTeX distro
+    message("Adding LaTeX files")
+    copy.glob(G$texzip, app.pt(), "tinytex")
+    
+    ## TeXLive installer path
+    tlmgr <- makePath(app.pt(G$texzip), 'bin/win32/tlmgr.bat')
+    tlmgr <- pswork.pt(tlmgr)
+    
+    ## Set xetex fonts dir to local
+    ## Check before and after with: texmf-var/fonts/conf/fonts.conf 
+    cmd <- paste(tlmgr, "postaction install script xetex")
+    shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
+
+    ## Do not wrap short (80 columns) log file lines
+    cmd <- paste(tlmgr, "conf texmf max_print_line 10000")
+    shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
+
+    ## Set repo for updates 
+    cmd <- paste(tlmgr, "option repository 'ctan'")
+    shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
+        
+    return()
+
+    ### ==============
     ## More packs for minimal Rnw: palatino breakurl fpl mathpazo
     morepaks <- c("palatino", "breakurl", "fpl", "mathpazo")
     
@@ -814,7 +846,7 @@ makeStudio.addLatex <- function(){
     args <- c(args,
                sprintf("options(tinytex.tlmgr.path = %s)", tlmgr))
             
-    ## Remove hard path. The alternative couls be to copy files texmf-local
+    ## Remove hard path. The alternative could be to copy files to texmf-local
     args <- c(args, "r_texmf('remove')")    
 
     message("Executing:")
@@ -1488,7 +1520,7 @@ download.git <- function(file, to, overwrite=TRUE, desc=""){
         
     ## local git
     } else {
-        messagev('\nDownloading', desc)
+        messagev('\nObtaining', desc, "\nfrom ", G$github.local)
         from <- makePath(G$github.local, file)  # not relative to the build workdir 
         if(!is.path_(from)) stop(from, "\nnot found in local Git repo:\n", G$github.local)
         to <- work.pt(to)
@@ -1560,16 +1592,6 @@ slisp.pt <- function(dir=""){
 
 
 
-win.pt <- function(path){ # not used 
-### Given a Unix path relative to G$work build workdir, quote, windows-ize, and prefix with wordir
-### If G$work=="./workdir", "foo/bar" -> "\".\\wordir\\foo\\bar\""
-### This function is used to send paths Windows shell (e.g. with shell)
-    
-    path <- work.pt(path)            
-    path <- shQuote(path)
-    chartr("/", "\\", path)
-}
-
 winwork.pt <- function(path){
 ### Convert a Unix path, relative to the build workdir, to a shell-quoted absolute Windows path. 
 
@@ -1586,6 +1608,13 @@ windown.pt <- function(path){
     shQuote(path)
 }
 
+pswork.pt <- function(path){
+### Like winwork.pt, but use single quotes, convenient for PowerShell
+
+    path <- work.pt(path)            
+    path <- normalizePath(path, mustWork=FALSE)
+    squoteu(path)
+}
 
     
 is.path <- function(path){ # Path exists relative to the build workdir
