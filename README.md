@@ -3,8 +3,6 @@ BloomR
 
 *Portable R for Bloomberg and Refinitiv Eikon*
 
-__Some features are related to the Lakmé beta release__
-
 BloomR is a portable R distribution reshaped in order to get, manipulate and run models against Bloomberg or Refinitiv Eikon data.
 
 __Focus on  Data__
@@ -223,14 +221,14 @@ BloomR is build upon several great pieces of free and open source software:
 [AutoHotkey](http://ahkscript.org)  
 [Emacs](https://www.gnu.org/software/emacs/)	
 [eikonapir](https://github.com/ahmedmohamedali/eikonapir)	
-[MiKTeX](https://miktex.org/)	
-[Nsis](http://nsis.sourceforge.net)	 
-[innoextract](http://constexpr.org/innoextract)	 
+[Nsis](http://nsis.sourceforge.net)	  
+[innoextract](http://constexpr.org/innoextract)	  
 [Iconset Simplicio CC 3.0 by Neurovit](http://neurovit.deviantart.com)	
 [PeaZip](http://sourceforge.net/projects/peazip)	
 [R](https://www.r-project.org/)	 
 [Rblpapi](https://cran.r-project.org/web/packages/Rblpapi/index.html)	
-       	
+[TinyTeX](https://yihui.org/tinytex/)     
+
 <!-- Local Variables: -->
 <!-- mode: markdown -->
 <!-- End: -->

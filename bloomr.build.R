@@ -154,9 +154,9 @@ makeBloomR <- function( # Build BloomR
                     ask=TRUE,     # asks if to overwrite the existent build workdir and installer
                     alttex=FALSE, # Try alternative LaTeX repos on failures, beyond the suggested one 
                     deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug, avoid with what=all
-                    gitsim=FALSE, # local path (abs. or relative)to simulate github downloads.
+                    gitsim=FALSE, # local path (abs. or relative) to simulate github downloads.
                     reset=TRUE    # Only set FALSE internally to allow multi-builds calls and keep globals
-){
+) {
     
     ## Set work dir
     if(!nzchar(work)) stop("Please, specify a work directory as first arg!")
@@ -509,7 +509,7 @@ bloomrTree <- function(){
            })
 }
 
-bloomrTree.AddVersion <- function(){ # Add and possible relpace version file (ver, build, edition) to tree
+bloomrTree.AddVersion <- function() { # Add and possible relpace version file (ver, build, edition) to tree
 ### Studio will replace the Lab version file, Lab will replace the Core file.
 
     download.git("curver.txt",  "curver.txt") 

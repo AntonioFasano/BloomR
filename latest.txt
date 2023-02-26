@@ -1,6 +1,6 @@
-1.5.1 beta -- "Lakmé"
+1.5.2 -- "Lakmé"
 
-R version 4.1.3
+R version 4.2.2
 
 New edition system.
 After struggling for support, MiKTeX is replaced with TinyTeX
