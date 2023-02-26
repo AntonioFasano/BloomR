@@ -1585,13 +1585,7 @@ knit2 <- function(file, use.bloomr=TRUE) {
     knitr:::opts_chunk$set(tidy.opts=list(width.cutoff=60))
     fse=tools:::file_path_sans_ext(file)
     step2=FALSE
-    knit(file)
-    
-    ## fix a problem with purl commenting everything
-    txt <- readLines(paste0(fse, ".R"))
-    txt <- sapply(txt, function(line) sub("^#  ", "", line))
-    writeLines(txt, paste0(fse, ".R"))
-   
+    knit(file)      
     step2=TRUE
     knit(file)
     topics()    
@@ -1599,6 +1593,11 @@ knit2 <- function(file, use.bloomr=TRUE) {
     wp(render(paste0(fse, '.md'), pdf_document()))
     wp(render("../README.md", html_document()))
 
+    ## fix a problem with purl commenting everything
+    txt <- readLines(paste0(fse, ".R"))
+    txt <- sapply(txt, function(line) sub("^#  ", "", line))
+    writeLines(txt, paste0(fse, ".R"))
+    
 }
 ##knit2("bloomr.Rmd", use.bloomr=FALSE) 
 knit2("bloomr.Rmd")
