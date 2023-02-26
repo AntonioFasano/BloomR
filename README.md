@@ -220,14 +220,14 @@ BloomR is build upon several great pieces of free and open source software:
 
 [AutoHotkey](http://ahkscript.org)  
 [Emacs](https://www.gnu.org/software/emacs/)	
-[eikonapir](https://github.com/ahmedmohamedali/eikonapir)	
+[eikonapir](https://github.com/ahmedmohamedali/eikonapir)   
 [Nsis](http://nsis.sourceforge.net)	  
 [innoextract](http://constexpr.org/innoextract)	  
-[Iconset Simplicio CC 3.0 by Neurovit](http://neurovit.deviantart.com)	
-[PeaZip](http://sourceforge.net/projects/peazip)	
-[R](https://www.r-project.org/)	 
-[Rblpapi](https://cran.r-project.org/web/packages/Rblpapi/index.html)	
-[TinyTeX](https://yihui.org/tinytex/)     
+[Iconset Simplicio CC 3.0 by Neurovit](http://neurovit.deviantart.com)   
+[PeaZip](http://sourceforge.net/projects/peazip)  
+[R](https://www.r-project.org/)	  
+[Rblpapi](https://cran.r-project.org/web/packages/Rblpapi/index.html)   
+[TinyTeX](https://yihui.org/tinytex/)   
 
 <!-- Local Variables: -->
 <!-- mode: markdown -->
