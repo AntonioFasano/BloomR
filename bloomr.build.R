@@ -1,20 +1,21 @@
 ###  BloomR source
 
 ##  TODO
-##  Remove "requestInfo" from R global env at start due to eikonapir
+##  In bloomr.init.R, eikonapir loading removes requestInfo from .GlobalEnv with a hack. Test it and then delete eikon.fallback() 
 ##  Byte compile is async. "0" can be removed in case of standard emacs elisp files
 ##  Finalise dir temp-help docs source dir
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
 ##  Custom polymode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
 ##  Automatically identify knit/rmarkdown needed LaTeX packages. See scatch latex.autopackages
 ##  melpa.getpak check if other packages can benefit from it otehr than ESS
-##  Repurpose src\bloomr.beta.*
 ##  Repurpose tests and test data 
 ##  RCurl find and remove references everywhere 
-##  bloomr.beta.Rmd introduces a system to auto extract args desc from comment and more. 
+##  bloomr.time.Rmd introduces a system to auto extract args desc from comment (see parseargs) consider use it.
+##  In `knit.twice` in "bloomr.time.Rmd" add the path hacks as `knit2` in "bloomr.Rmd" so as to build it in BloomR.
 ##  Separate code (e.g. in bloomr.Rmd) requiring a Bloomberg or Refinitive to test from knitting, time, system code. 
 ##  In bloomr.Rmd bdh always.display.ticker, dates.as.row.names and perhaps more relate to old java package.
 ##  Implemented gitsim=TRUE the git simulated dir to set to bloomr.build this script dir.
+##  Time startup of br-init.elc and possibly use it.
 
 ##
 ##  Usage:
@@ -82,15 +83,13 @@ G$rzip <- 'rmain'
 ## Emacs
 G$emacsurl <- "http://ftp.gnu.org/gnu/emacs/windows/"
 G$emacszip <- "emacs"
-G$emacs.type <- "emacs.*?64.zip$" # e.g. emacs-27.2-x86_64.zip
+G$emacs.type <- "emacs.*?.zip$" # e.g. emacs-28.2.zip
 
 ## SF items
 G$pzip <- "peazip"
 G$rport <- "rportable" # not used
 G$nsisurl <- 'portableapps'
 G$nsiszip <- 'nsis'
-# G$emacs <- 'emacsbinw64'
-# G$emacs.type <- 'Og' # e.g.: emacs-w64-25.1-Og.7z
 
 ## ESS, Polymode, Poly-markdown, Poly-noweb, BM
 G$melpalibs <- NULL # melpa.org packages' names/version
@@ -111,7 +110,7 @@ G$bmurl <- 'https://github.com/joodland/bm/archive/master.zip'
 G$bmzip <- 'bmmode'
 
 ## Pandoc for Studio
-G$panurl <- "https://github.com/jgm/pandoc/releases"
+G$panurl <- "https://api.github.com/repos/jgm/pandoc/releases"
 #G$paninst <- "pandoc.msi" #to remove this
 G$panzip <- "pandoc"
 
@@ -335,7 +334,7 @@ downloads.lab <- function(overwrite){
 
     cback <- function(){
         dir <- web.greplink("emacs-../", pos=-1, G$emacsurl, abs=TRUE)
-        zip <- web.greplink("emacs.*?64.zip$", pos=-1, dir)
+        zip <- web.greplink(G$emacs.type, pos=-1, dir)
         p0(dir, zip)
     }
     download.nice(cback, G$emacszip, overwrite,
@@ -388,10 +387,12 @@ downloads.studio <- function(overwrite){
     #              pack)
                 
     ## Pandoc        
-    from <- p0("https://github.com",
-               web.greplink("pandoc-[.0-9]+-windows-x86_64.zip$", pos=1, G$panurl)) 
-    download.nice(from, G$panzip, overwrite, "Pandoc")
-
+    cback <- function() {
+      json <- rawToChar(curl::curl_fetch_memory(G$panurl) $content)
+      lnks <- regmatches(json, gregexpr("\"browser_download_url\":\"[^\"]+", json))[[1]]
+      regmatches(lnks, regexpr("https://.+windows.+zip$", lnks))      
+    }
+    download.nice(cback, G$panzip, overwrite, "Pandoc")
     
 }
 
@@ -518,7 +519,7 @@ bloomrTree.AddVersion <- function(){ # Add and possible relpace version file (ve
     file.write(p0(ver, "\n", build, "\n", edt), app.pt("bloomr.txt"))    
 }
 
-bloomrTree.Core <- function(){
+bloomrTree.Core <- function() {
 ### Make BloomR Core tree
 ### All editions contain Core edition files, so  this function output differs only in the name given to the build folder, which is
 ### G$branch, that is "brCore" or "brEmacs" (for non-Core editions)
@@ -573,7 +574,9 @@ bloomrTree.Core <- function(){
     download.git("src/xlx/xlx.help.html",     root.pt("help/xlx.help.html"))     
     download.git("src/xlx/xlx.help.pdf",      root.pt("help/xlx.help.pdf"))
     download.git("reports/reporting.pdf",     root.pt("help/reporting.pdf"))     
-
+    download.git("src/bloomr.time.html",      root.pt("help/bloomr.time.html"))
+    download.git("src/bloomr.time.pdf",       root.pt("help/bloomr.time.pdf"))
+    
     ## These docs are not uploaded on git, so they are added only with gitsim != FALSE
     if(nzchar(G$github.local)){
         download.git("temp-help/BloomR.pdf",               root.pt("help/BloomR.pdf"))     
@@ -606,8 +609,8 @@ bloomrTree.brEmacs <- function(){
     
     ## Copy Emacs
     message("Copying main BRemacs files")
-    from <- G$emacszip
-    dirs <- c('bin', 'libexec', 'share/emacs', 'share/icons', 'share/info', 'share/man')
+    from <- makePath(G$emacszip, "emacs-*")    
+    dirs <- c('bin', 'lib', 'libexec', 'share/emacs', 'share/icons', 'share/info', 'share/man')
     copy.glob(from, bremacs, dirs)
     
     
@@ -718,7 +721,7 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
 "
     elisp <- sprintf(elisp.t,  l(work.pt(eldir)))
     args <- sprintf("-batch -Q -eval %s", dquoteu(elisp))
-    shell.cd(c(work.pt(cmd), args))   
+    shell.cd(c(work.pt(cmd), args), evars = c(emacs_dir = NA))   
     ## messagev(c(work.pt(cmd), args)) # To test in PS replace eval "..." with '...'
 
     ## Site-lisp sources need adding their directories to lisp-path, we also create autoloads
@@ -729,7 +732,7 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
        (pkg-name) (pkg-dir) (pkg-autoload-buf)
        (pkg-autoload-path) (pkg-autoload-basename))
 
-  ;; genarate elc in all site-lisp subdirs
+  ;; generate elc in all site-lisp subdirs
   (normal-top-level-add-subdirs-to-load-path)
   (byte-recompile-directory site-lisp 0)
 
@@ -761,7 +764,7 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
 
     elisp <- sprintf(elisp.t,  l(work.pt(eldir)))
     args <- sprintf("-Q -eval %s", dquoteu(elisp))
-    shell.cd(c(work.pt(cmd), args))        
+    shell.cd(c(work.pt(cmd), args), evars = c(emacs_dir = NA))
     ## messagev(c(work.pt(cmd), args)) # To test in PS replace eval "..." with '...'
 
 
@@ -1015,7 +1018,7 @@ initScripts <- function(){
     }    
 }
 
-initScripts.etc <- function(){
+initScripts.etc <- function() {
        
 
     message("\nMaking etc/Rprofile.site and shared directory")
@@ -1040,11 +1043,12 @@ initScripts.etc <- function(){
     to <- app.pt("R/share/bloomr")    
     makeDir(to,"BloomR share directory:")
     download.git("src/bloomr.init.R", app.pt("R/share/bloomr/bloomr.init.R"))
-    download.git("src/bloomr.beta.R", app.pt("R/share/bloomr/bloomr.beta.R"))
+    ## download.git("src/bloomr.beta.R", app.pt("R/share/bloomr/bloomr.beta.R"))
     ## download.git("src/bloomr.api.R",  app.pt("R/share/bloomr/bloomr.api.R"))
     download.git("src/bloomr.R",      app.pt("R/share/bloomr/bloomr.R"))
     download.git("src/bloomr.sys.R",  app.pt("R/share/bloomr/bloomr.sys.R"))
     download.git("src/bloomr.test.R", app.pt("R/site-library/bloomr.test.R"))
+    download.git("src/bloomr.time.R", app.pt("R/share/bloomr/bloomr.time.R"))
     download.git("src/xlx/xlx.R",     app.pt("R/share/bloomr/xlx.R"))
 
     ## Testdata
@@ -1262,8 +1266,9 @@ shell.cd <- function(
                                  # cmdvec[1] is tested for exisitance and shQuoted if necessary
                      wd=NULL,    # optional work dir
                      raw=FALSE,  # if T, do not pretty format the output with pv
-                     echo=TRUE   # Echo to console via messagev
-                      ){
+                     echo=TRUE,  # Echo to console via messagev
+                     evars=NULL  # Named vector or list of environment variables to set (`NA` value to unset)
+                     ) {
 
     
 ## 1. system(), takes a single cmd string, in Linux prefixes with "sh -c"
@@ -1296,6 +1301,30 @@ shell.cd <- function(
         stop(out,
              "\n(If the command requires args, make sure they are provided as (a) separate string(s) in the command vector.)",
              "\n\nSee G$lastshell for more.")
+    }
+
+    ## Environment variables    
+    if(!is.null(evars)) {
+        if(any(!nzchar(names(evars)))) stop("In 'shell.cd(evars = ...)' not all elements are named")
+        evars <- as.list(evars)
+        is.na <- sapply(evars, is.na)
+        evars[! is.na] -> setv
+        evars[is.na]   -> unsetv 
+
+        old.vars <- as.list(Sys.getenv(names(evars), unset = NA, names = TRUE))
+        is.na <- sapply(old.vars, is.na)
+        old.vars[! is.na] -> old.setv
+        old.vars[is.na]   -> old.unsetv
+
+        ## Set
+        if(length(setv)) do.call("Sys.setenv", setv)
+        Sys.unsetenv(names(unsetv))
+
+        ## Unset
+        on.exit({
+            if(length(old.setv)) do.call("Sys.setenv", old.setv)
+            Sys.unsetenv(names(old.unsetv))
+        })
     }
 
     ## Execute
@@ -1533,8 +1562,8 @@ download.git <- function(file, to, overwrite=TRUE, desc=""){
 
 ### === File System ===
 makePath <- function(parent, child){    
-### Chain parent-child paths managing '/' middle slashes 
-## You don't have to rememeber if you need to add or not that slash
+### Chain parent-child paths managing middle slashes ('/')
+## You don't have to remember if you need to add or not that slash
 
     ## No trail for parent 
     parent <- sub('/$', '',  parent)
@@ -1810,8 +1839,8 @@ copy.glob <- function(srcdir, destdir, subpaths){
 globpaths <- function( # Return parent/children, resolving globs (not regex). Both dirs should refer to the build workdir.
 ### Parent is scalar and its expansion should be unique. Children is a vector and each expansion can generate multiple matches
                      parent,   # with globbing, but its expansion gives a single path 
-                     children,    # with globbing
-                     both=TRUE # return only resolved child, without parent 
+                     children, # with globbing
+                     both=TRUE # return only resolved child, without parent, or both 
                      ){
 
     unlist(
@@ -1824,7 +1853,7 @@ globpath_ <- function( # globpaths() work horse, accepting a scalar child
                       
                      parent,   # with globbing, but its expansion gives a single path 
                      child,    # with globbing
-                     both=TRUE # return only resolved child, without parent 
+                     both=TRUE # return only resolved child, without parent, or both 
                      ){
 
     ## Can't normalize winslash = "/", as it won't work with UNC paths 

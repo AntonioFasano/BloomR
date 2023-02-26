@@ -18,7 +18,6 @@ R topics documented:
 [Manage connections](#connections)   
 [Misc functions](#misc.functions)   
 [Beta functionalities](#beta.functions)   
-[Time extension functions](#time.functions)   
 
 
 
@@ -274,17 +273,6 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```
-## 
-## Attaching package: 'zoo'
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-```
-
-```
 ## Loading 3988 HK Equity
 ```
 
@@ -356,26 +344,28 @@ data
 
 ```
 ## $Financial
-##            3988 HK  C US 601288 CH BAC US HSBA LN
-## 2022-03-15      NA 8.210    10.089 12.012      NA
-## 2022-03-16      NA 9.891    11.129     NA      NA
-## 2022-03-17    9.67    NA     8.560 10.903      NA
-## 2022-03-18      NA 9.888        NA 10.710   8.956
-## 2022-03-19      NA    NA    10.171  9.052   9.371
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2023-02-21  10.247     NA     9.629  9.122  12.038
+## 2023-02-22   9.495  9.290    10.813  8.243  10.352
+## 2023-02-23   8.509 10.925    11.661     NA  10.034
+## 2023-02-24      NA     NA    11.358     NA      NA
+## 2023-02-25  10.443 11.100    10.153     NA  11.005
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2022-03-16  10.113      NA 10.688 10.871  12.725
-## 2022-03-17      NA  10.402     NA 10.769      NA
-## 2022-03-18      NA   9.939     NA 10.457      NA
-## 2022-03-19      NA   9.748     NA     NA      NA
+## 2023-02-21      NA  10.932     NA 11.411  10.051
+## 2023-02-22      NA   9.792     NA     NA   9.083
+## 2023-02-23  10.429  11.017     NA     NA  10.155
+## 2023-02-24  11.244   9.910 11.059  9.602  10.342
+## 2023-02-25      NA  10.655     NA  9.013   8.356
 ## 
 ## $Indices
-##               DJI DJUSFN  W1TEC
-## 2022-03-15     NA 10.505  9.096
-## 2022-03-17     NA     NA  8.873
-## 2022-03-18 10.002     NA  9.050
-## 2022-03-19  9.310     NA 11.294
+##             DJI DJUSFN  W1TEC
+## 2023-02-21   NA 11.360  8.818
+## 2023-02-22   NA  9.291     NA
+## 2023-02-23   NA  9.813  8.668
+## 2023-02-24 9.12  9.263 10.176
+## 2023-02-25   NA  9.380     NA
 ```
 
 Note:
@@ -711,9 +701,11 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2022-03-17  10.975      NA
-## 2022-03-18   8.950      NA
-## 2022-03-19      NA     9.5
+## 2023-02-21  10.652  11.281
+## 2023-02-22  10.277  11.163
+## 2023-02-23  10.341      NA
+## 2023-02-24  10.032      NA
+## 2023-02-25   8.599   9.847
 ```
 
 ```r
@@ -923,64 +915,8 @@ If there are no errors, it returns invisibly the absolute path of the output fil
 
 
 
-```{to.be.finished}
-
-br.tex2pdf=function(tex.file, pdf.file, auxname="latexaux", quiet=TRUE){
-### Make an R Markdown file into a PDF
-### You need the proper BloomR version
-
-  ## to be finished uncomment set path var lines, consider synctex !!!!!!!!! 
-  
-  ## Test arguments
-  if(missing(tex.file)) stop("Argument 'tex.file' missing.")
-  texsans <- tools:::file_path_sans_ext(tex.file)
-  tex <- if(texsans == tex.file) paste0(texsans, '.tex') else tex.file
-  pdf <- if(missing(pdf.file)) paste0(texsans, '.pdf') else pdf.file
-
-  if(!file.exists(tex)) stop("There is no file\n", tex)
-  if(!dir.exists(dirname(pdf))) stop("There is no directory\n", dirname(pdf))
-  if(basename(auxname)!= auxname) stop("Please, use a name not a path as 'auxname' argument\n", auxname)
-  
-  ## Build Windows paths 
-  pdfdir <- normalizePath(dirname(pdf))
-  pdfbase <- basename(pdf)
-  pdfbase.sq <- shQuote(tools:::file_path_sans_ext(pdfbase))
-  texdir <- normalizePath(dirname(tex))
-  texbase <- basename(tex)
-  texbase.q <- shQuote(texbase)
-  outdir <- auxname
-  outdir.q <- shQuote(outdir)
-  pdf.aux <- file.path(texdir, outdir, pdfbase)
-
-  library(knitr)
-  library(rmarkdown)
-    
-  ## Set executable paths and build PDF
-##############  old.path <- .br.addpaths(quiet = quiet)
-  old.wd <- setwd(texdir)
-  cmd <- c("pdflatex", "-interaction=batchmode",
-           paste0("-output-directory=", outdir.q), paste0("-jobname=", pdfbase.sq), texbase.q)
-  
-  tryCatch(
-    ret <- system2(cmd[1], cmd[-1]),
-    finally = {
-      setwd(old.wd)
-      new.path <- Sys.getenv("Path")
-##############      Sys.setenv(Path=old.path)
-      if(ret) {
-        cmd[2]  <- "" # remove batchmode
-        stop("There was a non zero exit. To debug you can use:\n\n", 
-             paste("path", new.path, "\n\n"),
-             paste("cd", texdir, "\n\n"),
-             paste(cmd, collapse = " "))
-      } else   file.copy(pdf.aux, pdf)                         
-        })
-    invisible(ret)
-}
 
 
-
-```
 
 br.sample{#br.sample}
 ====================
@@ -1166,50 +1102,6 @@ Activate beta functionalities, if available for this release.
 Usage
 -----
     br.beta()
-
-
-
-
-Time extension functions{#time.functions}
-=========================================
-
-Description
-------------
-Functions to get, set dates.
-
-Usage
------
-    day(d)
-    month(d)
-    year(d)
-    day(d, n)
-    month(d, n)
-    year(d, n)
-    day(d)=x
-    month(d)=x
-    year(d)=x
-    d %+% n
-    d %-% n
-    last.day(d)
-    day.us(d1, d2)
-
-Arguments
----------
-d, d1, d2
-:   objects of class date  
-
-x
-:   an integer representing the day/month/year  
-
-n
-:   an integer representing the months to add/subtract
-
-
-Details
--------
-If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
-`%+%` and `%-%` add and subtract months to a date.  
-`last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
 
 
 

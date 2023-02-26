@@ -1,18 +1,43 @@
 ### BloomR bootstrap 
  
 ## Get user functions
-source(paste0(R.home("share"), "/bloomr/bloomr.R"))
+source(R.home("share/bloomr/bloomr.R"))
 
-## Get addon functions
-assign('bloomr.addons',  new.env(parent=asNamespace("stats")))
-source(paste0(R.home("share"), "/bloomr/bloomr.sys.R"), local=bloomr.addons)
-source(paste0(R.home("share"), "/bloomr/xlx.R"), local=bloomr.addons)
-attach(bloomr.addons)
+## Get system functions
+#assign('bloomr.sys',  new.env(parent=asNamespace("stats")))
+bloomr.sys <-  new.env(parent=asNamespace("stats"))
+source(R.home("share/bloomr/bloomr.sys.R"), local=bloomr.sys)
+attach(bloomr.sys, warn.conflicts = FALSE)
+rm(bloomr.sys)
 
-## Load libs
-local(x <- utils:::capture.output(library(Rblpapi), type = c("message")))
+## Get time functions
+source(R.home("share/bloomr/bloomr.time.R"))
+
+## xlx 
+local({
+    bloomr.xlx <- new.env(parent=asNamespace("stats"))
+    source(R.home("share/bloomr/xlx.R"), local=bloomr.xlx)
+    attach(bloomr.xlx)
+})
+
+## Eikon
 library(eikonapir)
 set_app_id("6ffad79674dd44a2b343bd5dd7d3359aa4c7c6fe")
+## This should avoid the requestInfo in the global env. Test before distribute
+bloomr.eikonreq <- new.env()
+bloomr.eikonreq$requestInfo <- requestInfo
+rm(requestInfo)
+attach(bloomr.eikonreq)
+rm(bloomr.eikonreq)
+## Delete if the hack above works 
+assign("eikon.fallback", function() {
+    library(eikonapir)
+    set_app_id("6ffad79674dd44a2b343bd5dd7d3359aa4c7c6fe")
+}, "bloomr.sys")
+
+
+## Load other libs
+local(x <- utils:::capture.output(library(Rblpapi), type = c("message")))
 library(stats)
 library(zoo, warn.conflicts=FALSE)
 library(xts)
@@ -27,31 +52,33 @@ local({r <- getOption("repos")
    })    
 
 
+
+
+
 ## Set  work directory and show user info
 local({    
-    infofile <- file.path(dirname(R.home()), "bloomr.txt")
-    if(!file.exists(infofile)) stop(paste("I cannot find:\n", x, "\nConsider to reinstall the product."))
+    ## BloomR version/edtion 
+    info <- br.info(msg = FALSE)
+    version <- info[1]
+    build <- info[2]
+    edition <- paste(tools::toTitleCase(.br.edition()), "Edition")
+    info.ex <- paste("This is BloomR version", version, edition)
+    info.ex <- c(info.ex, build)
 
-    info <- readLines(infofile)
-    edition <- info[3]
-    info <- paste(info[-3], collapse = "\n")
-
-    ## Clean vanilla console
-    if(nzchar(Sys.getenv("vanilla"))) 
-        system("powershell -ExecutionPolicy Bypass -command (New-Object -ComObject Wscript.Shell).SendKeys([string][char]12)")
-    
-    info.ex <- paste0("This is BloomR version ", info)
+    ## R version 
     rver <- paste0("Based on ", R.version.string)
-    info.ex <- paste0(info.ex, "\n",  rver)
+    info.ex <- c(info.ex, rver)
+
+    ## Homedir
     homedir <- normalizePath(R.home("../../mybloomr"), winslash="/", mustWork=FALSE)
     if(!dir.exists(homedir)) stop(paste("I cannot find 'mybloomr' directory with the path:\n", homedir,
-                              "\nIf you cannot fix it, consider to reinstall the product."))
+                                        "\nIf you cannot fix it, consider to reinstall the product."))
     setwd(homedir)
-    cdir <- paste0("Current working directory is\n", getwd())
-    info.ex <- paste0(info.ex, "\n", cdir)
-    
-    linelen <- max(nchar(strsplit(info.ex, "\n")[[1]]))
-    linedraw <- paste0(rep("=", linelen), collapse="")
-    info.ex <- paste0(linedraw, "\n", info.ex, "\n", linedraw)
-    message(info.ex)
+    info.ex <- c(info.ex, "Home directory is:", homedir)
+
+    ## Box
+    linelen <- max(nchar(info.ex))
+    linedraw <- strrep("=", linelen)
+    info.ex <- c(linedraw, info.ex, linedraw)
+    writeLines(info.ex)
 })
