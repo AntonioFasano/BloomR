@@ -271,7 +271,7 @@ store(br.desc)
 
     pandir <- xfind("pandoc/bin/pandoc.exe")
     if(!pandonly){
-        latdir <- xfind("tinytex/bin/win32/latex.exe")
+        latdir <- xfind("tinytex/bin/windows/latex.exe")
         perldir <- xfind("tinytex/tlpkg/tlperl/bin/perl.exe")
         .br.inittex()
     }
@@ -320,9 +320,9 @@ store(br.desc)
         })
 }
 
-.br.inittex <- function(){
+.br.inittex <- function() {
     library('tinytex')
-    options(tinytex.tlmgr.path = file.path(.br.home(), "tinytex/bin/win32/tlmgr.bat"))
+    options(tinytex.tlmgr.path = file.path(.br.home(), "tinytex/bin/windows/tlmgr.bat"))
 }
 
 

@@ -1,41 +1,11 @@
-1.5.2 -- "Lakmé"
+1.5.3 -- "to give"
 
-R version 4.2.2
+R version 4.3.0
 
-New edition system.
-After struggling for support, MiKTeX is replaced with TinyTeX
-UNC build support.
-Updated utility URLs.
-Byte compilation with autoloads.
-New masking quit().
-"main" is now "apps" folder.
-Installer warns on existing install dir and low space.
 
 _Change details_
 
-    build: UNC build support makeStudio (with miktex, mpm, initexmf), minimal Perl, user downloads folder,
-          switch-based branching, find alternative TeX repos, removed refs to old Java API, apps dir,
-          ~get7zbin adapted to new installer content, ~cran.geturl skips non-standard build (eg UCRT Rcpp),
-	  +melpa.getvers, +melpa.getpak, ~download.git, +makeBuildnum, +debug.mismatch, +squoteu, +dquoteu,
-	  +bloomrTree.AddVersion, support for network share building
-          emacs.exe for runemacs.exe (now waits processing before returnig to R) and -batch gives better output,
+    build: UNC support not necessary any more with TeXLive system.
+           TeXLive bins are now in bin/windows rather than bin/win32
 
-    br-init.el: ~tab-always-indent, ~inferior-ess-r-program, ~ess-r-post-run-hook, ~no req. ess markdown,
-                +declare br-init-simple-menu, +br-init-autoloads, ~br-app-dir(basename is "apps").
-    br-setmodes.el: -Disabled bremacs-rmd-mode, ~br-R-save-on-quit ~cl-defmethod ess-quit--override
-    br-keys.el: -br-ess-quit, ~polymode-eval-region-or-chunk, +smart_assign.
-    bloomr.sys.R: +q/quit, -.br.testBR, -br.getLatexAddons, -br.getPandoc, -.br.getPandoc.release, -download.bin,
-                  -dbr.brmain, +.br.home
-    bloomr.rmd: +.br.addpaths, +perl, ~br.rmd2both, ~br.rmd2pdf, ~br.rmd2html, ~br.md2pdf, +buildenv, +br.rmd2slides,
-                +.br.pathexe, .br.inittex()
-               'bloomr' env  follows package 'stats' position and not 'base', the assign is compatible with recent R.
-	       ~ Old Rblpapi wrapper functions removed.
-    bloomr.beta.Rmd: 'bloomr' env  follows package 'stats' as for bloomr.rmd.
-    time.Rmd: Split-up from bloomr.rmd
-    xlx.R: plyr:::rbind.fill without loading package to avoid conflicts.
-    ed: Cmds work from prompt, +BREMACSDBG, no Java, ~site-start.el.
-    bloomr.nsi: Warn on existing install dir and low space.
-    bloomr.api.R: Unused, hence removed
-    bloomr.beta.OLD.Rmd: Unused, hence removed
-    bloomr.download.build.R: now based on R curl and builds in date based folder in CWD.
-
+    bloomr.rmd: ~.br.addpaths TeXLive bins are now in TinyTeX/bin/windows

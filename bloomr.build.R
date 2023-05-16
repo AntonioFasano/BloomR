@@ -6,7 +6,6 @@
 ##  Finalise dir temp-help docs source dir
 ##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
 ##  Custom polymode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
-##  Automatically identify knit/rmarkdown needed LaTeX packages. See scatch latex.autopackages
 ##  melpa.getpak check if other packages can benefit from it otehr than ESS
 ##  Repurpose tests and test data 
 ##  RCurl find and remove references everywhere 
@@ -30,8 +29,8 @@
 ##
 ##  Credits:
 ##  R from https://www.r-project.org/
-##  MiKTeX from  https://miktex.org
 ##  blpapi_java*.tar from http://www.openbloomberg.com/open-api/
+##  TinyTeX https://yihui.org/tinytex/TinyTeX-1.zip
 ##  peazip from http://sourceforge.net/projects/peazip
 ##  ahkscript from http://ahkscript.org
 ##  Nsis from nsis.sourceforge.net
@@ -44,7 +43,7 @@
 ### Globals
 G <- new.env()
 G$lastshell <- NULL # Output of last shell invocation
-G$tempmap   <- NULL # Temporary Windows net drive, used by commands not supporting a detected UNC path
+G$tempmap   <- NULL # Temporary Windows net drive, used by commands not supporting a detected UNC path (NOT USED now)
 
 ### Contribs
 
@@ -65,13 +64,17 @@ G$github.local <- "" # Auto-set by makeBloomR() if gitsim=T, relative to the bui
 ## To learn about deps use:
 ## x <- available.packages(); x["ggplot2","Imports"]; x["ggplot2","Depends"]
 
-pks <- "knitr Rblpapi xts XML httr rmarkdown RCurl" # RCurl to be removed
+pks <- "knitr Rblpapi xts XML httr rmarkdown sodium httpuv RCurl" # RCurl to be removed
 pks <- paste(pks, "plyr pbapply") # for read read.xlx
 
 ## All packs deps
 G$packlist <- pks
 rm(pks)
 
+## BloomR infrastructure packages
+G$bloomrpacks <- c("secretR", "pcloudr", "elearnr") |>
+    paste0(".tar.gz")
+ 
 ## Innoextract
 G$innourl <- "http://constexpr.org/innoextract/files"
 G$innozip <- 'innoextract'
@@ -316,7 +319,7 @@ downloads.core <- function(overwrite){
     for(pack in unique(packs)) # Loop over packs and download them 
         download.nice(cran.geturl(pack), makePath("rlibs", pack), overwrite,
                   pack)
-        
+
     ## Eikon
     download.nice(G$eikonurl, G$eikonzip, overwrite,
                   "Eikon files")
@@ -377,15 +380,6 @@ downloads.studio <- function(overwrite){
     ## Download TinyTeX distro
     download.nice(G$texurl, G$texzip , overwrite, "TinyTeX")
 
-    ## Download tinytex CRAN package
-    #existMake.dd("tinytex.libs", overwrite=overwrite, ask=FALSE, "tinytex lib dir:")
-    #curpacks <- getDeps.format(G$packlist)
-    #tinyntex.deps <- getDeps.format("tinytex")
-    #packs <- setdiff(tinyntex.deps, curpacks)
-    #for(pack in unique(packs)) # Loop over packs and download them 
-    #    download.nice(cran.geturl(pack), makePath("tinytex.libs", pack), overwrite,
-    #              pack)
-                
     ## Pandoc        
     cback <- function() {
       json <- rawToChar(curl::curl_fetch_memory(G$panurl) $content)
@@ -463,14 +457,6 @@ expand.studio <- function(){
     ## Expand TinyTeX
     uzip(G$texzip, G$texzip, "TinyTeX distro")
     
-    ### CRAN packages
-    #message('\nExpanding tinytex R package', '...')
-    #from <- "tinytex.libs"
-    ### Loop and extract packs
-    #for(pack in  dir(down.pt(from)))
-    #    uzip(makePath('rlibs', pack), 'rlibs',
-    #          paste('R package', pack), delTarget=FALSE)    
-    
     ## Expand Pandoc
     uzip(G$panzip, G$panzip, "Pandoc binaries")
 
@@ -542,6 +528,17 @@ bloomrTree.Core <- function() {
     copy.dir(from, to, "main R files")
     makeDir(app.pt('R/site-library'), "BloomR library:")
     
+    ## Copy libs
+    message("\nAdding R libraries")
+    lib.from <- 'rlibs'
+    lib.to <- app.pt("R/library")
+    for(lib in dir(work.pt(lib.from))){
+        message("Adding ", lib)
+        from <- makePath(lib.from, lib)  
+        to <- makePath(lib.to, lib)
+        copy.dir(from, to)
+    }
+
     ## Install Eikon package
     message("Install Eikon API")
     ## In Windows R CMD invokes cmd.exe, which is incompatible with a UNC build workdir.
@@ -552,16 +549,21 @@ bloomrTree.Core <- function() {
     to <- p0("--library=", to)
     cmd <- c(exe, "--no-site-file --no-environ --no-save --no-restore --quiet CMD INSTALL", from, to)
     shell.cd(cmd, wd="c:") # In Windows cmd.exe is invoked, so we need to set wd to a non-UNC path 
-        
-    ## Copy libs
-    message("\nAdding R libraries")
-    lib.from <- 'rlibs'
-    lib.to <- app.pt("R/library")
-    for(lib in dir(work.pt(lib.from))){
-        from <- makePath(lib.from, lib)  
-        to <- makePath(lib.to, lib)
-        copy.dir(from, to)
+
+    ## Install BloomR infrastructure packages
+    message("Install BloomR infrastructure packages")
+    existMake("rlibs-bloomr", TRUE, FALSE, "BloomR infrastructure packages dir:")
+    exe <- winwork.pt(app.pt('R/bin/R.exe'))
+    to <-  winwork.pt(app.pt('R/library'))
+    to <- p0("--library=", to)    
+    for(pack in G$bloomrpacks) { # Loop over packs and download them
+        pack.relpath <- p0("res/", pack)
+        download.git(pack.relpath, "rlibs-bloomr")
+        from <- winwork.pt(makePath(work.pt("rlibs-bloomr"), pack))       
+        cmd <- c(exe, "--no-site-file --no-environ --no-save --no-restore --quiet CMD INSTALL", from, to)
+        shell.cd(cmd, wd="c:") # In Windows cmd.exe is invoked, so we need to set wd to a non-UNC path
     }
+    
 
     
     ## Download docs
@@ -590,15 +592,9 @@ bloomrTree.Core <- function() {
     makeDir(app.pt('ed'), "ED tools:")
     download.git("src/ed/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd"))
 
-
-    ### Set the edition if this is the actual Core
-    #if(is.core()){ # No, if a BRemacs edition is building the core components 
-    #    edt <- paste(get.edition(), "edition")
-    #    file.write(edt, app.pt("bloomr.txt"), append=TRUE)
-    #}    
 }
 
-bloomrTree.brEmacs <- function(){
+bloomrTree.brEmacs <- function() {
 ### Make BRemacs directory tree
 
     bremacs <- app.pt("bremacs")
@@ -700,7 +696,6 @@ br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  spli
     download.git("src/ed/bremacs-dbg.ed.cmd",  app.pt("ed/bremacs-dbg.ed.cmd")) 
 
     ## === Byte compile === ##
-
     message("Starting byte-compilation...")
 
     ## Lisp path quote: "path\\to" -> \\\"path\\\\to\\\" 
@@ -797,7 +792,7 @@ bloomrTree.Studio <- function(){
 }
 
 
-makeStudio.addLatex <- function(){
+makeStudio.addLatex <- function() {
 ### Install LaTeX. Currently TinyTex
 
     
@@ -806,7 +801,8 @@ makeStudio.addLatex <- function(){
     copy.glob(G$texzip, app.pt(), "tinytex")
     
     ## TeXLive installer path
-    tlmgr <- makePath(app.pt(G$texzip), 'bin/win32/tlmgr.bat')
+    tlmgr <- makePath(app.pt(G$texzip), 'bin/windows/tlmgr.bat')
+    if(!file.exists(work.pt(tlmgr))) stop("Unable to find executable:\n ", work.pt(tlmgr))
     tlmgr <- pswork.pt(tlmgr)
     
     ## Set xetex fonts dir to local
@@ -818,11 +814,18 @@ makeStudio.addLatex <- function(){
     cmd <- paste(tlmgr, "conf texmf max_print_line 10000")
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
 
-    ## Set repo for updates 
+    ## Set repo for updates to nearby
     cmd <- paste(tlmgr, "option repository 'ctan'")
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
         
     return()
+
+    ## Needed to build the PDF of R packages 
+    cmd <- paste(tlmgr, "install makeindex")
+    shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
+
+
+
 
     ### ==============
     ## More packs for minimal Rnw: palatino breakurl fpl mathpazo
@@ -833,7 +836,7 @@ makeStudio.addLatex <- function(){
     
     args <- "library('tinytex')" 
     tinytex.dir <- work.pt(app.pt("tinytex"))
-    ## Powershell call operator doesnt work with double quotes and backsslas in shQuotes. This is a temp fix:
+    ## Powershell call operator doesnt work with double quotes and backslash in shQuote(). This is a temp fix:
     usquote <- function(path) squoteu(normalizePath(path, winslash = "/", mustWork = FALSE))    
     tinytex.dir.sh <- usquote(tinytex.dir)
     
@@ -844,7 +847,7 @@ makeStudio.addLatex <- function(){
                   tinytex.dir.sh, morepaks))
                   
     ## Find tlmgr for r_texmf
-    tlmgr <- makePath(tinytex.dir, "bin/win32/tlmgr.bat")
+    tlmgr <- makePath(tinytex.dir, "bin/windows/tlmgr.bat")
     tlmgr <- usquote(tlmgr)
     args <- c(args,
                sprintf("options(tinytex.tlmgr.path = %s)", tlmgr))
@@ -860,76 +863,14 @@ makeStudio.addLatex <- function(){
     cmd <- paste(rscript, "-e", qargs)
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
     
-    ###  OLD UNC management, in case it is needed        
-    ## MiKTeX mpm.exe requires mapping a UNC build workdir do a drive
-    orig.work <- G$work
-    #if(unc.is(G$work)) {
-    #    message(G$work, " is a UNC path, which is not supported by MikTeX mpm, a mapped drive will be used.")
-    #    G$work <- unc.subs(G$work)
-    #}
-    ## Restore previous drive mapping
-    if(!is.null(G$tempmap)) unc.mapdel(G$tempmap)
-    G$work <- orig.work
 
     ## Old MikTeX paks
     toinstall <- "upquote microtype parskip kvoptions ltxcmds kvsetkeys xurl bookmark infwarerr kvdefinekeys
                   pdfescape hycolor letltxmacro auxhook intcalc etexcmds bitset bigintcalc rerunfilecheck
                   uniquecounter geometry fancyvrb framed booktabs footnotehyper refcount gettitlestring"
     toinstall <- paste(toinstall, "pdfcrop") # required by intermediate commands  
-    toinstall <- gsub("[[:space:]]+", ",", toinstall)
-    
-    
-}
-
-latex.autopackages  <- function(){
-### This is a draft to be implemented, based on MiKTeX Just enough TeX, https://miktex.org/kb/just-enough-tex
-    
-    ## To identify the package needed by knit and rmarkdown:::redner, we use the MiKTeX auto-install-package feature.
-    ## Step 1 Enable automatic packages with:
-    ##       initexmf --set-config-value=[MPM]AutoInstall=yes
-    ## Step 2 Generate a test.tex file from an Rmd.
-    ## Step 3 Compile it and backup the resulting
-    ##        c:/Users/kvm/Desktop/brEmacs/main/latex/texmfs/data/miktex/log/pdflatex.log
-    ## Step 4 Parse for autoinstalled packages pdflatex.bak
-    
-    ## pdfcrop
-    ## rmarkdown:::redner() makes some preliminary tex operations before generating the tex file.
-    ## currently they seem figure cropping based on package pdfcrop, which in turn reuires perl
-    ## If render() does not find pdfcrop package stops, so the auto-install will not operate for pdfcrop
-
-    ## Activate AutoInstall packages
-    initexmf <- app.pt("latex/texmfs/install/miktex/bin/initexmf.exe")
-    cmd <- paste0(winwork.pt(initexmf), " --set-config-value=[MPM]AutoInstall=yes")
-    shell.ps(cmd, winwork.pt("ps.latexautop.txt"))
-
-    ## Find auto-installed packages
-    latlog.path <- paste0("c:/Users/kvm/Desktop/", "brEmacs/main/latex/texmfs/data/miktex/log/pdflatex.log")
-    latlog <- readLines(latlog.path)
-    glines <- grep("pdflatex.packagemanager - installing package", latlog, value=TRUE)
-    packs <- strsplit(glines, " ")
-    if(length(unique(sapply(packs, length))) >1) stop("Unequal items in 'pdflatex.log' install lines\n",
-                                                      paste((sapply(packs, paste, collapse=" ")), collapse="\n"))
-    (packs <- sapply(packs, `[`, 9))
-    paste(packs, collapse=" ")
-    
 
 }
-
-latex.packList <- function(inst=FALSE){ # NOT USED
-### Get list of all packages from MiKTeX mpm --list
-## If inst=TRUE, give vector of names of installed ones
-
-    mpm <- app.pt("latex/texmfs/install/miktex/bin/x64/mpm.exe")
-    if(!file.exists(work.pt(mpm))) stop(paste('Unable to find:\n', mpm))
-    out <- system(paste(winwork.pt(mpm), '--list'), intern = TRUE, invisible = FALSE)
-    if(inst) {
-        x <- grep('^i', out, value=TRUE)
-        sapply(strsplit(x, ' +'), `[`, 4)
-    } else out
-}
-
-latex.packCheck <- function(pname) # Check if a package is installed via MiKTeX mpm --list
-    pname %in% latex.packList(inst=TRUE)    
 
 makeStudio.addPandoc <- function(){ # NOT USED
 
@@ -1285,6 +1226,7 @@ shell.cd <- function(
 
     ## Test command exists
     cmdnq <- gsub("^[\"']|[\"']$", "", cmdvec[1]) # unquote (if shQuote was used)
+    cmdnq <- normalizePath(cmdnq) # Sys.which and system2 do not work properly over Windows shares 
     notfound <- ! nzchar(Sys.which(cmdnq))
 
     ## Test Linux builtin
@@ -1347,14 +1289,18 @@ shell.ps <- function(
                      cmdstr,    # command string
                      outfile,   # optional work dir
                      stop=TRUE  # stop on errors
-                      ){
+                      ) {
 
     ## $LASTEXITCODE is for executables and "-not $?" is for cmdlets
     cmdstr.tee <- sprintf("& %s | Tee-Object %s; exit ($LASTEXITCODE -le 1 -and -not $?)", cmdstr, outfile)
     ## Quotes in cmdstr.tee, before passing to PS, are removed so we quote again
     psline <- paste("powershell -NoProfile -command", shQuote(cmdstr.tee))
+
+    ## system doesn't like the UNC paths, which we do
+    old.path <- setwd(Sys.getenv("TMP"))
+    on.exit(setwd(old.path))    
     ret <- system(psline)
-    if(ret){
+    if(ret) {
         msg <- sprintf(
             "The following PowerShell command had a nonzero exit:\n  %s \nFor the error log see:\n  %s",
             cmdstr, outfile)
@@ -1543,7 +1489,8 @@ download.git <- function(file, to, overwrite=TRUE, desc=""){
     ## remote git
     if(!nzchar(G$github.local)) {
         from <- makePath(G$github, file)
-        to.temp <- basename(to)
+        #to.temp <- basename(to)
+        to.temp <- basename(tempfile(pattern = basename(to), tmpdir = down.pt()))
         download.nice(from, to.temp, overwrite=TRUE, desc)
         file.rename(down.pt(to.temp), work.pt(to))
         
@@ -1961,7 +1908,7 @@ existMake.old <- function(dir, overwrite, ask, desc=""){
 
 
 existMake <- function(dir, overwrite, ask, desc=""){
-### If dir (relative to the build workdir) does not exist make it, otherwise might ask and skip creation.
+### If dir (relative to the build workdir) does not exist make it, otherwise might ask and maybe skip creation.
 ### An empty-dir is considered non-existent. Note: if dir="", it is the build workdir.
 
     existMake_(dir, overwrite=overwrite, ask=ask, desc=desc, isdown=FALSE)    
@@ -2050,7 +1997,7 @@ file.write <- function( # Write file
     write(text, work.pt(fpath), append = append)
 
 
-### === UNC Paths ===
+### === UNC Paths ===  NOT USED any more 
 
 unc.is <- function(path){
 ### Check if a path is a UNC path
@@ -2175,37 +2122,20 @@ uzip_ <- function(from, to){ # uzip workhorse
         stop('\nUnable to perform extraction')  
 }
 
-utar <- function(from, to, desc, delTarget=TRUE){
+utar <- function(from, to, desc, delTarget=TRUE) {
 ### Untar making path relative to the build workdir
 ### Stops on errors and inform used with a desc argument
 
     message('\nExpanding ', desc, '...') 
     if(!file.exists(down.pt(from))) stop("Cannot find the file\n", down.pt(from))
     if(delTarget) del.path(to)
-    utar_(from, to)
+    # utar_(from, to)  # consider remove this 
     
-}
-
-utar_ <- function(from, to){ # uzip workhorse    
-
-
-    ## Untar requires mapping a UNC build workdir do a drive
-    orig.work <- G$work
-    if(unc.is(G$work)) {
-        message(G$work, " is a UNC path, which is not supported by untar, a mapped drive will be used.")
-        G$work <- unc.subs(G$work)
-    }
-
     from <- down.pt(from)
     to <- work.pt(to)
-    tryCatch(untar(from, exdir= to), finally={    
-        ## Restore previous drive mapping
-        if(!is.null(G$tempmap)) unc.mapdel(G$tempmap)
-        G$work <- orig.work
-    })
-     
+    if(untar(from, exdir= to) != 0)
+        stop('\nUnable to perform extraction')    
 }
-
 
 uzip.7z <- function(from, to, desc, delTarget=TRUE){
     zexe <- get7zbin()

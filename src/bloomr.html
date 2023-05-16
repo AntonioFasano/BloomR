@@ -297,23 +297,17 @@ overflow-y: auto;
 border: 1px solid #ddd;
 border-radius: 4px;
 }
-.tabset-dropdown > .nav-tabs > li.active:before {
-content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+content: "\e259";
 font-family: 'Glyphicons Halflings';
 display: inline-block;
 padding: 10px;
 border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-content: "";
-border: none;
-}
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-content: "";
+content: "\e258";
 font-family: 'Glyphicons Halflings';
-display: inline-block;
-padding: 10px;
-border-right: 1px solid #ddd;
+border: none;
 }
 .tabset-dropdown > .nav-tabs > li.active {
 display: block;
@@ -719,6 +713,11 @@ will be returned.</p>
 <pre class="r"><code>con=NULL  #Simulated mode: replace with con=br.open() on terminal</code></pre>
 <pre class="r"><code>data=br.bulk.csv(con, &quot;mybloomr/tickers.csv&quot;) </code></pre>
 <pre><code>## Processing Financial ...</code></pre>
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric</code></pre>
 <pre><code>## Loading 3988 HK Equity</code></pre>
 <pre><code>## Loading C US Equity</code></pre>
 <pre><code>## Loading 601288 CH Equity</code></pre>
@@ -741,27 +740,27 @@ like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2023-02-21      NA     NA     9.980     NA   8.000
-## 2023-02-22      NA 12.036        NA 10.604   9.209
-## 2023-02-23      NA  9.397        NA  9.341   9.007
-## 2023-02-24      NA     NA    11.622  9.655  10.293
-## 2023-02-25  10.497     NA        NA 12.132  10.124
+## 2023-04-20      NA  8.856     9.477     NA      NA
+## 2023-04-21      NA 10.465        NA 10.495   9.474
+## 2023-04-22  11.982 10.421     9.636     NA      NA
+## 2023-04-23      NA  9.182    10.131     NA      NA
+## 2023-04-24   9.453     NA        NA 10.232      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2023-02-21   9.199  10.844 12.132     NA  10.066
-## 2023-02-22  11.412   9.880     NA 10.429  10.541
-## 2023-02-23   9.290   9.081  9.630     NA  10.868
-## 2023-02-24      NA   9.582     NA     NA   9.888
-## 2023-02-25  10.151   9.545  8.809     NA  10.097
+## 2023-04-20  11.238   9.248     NA  9.475   9.376
+## 2023-04-21   9.917   9.882  9.069 10.779   9.856
+## 2023-04-22  10.533      NA     NA  9.775   9.531
+## 2023-04-23   9.142  10.172 11.345 10.370  10.218
+## 2023-04-24  11.286   8.612  8.791 10.075   9.781
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2023-02-21 10.196  9.427 11.394
-## 2023-02-22 11.081  7.723  9.154
-## 2023-02-23 10.895 10.795 10.887
-## 2023-02-24 11.394 12.186 12.568
-## 2023-02-25 10.035 11.296  9.769</code></pre>
+## 2023-04-20 12.066     NA     NA
+## 2023-04-21  9.553     NA  9.027
+## 2023-04-22  9.189   9.38  9.895
+## 2023-04-23     NA     NA 10.934
+## 2023-04-24  8.447     NA 10.834</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security
@@ -981,11 +980,11 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2023-02-21      NA  10.663
-## 2023-02-22      NA   9.048
-## 2023-02-23  10.212      NA
-## 2023-02-24  10.245   9.325
-## 2023-02-25  10.507   9.035</code></pre>
+## 2023-04-20   9.494      NA
+## 2023-04-21  10.463      NA
+## 2023-04-22  10.175  10.506
+## 2023-04-23  11.807  10.913
+## 2023-04-24      NA  10.643</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">
