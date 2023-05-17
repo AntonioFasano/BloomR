@@ -1,3 +1,8 @@
+ ---
+title: "BloomR Time Functions"
+author: "Antonio Fasano"
+date: "`r format(Sys.Date(), '%b %d, %Y')`"
+---
 
 ```{r buildme, purl=FALSE, eval=FALSE, include=FALSE}
 
@@ -67,7 +72,7 @@ OTS(demodry=  list(purl=FALSE, eval=step2,  include=FALSE)) # run only (no code/
 OTS(democode= list(purl=FALSE, eval=FALSE,  include=TRUE))  # show code only, no run  
 
 ## Purl hook
-knitr::knit_hooks$set(purl = hook_purl)
+knitr::knit_hooks$set(purl = knitr::hook_purl)
 
 ```
 
@@ -98,39 +103,7 @@ store=function(sym) {
 # BloomR time functions
 
 
-Misc functions{#misc.functions}
-==============================
-
-Description
-------------
-`rm.all` deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot).
-`rm.var` deletes non-function objects from memory.
-
-
-Usage
------
-	rm.all()
-	rm.var()
-	
-
-```{r miscfunc, opts.label='brfuncs'}
-
-#Clean up
-## Remove visible and invisible objects
-rm.all=function() 
-    rm(list=ls(all=TRUE, envir=parent.frame()), envir=parent.frame())
-
-## Remove visible non-function objects
-rm.var=function() 
-    rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
-
-store(rm.all)
-store(rm.var)
-```
-
-
-
-Beta misc functions{#beta.misc.functions}
+Beta time functions{#beta.misc.functions}
 =========================================
 
 Description

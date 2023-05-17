@@ -20,20 +20,6 @@ store=function(sym) {
 }
 
 
-## ----miscfunc, opts.label='brfuncs'------------------------------------------------------------------------------------------------
-
-#Clean up
-## Remove visible and invisible objects
-rm.all=function()
-    rm(list=ls(all=TRUE, envir=parent.frame()), envir=parent.frame())
-
-## Remove visible non-function objects
-rm.var=function()
-    rm(list=setdiff(ls(envir=parent.frame()), lsf.str(envir=parent.frame())),  envir=parent.frame())
-
-store(rm.all)
-store(rm.var)
-
 ## ----MISCFUNC, opts.label='brfuncs'------------------------------------------------------------------------------------------------
 
 br.try.date=function(d){ # convert vector d to a date vector if possible or return null

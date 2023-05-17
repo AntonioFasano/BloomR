@@ -1,11 +1,18 @@
-1.5.3 -- "to give"
+1.5.3 -- "Nessun dorma"
 
 R version 4.3.0
 
+Introduced the cloud assignment system based on elearnr package  
+pcloudr package to access pCloud.com  
+secretR package to manage secrets in encrypted files  
 
 _Change details_
 
     build: UNC support not necessary any more with TeXLive system.
            TeXLive bins are now in bin/windows rather than bin/win32
 
-    bloomr.rmd: ~.br.addpaths TeXLive bins are now in TinyTeX/bin/windows
+    bloomr.Rmd: ~.br.addpaths TeXLive bins are now in TinyTeX/bin/windows
+
+    times.Rmd: fixed conflict masking rm.all, rm.var bloomr.usr.
+
+    

@@ -1,8 +1,9 @@
----
+ ---
 title: "BloomR Main Functions"
 author: "Antonio Fasano"
-date: "`r format(Sys.Date(), '%b %d, %Y')`"
+ date: "`r format(Sys.Date(), '%b %d, %Y')`"
 ---
+
 
 
 # BloomR main functions

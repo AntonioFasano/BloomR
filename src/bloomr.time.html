@@ -297,23 +297,17 @@ overflow-y: auto;
 border: 1px solid #ddd;
 border-radius: 4px;
 }
-.tabset-dropdown > .nav-tabs > li.active:before {
-content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+content: "\e259";
 font-family: 'Glyphicons Halflings';
 display: inline-block;
 padding: 10px;
 border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-content: "";
-border: none;
-}
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-content: "";
+content: "\e258";
 font-family: 'Glyphicons Halflings';
-display: inline-block;
-padding: 10px;
-border-right: 1px solid #ddd;
+border: none;
 }
 .tabset-dropdown > .nav-tabs > li.active {
 display: block;
@@ -358,36 +352,32 @@ display: none;
 </div>
 
 
+<table style="width:17%;">
+<colgroup>
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>R topics documented:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#beta.misc.functions">Beta time functions</a> <a href="#time.functions">Time extension functions</a> title: “BloomR Time
+Functions” author: “Antonio Fasano” date: “May 17, 2023”</td>
+</tr>
+</tbody>
+</table>
 <div id="bloomr-time-functions" class="section level1">
 <h1>BloomR time functions</h1>
-<div id="r-topics-documented" class="section level2">
-<h2>R topics documented:</h2>
-<p><a href="#misc.functions">Misc functions</a><br />
-<a href="#beta.misc.functions">Beta misc functions</a><br />
-<a href="#time.functions">Time extension functions</a></p>
-</div>
-</div>
-<div id="misc.functions" class="section level1">
-<h1>Misc functions</h1>
-<div id="description" class="section level2">
-<h2>Description</h2>
-<p><code>rm.all</code> deletes all objects (variables and functions)
-from memory, including invisible objects (those starting with a dot).
-<code>rm.var</code> deletes non-function objects from memory.</p>
-</div>
-<div id="usage" class="section level2">
-<h2>Usage</h2>
-<pre><code>rm.all()
-rm.var()</code></pre>
-</div>
 </div>
 <div id="beta.misc.functions" class="section level1">
-<h1>Beta misc functions</h1>
-<div id="description-1" class="section level2">
+<h1>Beta time functions</h1>
+<div id="description" class="section level2">
 <h2>Description</h2>
 <p>Miscellaneous functions dealing with dates.</p>
 </div>
-<div id="usage-1" class="section level2">
+<div id="usage" class="section level2">
 <h2>Usage</h2>
 <pre><code>br.try.date(d)
 br.is.same.class(...)</code></pre>
@@ -412,11 +402,11 @@ same class. It is mostly intended to check if dates are homogeneous.</p>
 </div>
 <div id="time.functions" class="section level1">
 <h1>Time extension functions</h1>
-<div id="description-2" class="section level2">
+<div id="description-1" class="section level2">
 <h2>Description</h2>
 <p>Functions to get, set dates.</p>
 </div>
-<div id="usage-2" class="section level2">
+<div id="usage-1" class="section level2">
 <h2>Usage</h2>
 <pre><code>day(d)
 month(d)

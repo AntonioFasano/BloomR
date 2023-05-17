@@ -352,28 +352,28 @@ display: none;
 </div>
 
 
+<table style="width:17%;">
+<colgroup>
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>R topics documented:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#br.bdh">br.bdh</a> <a href="#br.bulk.csv">br.bulk.csv</a>
+<a href="#br.bulk.desc">br.bulk.desc</a> <a href="#br.bulk.idx">br.bulk.idx</a> <a href="#br.bulk.tiks">br.bulk.tiks</a> <a href="#br.desc">br.desc</a> <a href="#br.md2pdf">br.md2pdf</a> <a href="#br.rmd2html">br.rmd2html</a>
+<a href="#br.rmd2slides">br.rmd2slides</a> <a href="#br.rmd2pdf">br.rmd2pdf</a> <a href="#br.rmd2both">br.rmd2both</a>
+<a href="#br.sample">br.sample</a> <a href="#deprecated.functions">Deprecated functions</a> <a href="#Internal">Internal BloomR functions</a> <a href="#connections">Manage connections</a> <a href="#misc.functions">Misc functions</a> <a href="#beta.functions">Beta
+functionalities</a> title: “BloomR Main Functions” author: “Antonio
+Fasano” date: “May 17, 2023”</td>
+</tr>
+</tbody>
+</table>
 <div id="bloomr-main-functions" class="section level1">
 <h1>BloomR main functions</h1>
-<div id="r-topics-documented" class="section level2">
-<h2>R topics documented:</h2>
-<p><a href="#br.bdh">br.bdh</a><br />
-<a href="#br.bulk.csv">br.bulk.csv</a><br />
-<a href="#br.bulk.desc">br.bulk.desc</a><br />
-<a href="#br.bulk.idx">br.bulk.idx</a><br />
-<a href="#br.bulk.tiks">br.bulk.tiks</a><br />
-<a href="#br.desc">br.desc</a><br />
-<a href="#br.md2pdf">br.md2pdf</a><br />
-<a href="#br.rmd2html">br.rmd2html</a><br />
-<a href="#br.rmd2slides">br.rmd2slides</a><br />
-<a href="#br.rmd2pdf">br.rmd2pdf</a><br />
-<a href="#br.rmd2both">br.rmd2both</a><br />
-<a href="#br.sample">br.sample</a><br />
-<a href="#deprecated.functions">Deprecated functions</a><br />
-<a href="#Internal">Internal BloomR functions</a><br />
-<a href="#connections">Manage connections</a><br />
-<a href="#misc.functions">Misc functions</a><br />
-<a href="#beta.functions">Beta functionalities</a></p>
-</div>
 </div>
 <div id="br.bdh" class="section level1">
 <h1>br.bdh</h1>
@@ -740,27 +740,27 @@ like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2023-04-20      NA  8.856     9.477     NA      NA
-## 2023-04-21      NA 10.465        NA 10.495   9.474
-## 2023-04-22  11.982 10.421     9.636     NA      NA
-## 2023-04-23      NA  9.182    10.131     NA      NA
-## 2023-04-24   9.453     NA        NA 10.232      NA
+## 2023-05-12   8.914 10.019        NA 10.189   8.977
+## 2023-05-13      NA 10.602        NA 10.062  11.384
+## 2023-05-14      NA  9.791    10.527 10.568  10.668
+## 2023-05-15      NA  9.440        NA 10.054   9.614
+## 2023-05-16      NA     NA        NA 11.414   9.780
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2023-04-20  11.238   9.248     NA  9.475   9.376
-## 2023-04-21   9.917   9.882  9.069 10.779   9.856
-## 2023-04-22  10.533      NA     NA  9.775   9.531
-## 2023-04-23   9.142  10.172 11.345 10.370  10.218
-## 2023-04-24  11.286   8.612  8.791 10.075   9.781
+## 2023-05-12      NA  10.683     NA 10.688  11.596
+## 2023-05-13      NA  10.919 10.106     NA      NA
+## 2023-05-14      NA      NA  9.572 10.542      NA
+## 2023-05-15      NA      NA 11.315 10.353  10.290
+## 2023-05-16   7.847      NA     NA 11.157      NA
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2023-04-20 12.066     NA     NA
-## 2023-04-21  9.553     NA  9.027
-## 2023-04-22  9.189   9.38  9.895
-## 2023-04-23     NA     NA 10.934
-## 2023-04-24  8.447     NA 10.834</code></pre>
+## 2023-05-12     NA     NA 10.303
+## 2023-05-13  8.431 11.285     NA
+## 2023-05-14     NA  9.530  9.310
+## 2023-05-15  8.815     NA  9.579
+## 2023-05-16 11.708  9.293 10.447</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security
@@ -980,11 +980,11 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2023-04-20   9.494      NA
-## 2023-04-21  10.463      NA
-## 2023-04-22  10.175  10.506
-## 2023-04-23  11.807  10.913
-## 2023-04-24      NA  10.643</code></pre>
+## 2023-05-12      NA  10.388
+## 2023-05-13  10.102      NA
+## 2023-05-14      NA  10.389
+## 2023-05-15   8.145      NA
+## 2023-05-16      NA  10.464</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

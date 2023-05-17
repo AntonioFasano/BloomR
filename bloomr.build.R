@@ -585,6 +585,9 @@ bloomrTree.Core <- function() {
         download.git("temp-help/frontier.pdf",             root.pt("help/frontier.pdf"))     
         download.git("temp-help/Bloomberg API Intro.pdf",  root.pt("help/Bloomberg API Intro.pdf"))
         unlink(root.pt("help/bloomr.html"))
+        download.git("temp-help/elearnr.pdf",               root.pt("help/elearnr.pdf"))     
+        download.git("temp-help/pcloudr.pdf",               root.pt("help/pcloudr.pdf"))     
+        download.git("temp-help/secretR.pdf",               root.pt("help/secretR.pdf")) 
     }
     
     ## Environment diagnostic

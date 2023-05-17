@@ -1,31 +1,26 @@
-# BloomR time functions
+ ---
 R topics documented:
 -----------
-[Misc functions](#misc.functions)   
-[Beta misc functions](#beta.misc.functions)   
+[Beta time functions](#beta.misc.functions)   
 [Time extension functions](#time.functions)   
-
-
-Misc functions{#misc.functions}
-==============================
-
-Description
-------------
-`rm.all` deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot).
-`rm.var` deletes non-function objects from memory.
-
-
-Usage
------
-	rm.all()
-	rm.var()
-	
+title: "BloomR Time Functions"
+author: "Antonio Fasano"
+date: "May 17, 2023"
+---
 
 
 
 
 
-Beta misc functions{#beta.misc.functions}
+
+
+
+
+
+# BloomR time functions
+
+
+Beta time functions{#beta.misc.functions}
 =========================================
 
 Description
