@@ -1,21 +1,16 @@
 ###  BloomR source
 
 ##  TODO
+##  Separate code (e.g. in bloomr.Rmd) requiring a Bloomberg or Refinitive to test from knitting, time, system code. 
 ##  In bloomr.init.R, eikonapir loading removes requestInfo from .GlobalEnv with a hack. Test it and then delete eikon.fallback() 
-##  Byte compile is async. "0" can be removed in case of standard emacs elisp files
+##  In bloomr.Rmd bdh always.display.ticker, dates.as.row.names and perhaps more relate to old java package.
 ##  Finalise dir temp-help docs source dir
-##  Make an external file for byte-compile and autoloads and solve the async problem see below. 
 ##  Custom polymode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
-##  melpa.getpak check if other packages can benefit from it otehr than ESS
 ##  Repurpose tests and test data 
 ##  RCurl find and remove references everywhere 
 ##  bloomr.time.Rmd introduces a system to auto extract args desc from comment (see parseargs) consider use it.
 ##  In `knit.twice` in "bloomr.time.Rmd" add the path hacks as `knit2` in "bloomr.Rmd" so as to build it in BloomR.
-##  Separate code (e.g. in bloomr.Rmd) requiring a Bloomberg or Refinitive to test from knitting, time, system code. 
-##  In bloomr.Rmd bdh always.display.ticker, dates.as.row.names and perhaps more relate to old java package.
-##  Implemented gitsim=TRUE the git simulated dir to set to bloomr.build this script dir.
-##  Time startup of br-init.elc and possibly use it.
-
+##
 ##
 ##  Usage:
 ##  Source this file and run:
@@ -44,6 +39,7 @@
 G <- new.env()
 G$lastshell <- NULL # Output of last shell invocation
 G$tempmap   <- NULL # Temporary Windows net drive, used by commands not supporting a detected UNC path (NOT USED now)
+G$frames <- sys.frames() # used to find source script wihtout calling the build function
 
 ### Contribs
 
@@ -52,8 +48,7 @@ G$eikonurl <- "https://github.com/ahmedmohamedali/eikonapir/archive/master.zip"
 G$eikonzip <- 'eikon'
 
 ## Ahkscript
-## G$ahkurl <- "http://ahkscript.org/download/ahk2exe.zip" # removed
-G$ahkurl <- "https://autohotkey.com/download/ahk.zip"
+G$ahkurl <- "https://api.github.com/repos/AutoHotkey/Ahk2Exe/releases"
 G$ahkzip <- "ahk"
 
 ## Github
@@ -88,58 +83,59 @@ G$emacsurl <- "http://ftp.gnu.org/gnu/emacs/windows/"
 G$emacszip <- "emacs"
 G$emacs.type <- "emacs.*?.zip$" # e.g. emacs-28.2.zip
 
-## SF items
+## BR/Emacs packages
+G$bremacs.paks.repos <- c( # archives in Elisp lingo
+    ## Order is relevant in case of multiple matches
+    `stable-melpa` = "https://stable.melpa.org/",
+    elpa = "https://elpa.gnu.org/",
+    melpa = "https://melpa.org/")
+G$bremacs.paks <- c("ess", "poly-R", "bm")
+G$bremacs.paks.pinned <- NULL
+G$bremacs.paks.pinned <- c(ess = "melpa") # or NULL
+G$bremacs.paks.manual <- NULL # Manually (tar) linked with a descriptive .el file. prevailing on pinned.
+## G$bremacs.paks.manual <- # list(NAME = c(tarurl = VALUE, descurl = VALUE), ...). See bremacs.pak.getdata.manual()
+##
+##    list(
+##      ess = c(tarurl  = "https://github.com/emacs-ess/ESS/archive/refs/tags/ESSRv1.8.tar.gz",
+##                descurl = "https://raw.githubusercontent.com/emacs-ess/ESS/a1d177cb87bf96e34f58cd59854ddfb2a2957b39/lisp/ess.el"
+##                ),
+##      `ado-mode` = c(tarurl = "https://github.com/louabill/ado-mode/archive/refs/tags/1.17.0.2.tar.gz",
+##        descurl = "https://raw.githubusercontent.com/louabill/ado-mode/5610074e29ce08631c5210f1873938c3bcd9cbde/lisp/ado-mode.el")
+##    )
+G$bremacs.paks.tree   <- NULL   # BRemacs pack names, deps, etc
+G$bremacs.paks.order  <- NULL   # BRemacs pack setup order
+
+
+## SourceForge items
 G$pzip <- "peazip"
-G$rport <- "rportable" # not used
 G$nsisurl <- 'portableapps'
 G$nsiszip <- 'nsis'
 
-## ESS, Polymode, Poly-markdown, Poly-noweb, BM
-G$melpalibs <- NULL # melpa.org packages' names/version
-G$essurl <- 'ess.tar'
-G$esszip <- 'ess'
-#G$polyurl <- 'https://github.com/vspinu/polymode/archive/master.zip'
-G$polyurl <- 'https://github.com/polymode/polymode/archive/refs/tags/v0.2.2.zip'
-G$polyzip <- 'polymode'
-G$markurl <- 'https://github.com/jrblevin/markdown-mode/archive/master.zip'
-G$markzip <- 'markdown'
-G$polymarkurl <- 'https://github.com/polymode/poly-markdown/archive/refs/tags/v0.2.2.zip'
-G$polymarkzip <- 'poly-markdown'
-G$noweburl <- 'https://github.com/polymode/poly-noweb/archive/refs/tags/v0.2.2.zip'
-G$nowebzip <- 'poly-noweb'
-G$polyrurl <- 'https://github.com/polymode/poly-R/archive/refs/tags/v0.2.2.zip'
-G$polyrzip <- 'poly-R'
-G$bmurl <- 'https://github.com/joodland/bm/archive/master.zip'
-G$bmzip <- 'bmmode'
-
 ## Pandoc for Studio
 G$panurl <- "https://api.github.com/repos/jgm/pandoc/releases"
-#G$paninst <- "pandoc.msi" #to remove this
 G$panzip <- "pandoc"
 
 ## TeX distro
 G$texurl <- "https://yihui.org/tinytex/TinyTeX-1.zip"
 G$texzip <- "tinytex"
-#old
-G$mikpaks <- c('fancyvrb', 'microtype', 'mptopdf', 'upquote', 'url',
-               'parskip', 'framed', 'titling', 'booktabs', 'etoolbox')
 
-## Local paths
-G$work <-    "" # This is the build workdir, not to be confused wtih R getwd()
-G$downdir <- "" # This is the downloads dir. 
-G$appname <- "apps" # BloomR application folder name. Used by app.pt() 
-G$branch <- NULL # Branch dir. The value can be "brCore" or "brEmacs" (for non-Core editions)
+## Local paths not intended to be customised.
+G$work    <- NULL # This is the build workdir, not to be confused wtih R getwd()
+G$downdir <- NULL # This is the downloads dir
+G$appname <- "apps" # BloomR application folder name, used by app.pt(). It's hardcoded at least in br-init.el, so don't change.
+G$branch  <- NULL # Branch dir. The value can be "brCore" or "brEmacs" (for non-Core editions)
+G$me      <- NULL # This file (automatically detected)
+G$prjdir  <- NULL # The project directory, based  on G$me
 
-## Arguments
+## makeBloomR() arguments
 G$bremacs <- NULL
 G$studio <- NULL
 G$ndown <- 0
 G$what <- NULL # What edition? If what !'core', then is.bremacs() TRUE
 G$builds <- NULL # Char vector of remaining builds to go 
-G$alttex <- FALSE # Try alt LaTeX repos on failures
 
 
-## Path convention
+## Path conventions
 ## Paths are normally related to G$work or G$downdir.
 ## Absolute paths are retrieved by means of work.pt() and down.pt().
 ## Other *.pt functions return paths relative to special BloomR folders e.g. root.pt().
@@ -147,7 +143,7 @@ G$alttex <- FALSE # Try alt LaTeX repos on failures
 
 makeBloomR <- function( # Build BloomR
                     work,         # work dir path, absolute or relative to cur path
-                    downdir=NULL, # optional resoruce download directory   
+                    downdir=NULL, # optional directory for assets download. It can't be a subidrectory `work`, nor end with a ":".
                     tight=FALSE,  # Reuse the downloads directory and build workdir 
                     ndown=2,      # num of download attempts
                     what='all',   # what edition: all/core/lab/studio
@@ -155,20 +151,24 @@ makeBloomR <- function( # Build BloomR
                     ## For debug/test:
                     bundle='exe', # exe/zip/all/none make the related installer for distribution
                     ask=TRUE,     # asks if to overwrite the existent build workdir and installer
-                    alttex=FALSE, # Try alternative LaTeX repos on failures, beyond the suggested one 
                     deb=1:6,      # defaults to 1:6 to execute all steps build steps, modify to debug, avoid with what=all
                     gitsim=FALSE, # local path (abs. or relative) to simulate github downloads.
                     reset=TRUE    # Only set FALSE internally to allow multi-builds calls and keep globals
 ) {
+
+    ## Get the local git project directory 
+    get.project()
     
     ## Set work dir
-    if(!nzchar(work)) stop("Please, specify a work directory as first arg!")
+    if(!is.null(work) && !nzchar(work)) stop("Please, specify a work directory as first arg!")
     chk.colon(work)
+    chk.zero.path(work)
     G$work <- work 
 
     ## Set downloads dir
     if(!is.null(downdir)){
         chk.colon(downdir)
+        chk.zero.path(downdir)
         if(is.subdir_gen(downdir, work))
             stop(downdir, "\n cannot be a subidrectory of\n", work, ".")
     }    
@@ -191,9 +191,8 @@ makeBloomR <- function( # Build BloomR
 
     ## Parse Arguments
     editions <- c('all', 'core', 'lab', 'studio')
-    if(! what %in% editions) messagev("'what' argument is not in", sQuote(editions))
+    if(length(what) > 1 || ! what %in% editions) stop(pv("'what' argument is not one in", sQuote(editions)))
     G$what <- what
-    G$alttex  <- alttex
 
     ## Don't touch the build history, if reset =FALSE 
     if(reset) {
@@ -232,7 +231,7 @@ makeBloomR <- function( # Build BloomR
     G$builds <- G$builds[-1] # needs makeBloomR(reset=F)
     if(length(G$builds)) makeBloomR(
                              work=work, downdir=downdir, tight=TRUE,  
-                             ndown=ndown, bundle=bundle, ask=ask, alttex=alttex,
+                             ndown=ndown, bundle=bundle, ask=ask, 
                              what=what,
                              reset =FALSE, # this will keep G$builds status 
                              deb=deb, gitsim=gitsim)
@@ -305,8 +304,9 @@ downloads.core <- function(overwrite){
     ## NSIS
     cback <- function(){
         url <- sfFirstbyProject(G$nsisurl, G$nsiszip)
-        url <- sfFirstbyUrl(url, 'additional')
-        url <- sfFirstbyUrl(url, '[[:digit:]]')
+        url <- sfFirstbyUrl(url, 'english\\.paf')
+#        url <- sfFirstbyUrl(url, 'additional')
+#        url <- sfFirstbyUrl(url, '[[:digit:]]')
         sfDirLink(url)
     }
     download.nice(cback, G$nsiszip, overwrite,
@@ -325,16 +325,24 @@ downloads.core <- function(overwrite){
                   "Eikon files")
     
     ## ahkscript
-    download.nice(G$ahkurl, G$ahkzip, overwrite,
-                   "ahkscript")
+    cback <- function() {
+        json <- rawToChar(curl::curl_fetch_memory(G$ahkurl) $content)
+        lnks <- regmatches(json, gregexpr("\"browser_download_url\":\"[^\"]+", json))[[1]]
+        regmatches(lnks, regexpr("https://.+zip$", lnks))[[1]]
+    }
+    download.nice(cback, G$ahkzip, overwrite, "AutoHotkey")
+
+
+
+    
 }
 
 downloads.lab <- function(overwrite){   
 ### BloomR Lab downloads
 
-    ## Download Melpa name/version 
-    melpa.getvers()    
-
+    ## Create BRemacs download folder
+    existMake.dd("bremacs-libs", overwrite=overwrite, ask=FALSE, "BRemacs packages dir:")
+   
     cback <- function(){
         dir <- web.greplink("emacs-../", pos=-1, G$emacsurl, abs=TRUE)
         zip <- web.greplink(G$emacs.type, pos=-1, dir)
@@ -342,36 +350,22 @@ downloads.lab <- function(overwrite){
     }
     download.nice(cback, G$emacszip, overwrite,
                   "Emacs files")
-    
-    ## ESS
-    url <- melpa.getpak("ess.tar")
-    download.nice(url, G$esszip, overwrite,
-                  "ESS files")
-    
-    ## Markdown mode
-    download.nice(G$markurl, G$markzip, overwrite,
-                  "Markdown files")
-    
-    ## Polymode
-    download.nice(G$polyurl, G$polyzip, overwrite,
-                  "Polymode files")
 
-    ## Poly-markdown mode
-    download.nice(G$polymarkurl, G$polymarkzip, overwrite,
-                  "Polymode for markdown")
-
-    ## Poly-noweb mode
-    download.nice(G$noweburl, G$nowebzip, overwrite,
-                  "Polymode for noweb")
-
-    ## Poly-r mode
-    download.nice(G$polyrurl, G$polyrzip, overwrite,
-                  "Polymode for R")
-    
-    ## Bookmark (bm) mode
-    download.nice(G$bmurl, G$bmzip, overwrite,
-                  "BM mode files")
-    
+    ## Elisp packages
+    bremacs.pak.getrepos(overwrite)
+    G$bremacs.paks.tree <- bremacs.pak.maketree() # G$bremacs.paks + deps
+    paknames <- names(G$bremacs.paks.tree) 
+    pakurls <- bremacs.pak.tree.el("url")
+    basenames <- bremacs.pak.tree.el("basename") 
+    existMake("bremacs-retar", overwrite=overwrite, ask=FALSE, "BRemacs retar dir:") # only used in case of compressed tars
+    for(pack in paknames){ # Loop over packs and download them
+        from <- pakurls[pack]
+        to <- makePath("bremacs-libs", basenames[pack])
+        download.nice(from, to, overwrite, pack)
+        ## Remove compression and rename tar.gz, tgz
+        retar(to, "bremacs-retar",  pack)
+    }
+        
 }
 
 downloads.studio <- function(overwrite){
@@ -384,7 +378,7 @@ downloads.studio <- function(overwrite){
     cback <- function() {
       json <- rawToChar(curl::curl_fetch_memory(G$panurl) $content)
       lnks <- regmatches(json, gregexpr("\"browser_download_url\":\"[^\"]+", json))[[1]]
-      regmatches(lnks, regexpr("https://.+windows.+zip$", lnks))      
+      regmatches(lnks, regexpr("https://.+windows.+zip$", lnks))[[1]]
     }
     download.nice(cback, G$panzip, overwrite, "Pandoc")
     
@@ -436,20 +430,6 @@ expand.lab <- function(){
 ### Expand BloomR Lab
 
     uzip(G$emacszip, G$emacszip, "BRemacs files")
-
-    utar(G$esszip, G$esszip, "ESS")
-
-    uzip(G$markzip, G$markzip, "Markdown mode")
-    
-    uzip(G$polyzip, G$polyzip, "Polymode")
-
-    uzip(G$polymarkzip, G$polymarkzip, "Polymode for markdown")
-
-    uzip(G$nowebzip, G$nowebzip, "Polymode for noweb")
-
-    uzip(G$polyrzip, G$polyrzip, "Polymode for R")
-    
-    uzip(G$bmzip, G$bmzip, "BM mode")
 }
  
 expand.studio <- function(){
@@ -593,7 +573,7 @@ bloomrTree.Core <- function() {
     ## Environment diagnostic
     message("\nAdding ED tools")
     makeDir(app.pt('ed'), "ED tools:")
-    download.git("src/ed/bloomr.ed.cmd",  app.pt("ed/bloomr.ed.cmd"))
+    download.git("src/ed/core.cmd",  app.pt("ed/core.cmd"))
 
 }
 
@@ -608,176 +588,129 @@ bloomrTree.brEmacs <- function() {
     
     ## Copy Emacs
     message("Copying main BRemacs files")
-    from <- makePath(G$emacszip, "emacs-*")    
+    from <- G$emacszip
     dirs <- c('bin', 'lib', 'libexec', 'share/emacs', 'share/icons', 'share/info', 'share/man')
     copy.glob(from, bremacs, dirs)
-    
-    
-    ## Copy ESS
-    message("Adding ESS files")
-    from <- G$esszip
-    # git version now Melpa
-    #from <- globpaths(from, '/ESS-ESSR*')
-    #to <- slisp.pt(G$esszip)
-    #makeDir(to)
-    #copy.glob(from, to, "etc")
-    #files <- c('obsolete', '*.el')
-    #copy.glob(makePath(from, 'lisp'), to, files)
 
-    from <- globpaths(from, '/ess-*')
-    to <- slisp.pt(G$esszip)
-    copy.dir(from, to, "ESS mode")
-
-    ## Copy Markdown mode
-    message("Adding Markdown mode files")
-    from <- G$markzip
-    from <- makePath(from, 'markdown-mode-master')
-    to <- slisp.pt(G$markzip)
-    makeDir(to)
-    copy.glob(from, to, "*.el")
-    
-    ## Copy Polymode
-    message("Adding Polymode files")
-    from <- G$polyzip
-    from <- globpaths(from, '/polymode*')    
-    to <- slisp.pt(G$polyzip)
-    makeDir(to)
-    copy.glob(from, to, "*.el")
-
-    ## Copy Poly-markdown mode
-    message("Adding Poly-markdown files")
-    from <- G$polymarkzip
-    from <- globpaths(from, '/poly-markdown*')
-    to <- slisp.pt(G$polymarkzip)
-    makeDir(to)
-    copy.glob(from, to, "*.el")
-
-    ## Copy Poly-noweb mode
-    message("Adding Poly-noweb files")
-    from <- G$nowebzip
-    from <- globpaths(from, '/poly-noweb*')
-    to <- slisp.pt(G$nowebzip)
-    makeDir(to)
-    copy.glob(from, to, "*.el")
-   
-    ## Copy Poly-R mode
-    message("Adding Poly-R files")
-    from <- G$polyrzip
-    from <- globpaths(from, '/poly-R*')
-    to <- slisp.pt(G$polyrzip)
-    makeDir(to)
-    copy.glob(from, to, "*.el")
-    
-    ## Copy BM mode
-    from <- p0(G$bmzip, '/bm-master')              
-    to <- slisp.pt(G$bmzip)
-    copy.dir(from, to, "BM mode")
-    
-    ## Copy BRemacs lib files
+    ## === Download BRemacs lib files === ##
     makeDir(slisp.pt("bremacs"), "BRemacs library:")
-
-    ## Get BRemacs lib files with ls or dir and parse into a string
-    bfiles <- "
-br-init-dbg.el  br-keys.elc    br-recentf.el   br-rnw.elc       br-simple-buffer-menu.el     
-br-init.el      br-menico.el   br-recentf.elc  br-setmodes.el   br-simple-buffer-menu.elc  splith.svg      
-br-keys.el      br-menico.elc  br-rnw.el       br-setmodes.elc  ess-init.R  splith.xpm
-"
+    ## Filename list. If chhanged rubuild like that
+    ## dir("src/bremacs/lib/", "\\.el$")
+    brlib.files <- "br-init-dbg.el br-init.el     br-keys.el br-menico.el  br-recentf.el
+                    br-rnw.el      br-setmodes.el br-simple-buffer-menu.el
+                    splith.svg     splith.xpm" |>
+                   gsub("\n", "", x =_) |> strsplit(split= " +") |> unlist() |> Filter(nzchar, x=_)
     
-    bfiles <- gsub(" ", "\n", bfiles)
-    bfiles <- strsplit(bfiles, "\n")[[1]]
-    bfiles <- bfiles[nzchar(bfiles)]
-
-    ## Download BRemacs lib files
+    ## Ready to download BRemacs lib files
     d <- slisp.pt("bremacs")
-    x <- sapply(bfiles, function(f)
+    x <- sapply(brlib.files, function(f)
         download.git(makePath("src/bremacs/lib", f),  makePath(d, f)))
-    download.git("src/bremacs/site-start.el",   slisp.pt("site-start.el")) 
+
+    ## Download BRemacs early-init.el
+    makeDir(app.pt("bremacs/.emacs.d"), "BRemacs init dir:")
+    download.git("src/bremacs/lib/early-init.el", app.pt("bremacs/.emacs.d/early-init.el"))
 
     ## Environemnt diagnostic
     message("\nAdding ED tools")
-    download.git("src/ed/bremacs.ed.cmd",      app.pt("ed/bremacs.ed.cmd")) 
-    download.git("src/ed/bremacs-dbg.ed.cmd",  app.pt("ed/bremacs-dbg.ed.cmd")) 
+    download.git("src/ed/bremacs.cmd",      app.pt("ed/bremacs.cmd")) 
+    download.git("src/ed/bremacs-dbg.cmd",  app.pt("ed/bremacs-dbg.cmd"))
 
-    ## === Byte compile === ##
-    message("Starting byte-compilation...")
-
-    ## Lisp path quote: "path\\to" -> \\\"path\\\\to\\\" 
-    l <- function(path) { # <- a quoted windows path  
-        x = gsub("\\", "\\\\", normalizePath(path, mustWork = FALSE), fixed=TRUE)
-        sprintf("\\\"%s\\\"", x)
-    }
-
-    ## runemacs does not wait 
-    cmd <-   makePath(bremacs, 'bin/emacs.exe')
-
-    ## Standard Emacs sources are already in lisp-path 
-    eldir <- globpaths(bremacs, 'share/emacs/[0-9]*')
-    elisp.t <- " 
-(progn
-  (byte-recompile-directory %s 0)
-  (kill-emacs 0))
+    ## Run with log
+    ## download.git("src/cs/run.cs", "run.cs") # currently evaluate in local src to keep a working git exe 
+    build.runtool()
+    
+    ## === Install local BRemacs packages === ##
+    message("Installing local BRemacs packages")
+    message("...this may take a bit")
+    tarpaths <-  makePath(down.pt("bremacs-libs"), bremacs.pak.tree.el("basename")) 
+    G$bremacs.paks.order <- bloomrTree.brEmacs.pakorder()
+    tarpaths.ord <- tarpaths[G$bremacs.paks.order]
+    tarpaths.txt <- paste(lapply(tarpaths.ord, dquoteu), collapse = " ")
+    package.user.dir <- normalizePath(work.pt(slisp.pt()))
+    elisp.t <- "
+(let ((package-user-dir %s)
+      (default-directory %s))
+     (require 'package)
+     (mapc #'package-install-file (list %s)))
 "
-    elisp <- sprintf(elisp.t,  l(work.pt(eldir)))
-    args <- sprintf("-batch -Q -eval %s", dquoteu(elisp))
-    shell.cd(c(work.pt(cmd), args), evars = c(emacs_dir = NA))   
-    ## messagev(c(work.pt(cmd), args)) # To test in PS replace eval "..." with '...'
+    sprintf(elisp.t, dquoteu(package.user.dir), dquoteu(getwd()), tarpaths.txt) |>
+        runsexp(log = "run.breamcs-paks.txt")
+    ## debug 
+    ## tarpaths.txt <- paste(lapply(tarpaths.ord[1], dquoteu), collapse = " ") # just first pak
+    ## runsexp(elisp, "dbg")  
+    message("\n\n*** Local BRemacs packages setup successfully completed ***\n\n")
 
-    ## Site-lisp sources need adding their directories to lisp-path, we also create autoloads
-    eldir <- globpaths(bremacs, 'share/emacs/site-lisp')
-    elisp.t <-"
-(let* ((site-lisp %s)
-       (default-directory site-lisp)
-       (pkg-name) (pkg-dir) (pkg-autoload-buf)
-       (pkg-autoload-path) (pkg-autoload-basename))
+    ## === Byte compile BRemacs packages === ##
+    message("Starting byte-compilation...")
+    message("...this may take a bit")
+    ## (byte-recompile-directory DIR 0) recompile subdirs of DIR even if no elc is present
 
-  ;; generate elc in all site-lisp subdirs
+    ## Recompile builtin Emacs GNU files. Sometimes some are not
+    message("Recompiling builtin packages")
+    eldir.gnu <- normalizePath(work.pt(globpaths(bremacs, 'share/emacs/[0-9]*'))) 
+    sprintf("(byte-recompile-directory %s)", dquoteu(eldir.gnu)) |>   # was: %s 0 Check COMPATIBILITY
+        runsexp(log = "run.breamcs-gnu.txt")
+
+    ## Compile our BRemacs libs.
+    message("Recompiling BRemacs specific packages")
+    eldir.site <- normalizePath(work.pt(slisp.pt())) 
+    eldir.bremacs <- normalizePath(work.pt(slisp.pt("bremacs")))
+    elisp.t <- "
+(let* ((default-directory %s)
+       (bremacs-libs %s))       
   (normal-top-level-add-subdirs-to-load-path)
-  (byte-recompile-directory site-lisp 0)
+  (byte-recompile-directory bremacs-libs  0))
+"
+    sprintf(elisp.t, dquoteu(eldir.site), dquoteu(eldir.bremacs)) |>
+        runsexp(log = "run.breamcs-paks.txt", append = TRUE)
+ 
+    ## For a debug .el file, its .elc would only add a layer of complexity
+    debug.init <- slisp.pt("bremacs/br-init-dbg.elc")
+    if(is.path(debug.init)) del.path(debug.init) else  stop("Can't find debug init file\n", debug.init)
 
-  ;; genarate autoloads in all site-lisp subdirs
-  (require 'package)
-  (require 'autoload)
-  (mapcar (lambda (pkg-dir)
-	    (setq pkg-name (file-name-nondirectory pkg-dir)
-		  pkg-autoload-basename (concat pkg-name (symbol-name '-autoloads.el))
-		  pkg-autoload-path (expand-file-name pkg-autoload-basename pkg-dir))
-		   
-	    (unless (file-exists-p pkg-autoload-path)
-	      ;; comments added to autoload files and 
-	      (let ((autoload-timestamps nil)
-		    (backup-inhibited t)
-		    (version-control 'never)
-		    (generated-autoload-file pkg-autoload-path)); wanted by upd-dir-autoloads
-		(write-region (autoload-rubric pkg-autoload-path (symbol-name 'package) nil)
-			      nil pkg-autoload-path nil 'silent)
-		(update-directory-autoloads pkg-dir))
-	      ;; update-directory-autoloads does not close generated-autoload-file 
-	      (when (setq pkg-autoload-buf (find-buffer-visiting pkg-autoload-path))
-		(kill-buffer pkg-autoload-buf))
-		(message pkg-dir)))
-	  
-  	  (seq-filter 'file-directory-p (directory-files site-lisp t directory-files-no-dot-files-regexp)))
-  (kill-emacs 0))
-"       
-
-    elisp <- sprintf(elisp.t,  l(work.pt(eldir)))
-    args <- sprintf("-Q -eval %s", dquoteu(elisp))
-    shell.cd(c(work.pt(cmd), args), evars = c(emacs_dir = NA))
-    ## messagev(c(work.pt(cmd), args)) # To test in PS replace eval "..." with '...'
-
-
-    ## Set the edition if this is the actual Lab
-    #if(is.lab()){ # No, if Studio is building common BRemacs
-    #    ## ver <- file.read(app.pt("bloomr.txt"))
-    #    edt <- paste(get.edition(), "edition")
-    #    ## file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
-    #    file.write(edt, app.pt("bloomr.txt"), append=TRUE)
-    #}
+    ## Backup elc files
+    elcs <- globpaths(slisp.pt("bremacs"), "*.elc")
+    copy.bak(elcs)
+    
+    ## Recompile all site-lisp packs. 
+    ## `package-install-file' alredy does, so normally not needed
+    eldir.site <- normalizePath(work.pt(slisp.pt())) 
+    elisp.t <- "
+(let* ((site-lisp %s)
+       (default-directory site-lisp))
+  (normal-top-level-add-subdirs-to-load-path)
+  (byte-recompile-directory site-lisp 0))
+"
+    ## sprintf(elisp.t, dquoteu(eldir.site)) |> runsexp() # not usually used
+    message("\n\n*** Byte-compilation completed ***\n\n")
     
 }
 
 
-bloomrTree.Studio <- function(){
+bloomrTree.brEmacs.pakorder <- function() { # Find Elisp pack setup order
+### Output intended for G$bremacs.paks.order 
+        
+    ## Recursive
+    vitinst <- function(paknames, installed = NULL) { # simulate recursive the install
+        for(pakname in paknames) {
+            if(pakname %in% installed) next
+            deps <- G$bremacs.paks.tree[[pakname]]$deps
+            are.deps.installed <- if(length(deps)) deps %in% installed else TRUE
+            deps.to.inst <- deps[!are.deps.installed]
+            if(all(are.deps.installed)) {
+                installed <- c(installed, pakname)
+            } else {
+                installed <- vitinst(c(deps.to.inst, pakname), installed)
+            }
+        }
+        installed 
+    }
+
+    ## Kick off recursive setup
+    vitinst(names(G$bremacs.paks.tree))
+}
+    
+bloomrTree.Studio <- function() {
 ### We add the to the tree created by bloomrTree.brEmacs() the LaTeX related component
 
     ## Replace version file
@@ -805,7 +738,7 @@ makeStudio.addLatex <- function() {
     
     ## TeXLive installer path
     tlmgr <- makePath(app.pt(G$texzip), 'bin/windows/tlmgr.bat')
-    if(!file.exists(work.pt(tlmgr))) stop("Unable to find executable:\n ", work.pt(tlmgr))
+    if(!is.path(tlmgr)) stop("Unable to find executable:\n ", work.pt(tlmgr))
     tlmgr <- pswork.pt(tlmgr)
     
     ## Set xetex fonts dir to local
@@ -820,20 +753,26 @@ makeStudio.addLatex <- function() {
     ## Set repo for updates to nearby
     cmd <- paste(tlmgr, "option repository 'ctan'")
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
-        
-    return()
-
-    ## Needed to build the PDF of R packages 
-    cmd <- paste(tlmgr, "install makeindex")
+#browser()        
+    ## Update might be necessary
+    cmd <- paste(tlmgr, "update --all")
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
 
+    ## Extra packages: bookmark needed for most report, makeindex for
+    ## R package manuals, and beamer is for slides
+    cmd <- paste(tlmgr, "install bookmark makeindex beamer")
+    shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
 
+    return()
 
 
     ### ==============
     ## More packs for minimal Rnw: palatino breakurl fpl mathpazo
     morepaks <- c("palatino", "breakurl", "fpl", "mathpazo")
-    
+
+    ## TODO: attempt to customise Tinytex paths Now PDF building
+    ## functions add on the fly paths to system PATH and remove them
+    ## on exit
     rscript <- makePath(app.pt("R"), 'bin/Rscript.exe')
     rscript <- winwork.pt(rscript)
     
@@ -963,8 +902,6 @@ initScripts <- function(){
 }
 
 initScripts.etc <- function() {
-       
-
     message("\nMaking etc/Rprofile.site and shared directory")
 
     ## Make new Rprofile.site and keep old
@@ -1017,40 +954,39 @@ makeLauncher.Core <- function(){
 ### Make launcher of Core editions
 
     ## Boot string    
-    bloomr.run <- "
-EnvSet,  BLOOMR,     %A_ScriptDir%
-EnvSet,  HOME,       %A_ScriptDir%\\mybloomr
-EnvSet,  vanilla,    true
-Run, %AppDir%\\R\\bin\\x64\\Rgui.exe LANGUAGE=en
+    core.run <- "
+EnvSet,  BLOOMR,         %A_ScriptDir%
+EnvSet,  HOME,           %A_ScriptDir%\\mybloomr
+EnvSet,  bloomr_branch, core
+Run, apps\\R\\bin\\x64\\Rgui.exe LANGUAGE=en
 "
-    bloomr.run <- gsub("%AppDir%", G$appname, bloomr.run)
-    makeLauncher_(bloomr.run, "core")
+    core.run <- gsub("%AppDir%", G$appname, core.run)
+    makeLauncher_(core.run, "core")
 }
 
 makeLauncher.brEmacs <- function(){
 ### Make launcher of Lab and Studio editions
 
-
-
     bremacs.run <-  "
-EnvSet,  BLOOMR,     %A_ScriptDir%
-EnvSet,  HOME,       %A_ScriptDir%\\apps\\bremacs
-Run, %AppDir%\\bremacs\\bin\\runemacs.exe -q --no-splash
+EnvSet,  BLOOMR,         %A_ScriptDir%
+EnvSet,  HOME,           %A_ScriptDir%\\mybloomr
+EnvSet,  bloomr_branch, bremacs
+Run, apps\\bremacs\\bin\\runemacs.exe --init-dir apps\\bremacs\\.emacs.d
 "        
     bremacs.run <- gsub("%AppDir%", G$appname, bremacs.run)
     makeLauncher_(bremacs.run, "bremacs")
 }
 
-
 makeLauncher_ <- function(script.cont, edition){
    
     ## Make boot file
-    ahkdir <- work.pt(p0(G$ahkzip, '/Compiler'))
+    ahkdir <- work.pt(G$ahkzip)
     cat(script.cont, file=makePath(ahkdir, p0(edition, ".run")))
    
     ## Get icon from GitHub
     icon <- if(edition=="core") "bloomr" else "bremacs" 
-    to <- makePath(p0(G$ahkzip, '/Compiler'), p0(edition, ".ico"))
+    # to <- makePath(p0(G$ahkzip, '/Compiler'), p0(edition, ".ico")) XXXXXXXXXXXXXXXXx
+    to <- makePath(G$ahkzip, p0(edition, ".ico"))
     download.git(makePath("res", p0(icon, ".ico")), to)
 
     ## Core icon is currently as setup icon too. It is named bloomr.ico, should it change style in the future
@@ -1069,8 +1005,8 @@ makeLauncher_ <- function(script.cont, edition){
             lab =  "bloomr-lab.exe",
             
             studio = {
-                ## if it a multi build, then we have the Lab launcher too, to delete
-                (function(x) if(file.exists(x)) file.remove(x))(work.pt(root.pt("bloomr-lab.exe")))
+                ## if it is a multi build, then we have the Lab launcher too, to delete
+                (function(x) if(is.path(x)) del.path(x))(root.pt("bloomr-lab.exe"))
                 "bloomr-studio.exe"
             }
         )
@@ -1082,7 +1018,8 @@ makeLauncher_ <- function(script.cont, edition){
     run <- c("Ahk2Exe.exe",
              "/in", p0(edition, ".run"),
              "/icon", p0(edition, ".ico"),
-             "/bin \"Unicode 32-bit.bin\"",
+             # "/bin \"Unicode 32-bit.bin\"",  xxxxxxxxxxxxxx
+             "/base \"Ahk2Exe.exe\"",
              "/out", exename
              ) 
     shell.cd(run, wd=wd)    
@@ -1099,7 +1036,7 @@ PROF <- function(){ #Keep this on separate line
     ## BloomR bootstrap
     ## ================
     
-    source(paste0(R.home("share"), "/bloomr/bloomr.init.R"))
+    source(file.path(R.home("share"), "bloomr/bloomr.init.R"))
     
     
     ## end BloomR----------
@@ -1205,7 +1142,7 @@ or you are using 'deb' with what='all'."
 ### === Shell helpers ===
 
 shell.cd <- function(
-### Similar to system2(), but can set the work dir and stops on errors
+### Similar to system2(), but can set the process work dir, environment and it stops on errors
                      cmdvec,     # c(cmd, arg1,...) or c(cmd, agvec)
                                  # cmdvec[1] is tested for exisitance and shQuoted if necessary
                      wd=NULL,    # optional work dir
@@ -1213,12 +1150,13 @@ shell.cd <- function(
                      echo=TRUE,  # Echo to console via messagev
                      evars=NULL  # Named vector or list of environment variables to set (`NA` value to unset)
                      ) {
-
+## Currently the executable is tested without reference to PATH var.
     
-## 1. system(), takes a single cmd string, in Linux prefixes with "sh -c"
-## 2. system2() wants cmd + args. In Linux wraps system() adding "2>&1" if stderr = T.
-## 3. shell(), Windows-only, wraps system() and prefixes the command string with "cmd.exe /c".  
-## Don't invoke cmd.exe (so shell()) as it breaks on UNC paths. Prefer PowerShell, direct calls to exes or R builtins
+## Review of R shell interfaces.    
+## 1. system() takes a single cmd string. In Linux prefixes it with "sh -c".
+## 2. system2() wants cmd + args. In Linux it's a wrapper of system(), adding "2>&1" if stderr = T.
+## 3. shell(), Win-only, wraps system(), by default prefixes passed cmd string with "cmd.exe /c".
+## Don't invoke cmd.exe, as it breaks on UNC paths. Prefer PowerShell or direct calls to exes.
 ## The best seems x <- suppressWarnings(system2(cmd, ags, stdout=T, stderr=T)); attr(x, "status")
 ## In Linux also suppressWarnings(tryCatch(system(paste(cmdstring, "2>&1"), intern=TRUE)))
 
@@ -1229,7 +1167,7 @@ shell.cd <- function(
 
     ## Test command exists
     cmdnq <- gsub("^[\"']|[\"']$", "", cmdvec[1]) # unquote (if shQuote was used)
-    cmdnq <- normalizePath(cmdnq) # Sys.which and system2 do not work properly over Windows shares 
+    cmdnq <- suppressWarnings(normalizePath(cmdnq)) # Sys.which and system2 don't work over Windows shares 
     notfound <- ! nzchar(Sys.which(cmdnq))
 
     ## Test Linux builtin
@@ -1289,13 +1227,20 @@ shell.cd <- function(
 
 shell.ps <- function(
 ### Similar to shell(), but based on Powershell. tees stdout to file and console and stops on errors
-                     cmdstr,    # command string
-                     outfile,   # optional work dir
-                     stop=TRUE  # stop on errors
-                      ) {
-
+                     cmdstr,     # command string
+                     outfile,    # redirect file, should be quoted
+                     stop=TRUE,  # stop on errors
+                     restream = NULL # stream in c(2:6, "*") redirected to 1. Dangerous
+                     ) {
+### There is a bug in PS 5.1 (Win 10) and 2>&1 does not work for executables writing on stderr
+### https://github.com/PowerShell/PowerShell/issues/3996 Emacs (message) writes to stderr, not print/princ 
+### https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection
+    
     ## $LASTEXITCODE is for executables and "-not $?" is for cmdlets
-    cmdstr.tee <- sprintf("& %s | Tee-Object %s; exit ($LASTEXITCODE -le 1 -and -not $?)", cmdstr, outfile)
+    cmdstr.tee <-
+        if(is.null(restream)) sprintf("& %s | Tee-Object %s; exit ($LASTEXITCODE -le 1 -and -not $?)", cmdstr, outfile)
+        else sprintf("& %s %s>&1 | Tee-Object %s; exit ($LASTEXITCODE -le 1 -and -not $?)", cmdstr, restream, outfile)
+ 
     ## Quotes in cmdstr.tee, before passing to PS, are removed so we quote again
     psline <- paste("powershell -NoProfile -command", shQuote(cmdstr.tee))
 
@@ -1313,7 +1258,7 @@ shell.ps <- function(
 }
 
 shell.ps.alt <- function( # Not used 
-### Similar to shell.ps(), but exit code works for cmdlets -not $?
+### Similar to shell.ps(), but exit code works for cmdlets only via -not $?
                      cmdstr,    # command string
                      outfile    # output log file
                       ){
@@ -1330,9 +1275,22 @@ shell.ps.alt <- function( # Not used
     ret
 }
 
+
+build.runtool <- function() { # build the run with log utility for Windows
+    csc <- tail(Sys.glob("c:/windows/Microsoft.NET/Framework64/v*/csc.exe"), 1)
+    run.cs <- proj.pt("src/cs/run.cs")
+    if(!file.exists(run.cs)) stop("Missing run source:\n", run.cs)
+    file.copy(run.cs, work.pt("run.cs"))    
+    shell.cd(c(csc, "/out:run.exe", "run.cs"), wd = work.pt())
+    if(!is.path("run.exe")) stop("Failed compilation of run source:\n", run.cs)
+
+    ## Backup
+    copy.bak("run.exe")
+}
+
 ### === Website helpers ===
 
-
+## Generic website helpers
 web.greplink <- function(regexp, pos=0, url, abs=FALSE){
 ### Grep links from URL and return 0=all, 1=first, -1=last
 ### abs: Return absolute or relative URL paths
@@ -1350,6 +1308,7 @@ web.greplink <- function(regexp, pos=0, url, abs=FALSE){
 }
 
 
+## SourceForge 
 sfFirstbyProject <- function (project, filtx, quiet=FALSE){
 ### First SF project item matching regex filter (url made from prj name)
     
@@ -1387,6 +1346,7 @@ sfDirLink <- function (url, quiet=FALSE){
     return (url)
 }
 
+## CRAN helper
 cran.geturl <- function(pack){ # Get CRAN Windows binaries relative to current release for a package
 ### Make sure the R release is current too  
 
@@ -1404,38 +1364,277 @@ cran.geturl <- function(pack){ # Get CRAN Windows binaries relative to current r
     p0(cranwin, url)
 }
 
-melpa.getvers <- function(){ # Store MELPA packages names/version as a data frame in G$melpa.vers
 
-    ## Get JSON package list and vectorise it
-    melpa.json <- rawToChar(curl_fetch_memory("https://melpa.org/archive.json")$content)
-    melpa.json <- substr(melpa.json, 2, nchar(melpa.json))
-    melpa.vec <- strsplit(melpa.json, "}},", fixed = TRUE)[[1]]
+## Elisp M/ELPA helpers
+bremacs.pak.getrepos <- function(overwrite) { # Download package archives  
+### In case of multiple matches, the order of G$bremacs.paks.repos is relevant 
 
-    ## Extract only package name and version as a data frame 
-    melpa.vers <- strsplit(melpa.vec, ":")
-    melpa.vers <- t(sapply(melpa.vers, `[`, c(1,3)))
-    x <- melpa.vers[,2]
-    x <- sub("\\[", "", regmatches(x, regexpr("\\[[^]]*", x)))
-    x <- sub(",", ".", x)
-    melpa.vers[, 2] <- x
-    G$melpalibs <- setNames(as.data.frame(melpa.vers), c("name", "version"))
-}
+    archives <- G$bremacs.paks.repos
 
-melpa.getpak <- function(pakname.ext){ # Build a package from G$melpa.vers given its name and extension
-
-    pakname <- tools:::file_path_sans_ext(pakname.ext)
-    qpakname <- dquoteu(pakname)
-    extension <- tools:::file_ext(pakname.ext)
+    lapply(seq_along(archives), \(j) {
+        url <- makePath(archives[j], "packages/archive-contents")
+        arch.name <- names(archives)[j]
+        file <- makePath(arch.name, ext = "el")
+        download.nice(url, file, overwrite, arch.name)
+    })
     
-    pos <- grep(qpakname, G$melpalibs$name, fixed=TRUE)
-    version  <- G$melpalibs$version[pos]
-    sprintf("https://melpa.org/packages/%s-%s.%s", pakname, version, extension)
-  
+    ## Fix Elpa as one record per pack
+    elpa.el <- down.pt("elpa.el")
+    elpa <- paste(readLines(elpa.el), collapse = "\n") |>
+        gsub("\n (", "\n\n (", x =_, fixed = TRUE) |> gsub("\n([^n])", "\\1", x =_) |>
+        gsub("\t+", " ", x =_) |> strsplit("\n") |> unlist()
+    write(elpa, elpa.el)
+}
+## bremacs.pak.getrepos()
+
+bremacs.pak.getdata.repo <- function( # Find pack entry in archive files and parse it
+                                  packname,
+                                  pinned = NULL # or the name of the pinned archive
+                                  ) { 
+### Requires downloading archives with bremacs.pak.getrepos()
+### Find precedence depends on archive order in G$bremacs.paks.repos  
+### Dependency is always set to the last in-archive version (for easy duplicate removal)
+### NB: if packname is both in G$bremacs.paks.manual and pinned, the first has priority     
+
+    ## Manage pinned archives
+    archives <- if(is.null(pinned)) G$bremacs.paks.repos else G$bremacs.paks.repos[pinned]
+    
+    ## Point archives to files
+    archives[] <-  makePath(archives, "/")  # add trailing '/' if missing    
+    arch.names <- names(archives)
+    arch.files <- makePath(down.pt(), arch.names, ext = "el")
+
+    ## Look for package
+    regexp <- sprintf("^ \\(%s ", packname)
+    for(j in seq_along(arch.files)) {
+        arch.name <- arch.names[j]
+        arch.url <- archives[arch.name]    
+        arch.file <- arch.files[j]
+        record <- grep(regexp, readLines(arch.file), value = TRUE)
+        if(length(record)) break
+    }
+    if(length(record) > 1)
+        stop("More than one occurence of ", packname, " in\n", arch.files[j])
+    if(length(record) == 0)
+        stop("No occurence of BRemacs package ", packname, " found")
+    
+    ## Convert Lisp version to dot format
+    dot.ver <- function(version) gsub(" ", ".", version)
+    
+    ## Parse package record
+    regexp <- p0("\\[\\(", "([^)]+)", "\\) *", "([^\"]+)")
+    matches <- regmatches(record, regexec(regexp, record))[[1]]
+    version <- matches[2] |> dot.ver()
+    deps <- trimws(matches[3]) |> gsub("^\\(|\\)$", "", x =_)
+    deps <- trimws(strsplit(deps, "))")[[1]]) |> strsplit("\\(") |> sapply(`[`, 2) |> trimws()
+    deps <- Filter(\(el) "emacs" != el, deps)
+    namever <- p0(packname, "-", version)
+    url <- makePath(arch.url, "packages", namever, ext = "tar", nonames = TRUE)
+    if(length(deps)) message("Found ", packname, " requirements: ", paste(deps, collapse = ", "))
+    
+    list(packname = packname, version = version, deps = deps, archive = arch.file, url = url)
+}
+## bremacs.pak.getdata.repo("poly-R")
+    
+bremacs.pak.getdata.pinned <- function(packname) { # Like bremacs.pak.getdata.repo() bat use a specific pinned archive 
+
+    pinrepos <- G$bremacs.paks.pinned
+    bremacs.pak.getdata.repo(packname, pinned = pinrepos[[packname]])
+    
+}
+    
+bremacs.pak.getdata.manual <- function( # Parse descriptive elisp URL for a manually linked package set by G$bremacs.paks.manual
+                                    packname
+                                    ) {
+### The descriptive package file linked by G$bremacs.paks.manual is normally PACKAGE.el or PACKAGE-mode.el
+### Note that some packages simply do not expose info compatible with Elisp (package-buffer-info) and `package-desc'
+### Look for package file with ";; Package-requires: " line and a similar version line
+    
+    descurl <- G$bremacs.paks.manual[[packname]] [['descurl']] 
+    tarurl <-  G$bremacs.paks.manual[[packname]] [['tarurl']] 
+
+    ## A test url
+    ## descurl <- "https://raw.githubusercontent.com/gkowzan/alert-toast/master/alert-toast.el"
+    elisp <- curl_fetch_memory(descurl)$content |> rawToChar() |> strsplit("\n") |> unlist()
+
+    extract.all <- function(pattern, text) Filter(length, regmatches(text, regexec(pattern, text, ignore.case = TRUE)))
+    extract.first <- function(pattern, text) extract.all(pattern, text)[[1]]
+    extract.ff <- function(pattern, text) extract.first(pattern, text) |> head(2) |> tail(1)
+
+    packname.found <- extract.ff("^;;;;*[[:blank:]]+(.+)\\.el[[:blank:]]+---", elisp)
+    if(packname != packname.found)
+        stop("Name found in description URL is inconsistent with package name '", packname, "':\n", descurl)
+
+    version <- extract.ff(";;;*[[:blank:]]+(?:package-)?version:[[:blank:]]+(.+)$", elisp)
+    
+    depsline <- extract.ff(";;;*[[:blank:]]+package-requires:[[:blank:]]+(.+)$", elisp) # we assume just one   
+    deps <- gsub("^\\(|\\)$", "", depsline)
+    deps <- strsplit(deps, "\\(")[[1]][-1] |> strsplit(' "') |> sapply(`[[`, 1)
+    deps <- Filter(\(el) "emacs" != el, deps)
+    if(length(deps)) message("Found ", packname, " requirements: ", paste(deps, collapse = ", "))
+
+    
+    list(packname = packname, version = version, deps = deps, archive = descurl, url = tarurl)
+}
+## list(`alert-toast` =
+##          c(tarurl = "https://github.com/gkowzan/alert-toast/archive/refs/tags/v1.0.0.tar.gz",
+##            descurl =
+##                "https://raw.githubusercontent.com/gkowzan/alert-toast/96c88c93c1084de681700f655223142ee0eb944a/alert-toast.el")
+##      ) |> bremacs.pak.getdata.manual()
+
+
+bremacs.pak.getdata <- function(packname) { # Make pack desc via archives or manual URLs
+### There are three types of packages:
+### Archive-list based: looked for on pre-downloaded repos based on G$bremacs.paks.repos order
+### Archive based pinned: looked for only on a specific repo set by G$bremacs.paks.pinned
+### Manually linked: have a given tar URL and Elisp descrption URL 
+### Priorities are: Manual > Pinned > Archive-list
+
+    plist <- 
+        ## Manually linked
+        if(packname %in% names(G$bremacs.paks.manual)) { bremacs.pak.getdata.manual(packname)
+                    
+        } # Archive based pinned
+        else if(packname %in% names(G$bremacs.paks.pinned)) { bremacs.pak.getdata.pinned(packname)
+
+        } # Archive-list based
+        else bremacs.pak.getdata.repo(packname)
+
+
+    ## Test that we have a tar to allow retar
+    tar.match <-  "\\.tar\\.gz$|\\.tgz$|\\.tar$"
+    if(!grepl(tar.match, plist$url))
+        stop("Package URL does not end in '.tar', 'tgz' or 'tar.gz':\n", plist$url)
+
+    ## Add filename and return 
+    plist$basename <- basename(plist$url)
+    plist
+    
 }
 
 
+bremacs.pak.maketree <- function() { # A recursive version of bremacs.pak.getdata, to make a list of with paks and deps
 
-### === Donwload helpers ===
+  L <- bremacs.pak.maketree_(G$bremacs.paks)
+  names(L) <- sapply(L, `[[`, "packname")
+  L[unique(names(L))]
+}
+## G$bremacs.paks.tree <- bremacs.pak.maketree(G$bremacs.paks)
+
+bremacs.pak.maketree_ <- function(pakvec, aggrlist = NULL) { # bremacs.pak.maketree work horse
+
+  L <- lapply(pakvec, bremacs.pak.getdata)
+  deps <- unlist(lapply(L, `[[`, "deps"))
+  L <- c(aggrlist, L) 
+  if(length(deps)) bremacs.pak.maketree_(deps, L) else L
+
+}
+
+bremacs.pak.tree.el <- # Extract element vector from G$bremacs.paks.tree
+    function(elt) sapply(G$bremacs.paks.tree, `[[`, elt)
+
+### === ELisp helpers ===
+
+runsexp <- function(sexp, # a single SEXP to eval. Use progn or let for more items
+                     how = # 'prt' prints more output, 'dbg' returns the unevaluated sexp. 
+                         c("run", "prt", "dbg"),
+                     log = NULL, # Tee output to a file relative to G$work
+                     append = FALSE, # if T, append to to log 
+                     emacs.exe = # executable path
+                         work.pt(app.pt("bremacs/bin/emacs.exe"))
+                     ) {
+
+### Windows runemacs.exe doesn't stop (properly) R. This can be used to parallize, but it is risky.  
+### Recall to quote if you substitute paths in SEXP, e.g. sexp = sprintf(template, dquoteu(my.path))
+
+### With 'dbg' you can start the target with emacs -Q and execute the unescaped output with C-x C-e
+### Unless the SEXP has explicit message/print evaluation does not return, hence you can try 'prt'
+        
+    ## Check args
+    how <- how[1]
+    how.legal <- c("run", "prt", "dbg")
+    if(!how %in% how.legal)
+        stop("'how' argument should be one of ", how.legal, " not\n", how[1])
+    if(!file.exists(emacs.exe)) stop("I can't file the Emacs executable\n", emacs.exe)
+
+    ## 'how' deconding functions
+    eval.dec <- "
+(defun ev (&rest hex-chars)
+  (eval (car (read-from-string (apply 'string hex-chars)))))
+"
+    eval.dec.prt <- "
+(defun ev (&rest hex-chars)
+  (print (eval (car (read-from-string (apply 'string hex-chars))))))
+"
+    eval.dec.dbg <- "
+(defun ev (&rest hex-chars)
+   (princ (apply 'string hex-chars)))
+"
+
+    ## To avoid escape-hell  Elisp code is raw-encoded 
+    encode.lisp <- function(code) {
+        code <- gsub("\\", "\\\\", code, fixed = TRUE)
+        paste0("#x", charToRaw( code), collapse = "")|> sprintf("(ev %s)", ... =_)
+    }
+    
+    evfunc <- # choose how to decode
+        if(how == "prt") eval.dec.prt 
+        else if(how == "dbg") eval.dec.dbg     
+        else eval.dec 
+
+    ## In Windows, at startup the env-var "emacs_dir" is set to Emacs setup dir.
+    ## If R is running in BR/Emacs, to avoid side effects, we unset it
+    this.emacs_dir <- Sys.getenv("emacs_dir")
+    Sys.unsetenv("emacs_dir") # harmless in Linux as inexistent
+    on.exit(Sys.setenv(emacs_dir = this.emacs_dir))
+
+    ## Encode elisp sexp
+    sexp.enc <- encode.lisp(sexp)
+    ## With run emacs do not use -batch, but with need to kill to close at the end of the task
+    batch <- ifelse(basename(emacs.exe) == "emacs.exe", "-batch", "-kill")
+
+    ## Make cmd string
+    if(!is.path("run.exe")) stop("Run log tool missing:\n", work.pt("run.exe"))
+    runbin <- winwork.pt("run.exe")
+    args <- paste(batch, "-Q", "-eval", dquoteu(evfunc), "-eval", dquoteu(sexp.enc))
+    app.log <- ifelse(append, "-alog", "-log")
+    log.arg <- if(is.null(log)) "-nolog" else paste(app.log, winwork.pt(log))
+    ret <- system(paste(runbin, log.arg, winwork.pt(emacs.exe), shQuote(args)))
+    if(ret > 0) stop("The command had non-zero exit") 
+ 
+}
+#         runsexp(log = winwork.pt("run.breamcs-paks.txt"))
+
+
+## === Debug local setup package === ##    
+elisp.delpak <- function( # Delete a package realted EMACS.EXE bin and PACKAGE.USER.DIR. For testing only
+                         emacs.exe,        # The path of the Emacs binary relative to G$work 
+                         package.user.dir, # e.g. work.pt('brEmacs/apps/bin/emacs.exe')
+                         package.name      # e.g. "julia-mode"
+                         ) {
+    elisp.t <- "
+(let ((package-user-dir %s)
+      (package-to-delete (intern %s)))
+  (when (package-installed-p package-to-delete)
+    (package-delete (cadr (assq package-to-delete package-alist)) t)))
+"
+    sprintf(elisp.t, dquoteu(package.user.dir), package.name) |> runsexp()
+
+}
+## emacs.exe <- work.pt(makePath(bremacs, 'bin/emacs.exe')) 
+## package.user.dir <- normalizePath(work.pt(slisp.pt()))
+## elisp.delpak(emacs.exe, package.user.dir, "julia-mode")
+    
+
+## Barebone for testing 
+## emacs.dir.old <- Sys.getenv("emacs_dir")
+## Sys.unsetenv("emacs_dir")
+## system(paste(dquoteu(normalizePath(emacs.exe)),
+##              "-batch -Q -eval \"(print (file-directory-p \\\"C:\\\\Program Files\\\"))\""))
+## Sys.setenv(emacs_dir = emacs.dir.old)
+
+
+### === Download helpers ===
 
 
 download.nice <- function(from, to, overwrite, desc=""){
@@ -1511,7 +1710,7 @@ download.git <- function(file, to, overwrite=TRUE, desc=""){
 
 
 ### === File System ===
-makePath <- function(parent, child){    
+makePath.old <- function(parent, child){    
 ### Chain parent-child paths managing middle slashes ('/')
 ## You don't have to remember if you need to add or not that slash
 
@@ -1528,9 +1727,76 @@ makePath <- function(parent, child){
 
 }
 
+makePath <- function( # Extended version of base file.path()
+                     ..., # Each element is a character vector representing paths 
+                     ext = "", # path-extension character vector, without dot
+                     suf = "", # like 'ext' but no dot is added. It is applied before ext, when both are used 
+                     plat.sep = FALSE,   # T: use platform specific path separator. F: use forword slash
+                     extra.seps = FALSE, # If T, remove unecessary path separators, e.g. a//b -> a/b
+                     nonames = FALSE     # If F, preserve names is all similar or only the longest vector is named
+                     ) {
+
+### For vector components we use the logic of paste, that is:
+### makePath(c("a", "b"), 1:2, ext = "ext") -> c("a/1/ext", "b/2/ext")
+### makePath(c("a", "b"), 1:2, ext = c("ex1", "ex1")) -> c("a/1/ex1", "b/2/ex2")
+### 'extra.seps' does not affect 'suf' and 'ext' values, and Linux backslashes
+
+    ## We don't want with an empty parent, e.g. ("", "path"), to get
+    ## the absoulte path "/path"
+    if(is.null(..1) || any(sapply(..1, void))) {
+        pref <- ifelse(length(..1) > 1, "One or more elements of the", "The") 
+        stop(pref, " first argument can't be coerced to a non-zero string")
+    }
+    
+    win <- .Platform$OS.type == "windows"
+
+    ## Preserve names of '...' vectors if
+    ## ... all names are equal (and valid)
+    nms     <- unique(lapply(list(...), names))
+    out.nms <- nms[[1]]
+    is.unq  <- length(nms) == 1
+    no.null <- all(!is.null(out.nms))
+    no.na   <- all(!is.na(out.nms))
+    preser  <- is.unq && no.null && no.na
+
+    ## ... only longest `...` vector has non-null names
+    if(!preser){
+        nms      <- lapply(list(...), names)
+        which.nn <- which(!sapply(nms, is.null))
+        max      <- max(sapply(nms, length))
+        longest  <- which(sapply(nms, length) == max)
+        out.nms  <- nms[[longest[1]]]
+        preser   <- length(unique(which.nn, longest)) == 1 &&
+            all(!is.na(out.nms)) # discard if any NA
+    }
+    
+    ## Join as Unix 
+    p <- paste(..., sep = "/")
+
+    ## Unixify
+    if(win) p <- gsub("\\\\", "/", p)
+
+    ## Uniquify (except initial UNC // )
+    if(!extra.seps) p <- gsub("(.)/+", "\\1/", p)
+
+    ## Add suffix/es
+    if(nzchar(suf)) p <- paste(p, suf, sep="")
+ 
+    ## Add extension/s
+    if(nzchar(ext)) p <- paste(p, ext, sep=".")
+ 
+    ## Fix separators 
+    if(win && plat.sep) p <- gsub("/", "\\\\", p)
+
+    ## Output with names
+    if(nonames || !preser) out.nms <- NULL
+    setNames(p, out.nms) 
+
+}
+
 work.pt <- function(path=""){    
 ### Prefix path with the build workdir
-### The build workdir is by global G$work
+### The build workdir is from global G$work
 
     if(is.null(G$work)) stop("`G$work' build workdir is not set!") 
     if(is.abspath(path))
@@ -1541,21 +1807,32 @@ work.pt <- function(path=""){
 down.pt <- function(path=""){    
 ### Prefix path with downloads directory 
 ### The downloads directory is set by global G$downdir
-    
-    if(is.null(G$downdir)) stop("`G$downdir' downloads directory is not set!")
+
+    if(!nzchar(G$downdir)) stop("`G$downdir' downloads directory is not set!")
     if(is.abspath(path))
         stop("The path you provided:\n", path, "\nis absolute, but it should be relative to:\n", G$downdir)
     makePath(G$downdir, path)
 }
 
+proj.pt <- function(path=""){# Prefix path with the project directory  
+### The directory is from global G$prjdir and is automatically set by
+### get.project() at startup
+
+    if(is.abspath(path))
+        stop("The path you provided:\n", path, "\nis absolute, but it should be relative to:\n", G$prjdir)
+    makePath(G$prjdir, path)
+}
+        
 root.pt <- function(path=""){
 ### Prefix path with current branch name, e.g 'brStudio'
+    if(is.null(G$branch))
+        stop("You are asking for a branch-specific path:\n", path, "\n but a branch was not set for `G$branch'.")
     makePath(G$branch, path)
 }
 
 
 app.pt <- function(path=""){
-### Prefix path with BloomR app path relative to the build workdir.
+### Prefix path with BloomR apps path relative to the build workdir.
 ### The app directory is below the branch directory and its name is set by G$appname, e.g.: brStutio/programs
 
     x <- root.pt(G$appname)
@@ -1568,7 +1845,6 @@ slisp.pt <- function(dir=""){
     x <- app.pt("bremacs/share/emacs/site-lisp")
     makePath(x, dir)
 }
-
 
 
 winwork.pt <- function(path){
@@ -1643,10 +1919,13 @@ chk.dir <- function(dir){ # Break if path relative to the build workdir not a di
 
 chk.colon <- function(path){ # Test a path does not end with a colon
     if(grepl(":$", path))
-        stop("In ", path, "\n ending with a colon (:) is ambiguous and not allowed as a working directory.",
+        stop("In ", path, "\n ending with a colon (:) is ambiguous and not allowed as a directory.",
              "\nFor a USB drive root append a slash to it.")
 }
 
+chk.zero.path <- function(path) # Test a path is not an empty string
+    if(!nzchar(path))
+        stop("To avoid overwriting source files, work and download dir can't be an empty string")
 
 chk.write <- function(path, over, desc="", stop=TRUE){ # Not Used!!
 ### Check if we can overwrite non-empty dir and possibly stop
@@ -1793,7 +2072,7 @@ globpaths <- function( # Return parent/children, resolving globs (not regex). Bo
                      both=TRUE # return only resolved child, without parent, or both 
                      ){
 
-    unlist(
+    as.vector(
         sapply(children, function(child) globpath_(parent, child, both=both), 
                USE.NAMES = FALSE))
 }
@@ -1887,6 +2166,12 @@ copy.dir_ <- function(from, to){ # copy.dir work horse
     file.rename(tempdir, to)
 }
 
+copy.bak <- function(paths){ # Recursively copy PATHS vector to proj.pt(bin-back) overwriting destination
+### PATHS are relative to G$work
+    wpaths <- makePath(G$work, paths)
+    file.copy(wpaths, proj.pt("bin-bak"), overwrite = TRUE, recursive = TRUE)
+}
+
 existMake.old <- function(dir, overwrite, ask, desc=""){
 ### If dir relative to the build workdir does not exist make it, otherwise might ask and skip creation 
 ### An empty-dir is considered non-existent. Note: if dir="", it is the build workdir 
@@ -1914,16 +2199,16 @@ existMake <- function(dir, overwrite, ask, desc=""){
 ### If dir (relative to the build workdir) does not exist make it, otherwise might ask and maybe skip creation.
 ### An empty-dir is considered non-existent. Note: if dir="", it is the build workdir.
 
-    existMake_(dir, overwrite=overwrite, ask=ask, desc=desc, isdown=FALSE)    
+    existMake_(dir, overwrite=overwrite, ask=ask, desc=desc, use.downdir=FALSE)    
 }
 
 existMake.dd <- function(dir, overwrite, ask, desc=""){
 ### If dir (relative to the downloads dir) does not exist, make it, otherwise might ask and skip creation.
 ### An empty-dir is considered non-existent. Note: if dir="", it is the downloads dir.
 
-    existMake_(dir, overwrite=overwrite, ask=ask, desc=desc, isdown=TRUE)
+    existMake_(dir, overwrite=overwrite, ask=ask, desc=desc, use.downdir=TRUE)
     
-  # wouldbe symlinks linka are fs specific,  better to avoid 
+  # would be symlinks, but links are fs specific, better to avoid 
   #  ## https://superuser.com/questions/1307360/how-do-you-create-a-new-symlink-in-windows-10-using-powershell-not-mklink-exe
   #  if(!is.subdir_gen(G$downdir, G$work)){  
   #      mklink  <- sprintf("new-item -itemtype symboliclink -path %s -name 'downloads.lnk' -Target %s",
@@ -1936,14 +2221,14 @@ existMake.dd <- function(dir, overwrite, ask, desc=""){
 
 }
 
-existMake_ <- function(dir, overwrite, ask, desc="", isdown=FALSE){
-### This is the workhorse for 'existMake', if isdown=FALSE, or 'existMake.dd', isdown=TRUE.
+existMake_ <- function(dir, overwrite, ask, desc="", use.downdir=FALSE){
+### This is the workhorse for 'existMake', if use.downdir=FALSE, or for 'existMake.dd', if use.downdir=TRUE.
     
     ## Inform user with desc if any
     if(nzchar(desc)) message("\nCreating ", desc, '\n',  dir)
 
     ## Who are we serving?
-    dir <- if(isdown) down.pt(dir) else work.pt(dir)
+    dir <- if(use.downdir) down.pt(dir) else work.pt(dir)
     dir <- normalizePath(dir, mustWork = FALSE)
 
     emsg <- paste("\nUnable to access/create\n", dir)
@@ -1999,6 +2284,23 @@ file.write <- function( # Write file
                    )    
     write(text, work.pt(fpath), append = append)
 
+get.project <- function() { # Identify the sourced script and its parent for G$me and G$prjdir 
+
+    ## The standard method is 'sys.frame(1)$ofile', but we deal with
+    ## non-top-level source calls, e.g. a source() nested in function.
+    maybe.script <- lapply(G$frames, \(frame) frame$ofile) |> unlist()
+    if(length(maybe.script) > 1 || void(maybe.script)) stop("I am unable to identify the sourced script")
+    maybe.dir <- dirname(maybe.script)
+
+    ## The method is reliable, but we check that the project dir is a git
+    ## dir and has the main build script
+    proofs <- c(".git", "bloomr.build.R") %in% dir(maybe.dir, all.files = TRUE)
+    if(!all(proofs))
+        stop("The file you sourced, identified as below, does not seem to come from the original BloomR project")
+
+    G$me <- maybe.script
+    G$prjdir <- maybe.dir
+}
 
 ### === UNC Paths ===  NOT USED any more 
 
@@ -2136,8 +2438,31 @@ utar <- function(from, to, desc, delTarget=TRUE) {
     
     from <- down.pt(from)
     to <- work.pt(to)
-    if(untar(from, exdir= to) != 0)
+    if(untar(from, exdir = to) != 0)
         stop('\nUnable to perform extraction')    
+}
+
+retar <- function( ## Remove tar compression, if any (for elisp package setup)
+                  maybe.gz, retar.dir, packname) {
+### Emacs (package-install-file ...) only wants plain tars.
+ 
+    tgmatch <- "\\.tar\\.gz$|\\.tgz$"
+    if(grepl(tgmatch, maybe.gz)) {
+
+        ## Expand
+        utar(maybe.gz, retar.dir, desc = paste(packname, "for retar"))
+
+        ## Get the tar internal root (which beccomes the extracted dir)
+        extr.dir <- basename(untar(down.pt(maybe.gz), list = TRUE)[1]) 
+
+        ## ... and retar
+        sans <- sub(tgmatch, "", maybe.gz) # Remove ext
+        tarfile <- down.pt(makePath(sans, ext = "tar"))
+        if(!nzchar(tar <- Sys.which("tar"))) stop("A tar binary is not found on your system")
+        shell.cd(c(tar, "-c", "-C", winwork.pt(retar.dir), "-f", dquoteu(tarfile), dquoteu(extr.dir)))
+        G$bremacs.paks.tree[[packname]][["basename"]] <- basename(tarfile)
+        message("Tar compression removed and package renamed as ", basename(tarfile))
+    }        
 }
 
 uzip.7z <- function(from, to, desc, delTarget=TRUE){
@@ -2150,7 +2475,7 @@ uzip.7z <- function(from, to, desc, delTarget=TRUE){
     message('This may take a bit ...')
     cmd <- paste(winwork.pt(to), windown.pt(from))
     cmd <- p0(winwork.pt(zexe), ' x -aoa -r -o', cmd)
-    ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    ret <- system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 }
 
@@ -2172,7 +2497,8 @@ innoextract <- function(from, to, desc, delTarget=TRUE){
     if(is.path(to)) {
         message('\nDeleting exisiting ', desc)
         del.path(to)
-    }    
+    }
+
     message('\nExpanding (w/ innoextract) ', desc)
     message('This may take a bit ...')
     cmd <- c(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
@@ -2184,7 +2510,6 @@ innoextract <- function(from, to, desc, delTarget=TRUE){
 
 
 getInnobin <- function(){ # Get 7z.exe relative to the build workdir
-#    innodir <- p0(G$innozip,'.d')
     makePath(G$innozip, "innoextract.exe")
 }
 
@@ -2290,5 +2615,21 @@ squoteu <- function( # Undirectional sQuote
 dquoteu <- function( # Undirectional dQuote
                     x) dQuote(x, q = FALSE)
 
+unquote <- function( # Obvious
+                    x) gsub("^[\"']|[\"']$", "", x)
 
+void <- function(x) # Similar to !nzchar(var) but works if var is NA or NULL
+    is.null(x) || is.na(x) || nchar(as.character(x)) == 0
 
+linux.dbg <- function( # Some superficial linux debugging after sourcing this file
+                      workdir = "/tmp/bloomr.dbg",      # or your last actual path
+                      branch  = c("brEmacs", "brCore"), # defaults to branch[1]
+                      downdir = "/bloomr.down.dbg"      # or your last actual path
+                      ) {
+    G$work <- workdir
+    G$branch <- branch[1] 
+    dir.create(G$work, recursive = TRUE, showWarnings = FALSE)
+    G$downdir <- downdir
+    dir.create(G$downdir, recursive = TRUE, showWarnings = FALSE)
+}
+## linux.dbg()

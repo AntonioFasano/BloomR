@@ -18,5 +18,5 @@ gitToken.R
 # Example code in package build process
 *-Ex.R
 
-# this to for read.xlx  need to be checked
+# this files for read.xlx  needs to be checked
 src/xlx/TODO.txt

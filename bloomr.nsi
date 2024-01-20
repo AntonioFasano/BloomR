@@ -33,7 +33,7 @@
   InstallDir $DESKTOP\BloomR
 
   ; Icon path
-  !define MUI_ICON "ahk\Compiler\bloomr.ico"
+  !define MUI_ICON "ahk\bloomr.ico"
 
   ;Set application privileges
   RequestExecutionLevel user

@@ -354,13 +354,13 @@ br.rmd2html <- function(rmd.file, html.file, quiet=TRUE){
     if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.html')
     if(html.file != basename(html.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
 
-    library(knitr)
-    library(rmarkdown)
+    #library(knitr)
+    #library(rmarkdown)
 
     ## Render Rmd to HTML
     cmdexpr <- quote(
-        render(rmd.file,
-               output_format = html_document(theme="cerulean", highlight="tango",
+        rmarkdown::render(rmd.file,
+               output_format = rmarkdown::html_document(theme="cerulean", highlight="tango",
                                            md_extensions="-tex_math_single_backslash"),
                output_file = html.file,
                clean = quiet, quiet = quiet)
@@ -371,23 +371,22 @@ br.rmd2html <- function(rmd.file, html.file, quiet=TRUE){
 store(br.rmd2html)
 
 ## ----br.rmd2slides, opts.label='purlme'--------------------------------------------------------------------------------------------
-br.rmd2slides <- function(rmd.file, html.file, quiet=TRUE){
+br.rmd2slides.html <- function(rmd.file, html.file, quiet=TRUE){
 ### Make an R Markdown file into a Google Slides self-contained HTML file
 ### You need proper BloomR edition
-
 
     ## Test arguments
     if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
     if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.html')
     if(html.file != basename(html.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
 
-    library(knitr)
-    library(rmarkdown)
+    #library(knitr)
+    #library(rmarkdown)
 
     ## Render Rmd to HTML
     cmdexpr <- quote(
-        render(rmd.file,
-               output_format = ioslides_presentation(
+        rmarkdown::render(rmd.file,
+               output_format = rmarkdown::ioslides_presentation(
                    md_extensions="-tex_math_single_backslash"
                ),
                output_file=html.file,
@@ -396,7 +395,60 @@ br.rmd2slides <- function(rmd.file, html.file, quiet=TRUE){
     out <- .br.pathexe(cmdexpr, pandonly = TRUE, quiet = quiet)
     invisible(out)
 }
+store(br.rmd2slides.html)
+
+br.rmd2slides.pdf <- function(rmd.file, pdf.file, theme = "AnnArbor", highlight = "tango", quiet = TRUE) {
+### Make an R Markdown file into a Beamer PDF
+### You need the proper BloomR edition
+
+    ## Test arguments
+    if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
+    if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.pdf')
+    if(pdf.file != basename(pdf.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
+
+    #library(knitr)
+    #library(rmarkdown)
+
+    ## Render Rmd to PDF
+    cmdexpr <- quote(
+        rmarkdown::render(rmd.file,
+               output_format = rmarkdown::beamer_presentation(theme = theme, highlight = highlight,
+                                          md_extensions="-tex_math_single_backslash",
+                                          keep_tex = !quiet, keep_md = !quiet),
+               output_file = pdf.file,
+               clean = quiet, quiet = quiet)
+    )
+
+    out <- .br.pathexe(cmdexpr, quiet = quiet)
+    invisible(out)
+
+}
+store(br.rmd2slides.pdf)
+
+br.rmd2slides <- function(rmd.file,  theme = "AnnArbor", highlight = "tango", quiet = TRUE) {
+### Make an R Markdown file into a Beamer PDF and and a Google Slides self-contained HTML file
+### You need the proper BloomR edition
+
+    ## Test arguments
+    if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
+
+    html.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.html')
+    pdf.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.pdf')
+
+    br.rmd2slides.html(rmd.file, html.file, quiet = quiet)
+    br.rmd2slides.pdf (rmd.file, pdf.file,  theme = theme, highlight = highlight, quiet = quiet)
+
+}
 store(br.rmd2slides)
+
+highlight.styles <- function() {# List Pandoc syntax highlight styles
+
+    panexe <- .br.home("pandoc/bin/pandoc.exe")
+    if(!file.exists(panexe)) stop("This function is not available in this BloomR edition")
+    system2(panexe, "--list-highlight-styles")
+}
+store(highlight.styles)
+
 
 
 ## ----br.rmd2pdf, opts.label='purlme'-----------------------------------------------------------------------------------------------
@@ -409,13 +461,13 @@ br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
     if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.pdf')
     if(pdf.file != basename(pdf.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
 
-    library(knitr)
-    library(rmarkdown)
+    #library(knitr)
+    #library(rmarkdown)
 
     ## Render Rmd to PDF
     cmdexpr <- quote(
-        render(rmd.file,
-               output_format=pdf_document(highlight="tango",
+        rmarkdown::render(rmd.file,
+               output_format=rmarkdown::pdf_document(highlight="tango",
                                           md_extensions="-tex_math_single_backslash"),
                output_file = pdf.file,
                clean = quiet, quiet = quiet)
@@ -445,13 +497,13 @@ br.rmd2both=function(rmd.file, quiet=TRUE){
     ##    html.file <- paste0(out.dir, basename(html.file))
     ##}
 
-    library(knitr)
-    library(rmarkdown)
+    #library(knitr)
+    #library(rmarkdown)
 
     ## Render Rmd to HTML
     cmdexpr <- quote(
-        render(rmd.file,
-               output_format=html_document(theme="cerulean", highlight="tango",
+        rmarkdown::render(rmd.file,
+               output_format=rmarkdown::html_document(theme="cerulean", highlight="tango",
                                            md_extensions="-tex_math_single_backslash"),
                output_file = html.file,
                clean = quiet, quiet = quiet)
@@ -463,7 +515,7 @@ br.rmd2both=function(rmd.file, quiet=TRUE){
     ## Render Rmd to PDF
     cmdexpr <- quote(
         render(rmd.file,
-               output_format = pdf_document(highlight="tango",
+               output_format = rmarkdown::pdf_document(highlight="tango",
                                             md_extensions = "-tex_math_single_backslash"),
                output_file = pdf.file,
                clean = quiet, quiet = quiet)

@@ -368,7 +368,7 @@ display: none;
 <a href="#br.rmd2slides">br.rmd2slides</a> <a href="#br.rmd2pdf">br.rmd2pdf</a> <a href="#br.rmd2both">br.rmd2both</a>
 <a href="#br.sample">br.sample</a> <a href="#deprecated.functions">Deprecated functions</a> <a href="#Internal">Internal BloomR functions</a> <a href="#connections">Manage connections</a> <a href="#misc.functions">Misc functions</a> <a href="#beta.functions">Beta
 functionalities</a> title: “BloomR Main Functions” author: “Antonio
-Fasano” date: “May 17, 2023”</td>
+Fasano” date: “Jan 20, 2024”</td>
 </tr>
 </tbody>
 </table>
@@ -739,28 +739,27 @@ show anymore in the following.</p>
 like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2023-05-12   8.914 10.019        NA 10.189   8.977
-## 2023-05-13      NA 10.602        NA 10.062  11.384
-## 2023-05-14      NA  9.791    10.527 10.568  10.668
-## 2023-05-15      NA  9.440        NA 10.054   9.614
-## 2023-05-16      NA     NA        NA 11.414   9.780
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2024-01-15      NA 9.366        NA 10.814      NA
+## 2024-01-16  10.934 9.369    10.802  8.929      NA
+## 2024-01-17      NA    NA        NA 10.737   9.781
+## 2024-01-18      NA 9.419     8.147 11.188  11.925
+## 2024-01-19      NA    NA        NA 10.449      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2023-05-12      NA  10.683     NA 10.688  11.596
-## 2023-05-13      NA  10.919 10.106     NA      NA
-## 2023-05-14      NA      NA  9.572 10.542      NA
-## 2023-05-15      NA      NA 11.315 10.353  10.290
-## 2023-05-16   7.847      NA     NA 11.157      NA
+## 2024-01-15   9.530      NA     NA 10.356      NA
+## 2024-01-16  11.342      NA     NA 12.466   9.026
+## 2024-01-18   9.011   8.601     NA     NA   9.959
+## 2024-01-19  10.272      NA   7.96     NA      NA
 ## 
 ## $Indices
-##               DJI DJUSFN  W1TEC
-## 2023-05-12     NA     NA 10.303
-## 2023-05-13  8.431 11.285     NA
-## 2023-05-14     NA  9.530  9.310
-## 2023-05-15  8.815     NA  9.579
-## 2023-05-16 11.708  9.293 10.447</code></pre>
+##               DJI DJUSFN W1TEC
+## 2024-01-15     NA  9.762    NA
+## 2024-01-16  9.475     NA 9.066
+## 2024-01-17 10.315     NA    NA
+## 2024-01-18  9.782     NA    NA
+## 2024-01-19 10.216 11.959 9.861</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security
@@ -980,11 +979,10 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2023-05-12      NA  10.388
-## 2023-05-13  10.102      NA
-## 2023-05-14      NA  10.389
-## 2023-05-15   8.145      NA
-## 2023-05-16      NA  10.464</code></pre>
+## 2024-01-15   9.093  11.300
+## 2024-01-16   9.494      NA
+## 2024-01-17      NA   9.026
+## 2024-01-19   8.639  11.119</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">
@@ -1104,12 +1102,21 @@ output file.</p>
 <h1>br.rmd2slides</h1>
 <div id="description-6" class="section level2">
 <h2>Description</h2>
-<p>Make an R Markdown file into a <a href="https://github.com/googleworkspace/md2googleslides">Google
-Slides</a> self-contained HTML file</p>
+<p><code>br.rmd2slides.html()</code> makes an R Markdown file into a <a href="https://github.com/googleworkspace/md2googleslides">Google
+Slides</a> self-contained HTML file.<br />
+<code>br.rmd2slides.pdf()</code> makes an R Markdown file into a Beamer
+PDF.<br />
+<code>br.rmd2slides()</code> makes both a self-contained HTML file and a
+Beamer PDF.<br />
+<code>highlight.styles()</code> print the list of available syntax
+highlight styles.</p>
 </div>
 <div id="usage-8" class="section level2">
 <h2>Usage</h2>
-<pre><code>br.rmd2slides(rmd.file, html.file, quiet=TRUE)</code></pre>
+<pre><code>br.rmd2slides(rmd.file, theme = &quot;AnnArbor&quot;, highlight = &quot;tango&quot;, quiet = TRUE) 
+br.rmd2slides.html(rmd.file, html.file, quiet=TRUE)
+br.rmd2slides.pdf(rmd.file, pdf.file, theme = &quot;AnnArbor&quot;, highlight = &quot;tango&quot;, quiet = TRUE){
+highlight.styles()</code></pre>
 </div>
 <div id="arguments-8" class="section level2">
 <h2>Arguments</h2>
@@ -1118,10 +1125,24 @@ Slides</a> self-contained HTML file</p>
 <dd>
 path to the R markdown file to be converted.
 </dd>
+<dt>theme</dt>
+<dd>
+A Beamer <a href="https://hartwork.org/beamer-theme-matrix/">theme</a>
+</dd>
+<dt>highlight</dt>
+<dd>
+A syntax highlight style. Use <code>highlight.styles()</code> to list
+them.
+</dd>
 <dt>html.file</dt>
 <dd>
-path to the HTML file to be generated. If missing, change extension of
-rmd.file to html.
+path to the HTML file to be generated. If missing, we change the
+extension of <code>rmd.file</code> to “.html”.
+</dd>
+<dt>pdf.file</dt>
+<dd>
+path to the PDF file to be generated. If missing, we change the
+extension of <code>rmd.file</code> to “.pdf”.
 </dd>
 <dt>quiet</dt>
 <dd>
@@ -1131,7 +1152,27 @@ FALSE to show the system PATH variable and intermediate files.
 </div>
 <div id="details-6" class="section level2">
 <h2>Details</h2>
-<p>You need proper BloomR edition.</p>
+<p>You need the proper BloomR edition. The output filename for
+<code>br.rmd2slides()</code> is automatically generated by changing the
+<code>rmd.file</code> file extension.</p>
+<p>To represent the slide structure in an Rmd, you use the following
+pattern:</p>
+<pre><code>---
+title: &quot;Your Presentation Title&quot;
+author: &quot;Your Name&quot;
+date: &quot;A date description&quot;
+---
+ 
+## Slide 1
+ 
+This is the content for slide 1.
+ 
+## Slide 2
+ 
+This is the content for slide 2.
+ 
+etc.</code></pre>
+<p>Then you can proceed as usual to add R code chunks.</p>
 </div>
 <div id="value-8" class="section level2">
 <h2>Value</h2>

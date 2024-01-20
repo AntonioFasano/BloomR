@@ -1,12 +1,15 @@
+;;; br-setmodes.el --- BRemacs init library -*- lexical-binding: t -*-
 
-;;; Setup relevant modes and create bremacs-rmd-mode
+;; Copyright (C) Antonio Fasano
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GPL 2+ license.
+
+;;; Commentary:
+;; Setup relevant modes and create bremacs-rmd-mode
+
+;;; Code:
 
 
-;; we now have autoloads
-;(require 'ess-site)
-;(require 'markdown-mode)
-;(require 'poly-markdown)
-;(require 'poly-R)
 
 ;;;; bremacs-rmd-mode is temporary disabled
 ;;;; Create bremacs-rmd-mode
@@ -67,21 +70,21 @@
 
 
 (defvar br-R-save-on-quit "no"
-"Behaviour of `ess-quit', bound to C-c C-q, <menu-bar> <iESS> <Quit>. This variable's values are those accepted by R quit() function, which is invoked by ESS: one of \"no\", \"yes\", \"ask\" or \"default\". See R function documentation for more information. 
-Note that the original R base quit() and q() is also overridden by the attached BloomR environments in 'bloomr.init.R' and the default 'save' value is set to \"no\". Pass this argument explicitly if you want to an alternative behaviour.")
+  "Behaviour of `ess-quit', bound to C-c C-q, <menu-bar> <iESS> <Quit>.
+Possible values are those accepted in R quit(save = ...),
+that is \"no\", \"yes\", \"ask\" or \"default\".
+See R function documentation for more information.
 
-(defun br-quit-override ()
-(cl-defmethod ess-quit--override (arg &context (ess-dialect "R"))
-  "This is a rewrite of the official ESS function. The orginal calls R 'quit(save)', where 'save' is: (if arg \"no\" \"default\"). 
-Here the 'save' argument is set to `br-R-save-on-quit'."
-  (let ((cmd (format "base::q('%s')\n" br-R-save-on-quit))
-        (sprocess (ess-get-process ess-current-process-name)))
-    (when (not sprocess) (error "No ESS process running"))
-    (ess-cleanup)
-    (ess-send-string sprocess cmd)))
-)
+Note that the original R base quit() and q() is also overridden
+by the attached BloomR environments in \"bloomr.init.R\" and the
+default \"save\" value is set to \"no\". Pass this argument
+explicitly if you want to an alternative behaviour.")
 
-;;; Set initialite modes
+(defun br-ess-quit-advice (ess-quit-orig &optional arg)
+  (setq arg br-R-save-on-quit)
+  (funcall ess-quit-orig arg))
+
+;;; Customise R/md modes
 ;;; ====================
 
 (defun br-init-change-minor-name (mode new-name)
@@ -93,9 +96,7 @@ Here the 'save' argument is set to `br-R-save-on-quit'."
 (defun br-init-modes ()
   ;;  ESS[S] to  R 
   (add-hook 'ess-r-mode-hook (lambda ()
-			       (setq mode-name "R")
-			       (br-quit-override))
-	    )
+			       (setq mode-name "R") ))
   
  ;; (br-init-change-minor-name  'bremacs-rmd-mode "")
   (br-init-change-minor-name  'eldoc-mode "")
@@ -104,8 +105,8 @@ Here the 'save' argument is set to `br-R-save-on-quit'."
   ;;Use wrap lines in markdown
   (add-hook 'markdown-mode-hook (lambda () (visual-line-mode 1)))
 
-  ;; Associates Rmd to BloomR poly-markdown+r-mode now in autoload
-  ;(add-to-list 'auto-mode-alist '("\\.Rmd" . bremacs-rmd-mode))
+  ;; `ess-quit' defaults to br-R-save-on-quit
+  (advice-add 'ess-quit :around #'br-ess-quit-advice)
   )
 
 ;;; end Set initialite modes===
@@ -114,4 +115,4 @@ Here the 'save' argument is set to `br-R-save-on-quit'."
 (br-init-modes)
 (provide 'br-setmodes)
 
-
+;;; br-setmodes.el ends here

@@ -1,9 +1,22 @@
+;;; br-menico.el --- BRemacs init library -*- lexical-binding: t -*-
 
-;;; Set menu and icons for all modes 
+;; Copyright (C) Antonio Fasano
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GPL 2+ license.
+
+;;; Commentary:
+;; Set menu and icons for all modes 
 ;; As of now only icons
 ;; For Buffer menu see `br-simple-buffer-menu.el`
 
-(require 'ess-site)
+;;; Code:
+
+
+(require 'ess-mode); contains ess-mode-map we want to patch 
+(require 'ess-toolbar)
+;; If autolads are active, can be omitted, but the user is more willing
+;; to wait at product launch, than later when calling a file.
+(require 'ess-r-mode)
 
 (defun br-init-general-icons()
   "Set icons not mode-specific."
@@ -11,35 +24,13 @@
 		     'br-toggle-split-h
 		     :help   "Toggle horizontal split"))
 
-
-(defun ess-eval-line-and-step-xx (&optional simple-next even-empty invisibly)
-  "Evaluate the current line visibly and step to the \"next\" line.
-If SIMPLE-NEXT is non-nil, possibly via prefix arg, first skip
-empty and commented lines. If 2nd arg EVEN-EMPTY [prefix as
-well], also send empty lines.  When the variable `ess-eval-empty'
-is non-nil both SIMPLE-NEXT and EVEN-EMPTY are interpreted as
-true."
-  ;; From an idea by Rod Ball (rod@marcam.dsir.govt.nz)
-  (interactive "P\nP"); prefix sets BOTH !
-  (ess-force-buffer-current "Process to load into: ")
-  (save-excursion
-    (end-of-line)
-    (let ((end (point)))
-      (beginning-of-line)
-      ;; go to end of process buffer so user can see result
-      (ess-eval-linewise (buffer-substring (point) end)
-                         invisibly 'eob (or even-empty ess-eval-empty))))
-  (if (or simple-next ess-eval-empty even-empty)
-      (forward-line 1)
-    (ess-next-code-line 1)))
-
-
+;; In ess-mode add the button to set R workdir based on current buffer file 
 (define-key ess-mode-map
        [menu-bar ESS sync]
        '("Set directory to this file" . ess-use-this-dir))
 
 (defun br-init-ess-icons()
-  "Set ESS icons. Run after `br-init-general-icons` to inherit its icons."
+  "Set ESS icons. To be run after `br-init-general-icons' to inherit its icons."
   
   ;; Remove S-plus icon
   (setq ess-toolbar-items
@@ -50,11 +41,8 @@ true."
  	  (ess-eval-function-or-paragraph-and-step "rregion" "Eval function or paragraph and step")
  	  (ess-load-file "rbuffer" "Load file")
  	  (ess-eval-function "rfunction" "Eval function")
-
- 	  (ess-use-this-dir "switchr" "Set directory to this file")
-
-	  )))
-
+ 	  (ess-use-this-dir "switchr" "Set directory to this file"))))
+  
   (ess-make-toolbar))
 
 
@@ -69,9 +57,11 @@ true."
 (defun br-init-menico()
   "Call specific and generic icon and menu functions."
   (br-init-general-icons)
-  (br-init-ess-icons))
+  (br-init-ess-icons)
+  )
 
 
 (br-init-menico)
 (provide 'br-menico)
+;;; br-menico.el ends here
 

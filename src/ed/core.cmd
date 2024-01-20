@@ -20,11 +20,9 @@ Echo Current dir set to:
 cd   %HOME%
 Echo %CD%
 
-Set "vanilla=true"
-Echo vanilla is  %vanilla%
+Set "bloomr_branch=core"
+Echo BloomR edition is %bloomr_branch%
 
 Echo Start ..\apps\R\bin\x64\Rgui.exe LANGUAGE=en
      Start ..\apps\R\bin\x64\Rgui.exe LANGUAGE=en
 Pause
-
-

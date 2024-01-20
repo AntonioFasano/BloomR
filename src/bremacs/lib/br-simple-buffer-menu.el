@@ -1,3 +1,18 @@
+;;; br-simple-buffer-menu.el --- BRemacs init library -*- lexical-binding: t -*-
+
+;; Copyright (C) Antonio Fasano
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GPL 2+ license.
+
+;;; Commentary:
+;; This package redefine the Buffers menu to show only the interesting
+;; buffers defined with variable `br-regular-buffer-regex'.
+
+;;; Code:
+
+(defvar br-regular-buffer-regex "^\\*R\\|[^]*]$"  "Regexp identifing interesting buffers.
+Currently those whose name starts with '*R' or does not end with ']', '*'.")
+
 (defun br-next ()
   "Switch to next buffer among those returned `br-file-buffers-regular`"
   (interactive)
@@ -6,7 +21,6 @@
            (switch-to-buffer (nth 0 buffers))
           (bury-buffer-internal (nth 0 buffers))
           (switch-to-buffer (nth 1 buffers)))))
-
 
 
 (defun br-previous()
@@ -22,7 +36,7 @@
 
 
 (defun br-file-buffers-regular ()
-  "Filter (buffer-list) for buffers whose name starts with '*R' or does not end with ']', '*'."
+  "Filter (buffer-list) for buffers whose name matches `br-regular-buffer-regex'."
   (delq nil (mapcar #'(lambda (buf)
 			(and ; (buffer-file-name buf) restrict to file buffer only
 			 (let ((case-fold-search nil))
@@ -31,7 +45,8 @@
 		    (buffer-list))))
 
 (defun menu-bar-update-buffers (&optional force)
-  "Hacked version of the same function in `buffer-menu.el`, filtering buffers with `br-file-buffers-regular`,"
+  "Hacked version of the same function in `buffer-menu.el',
+filtering buffers with `br-file-buffers-regular',"
   
   ;; If user discards the Buffers item, play along.
   (and (lookup-key (current-global-map) [menu-bar buffer])
@@ -137,5 +152,5 @@
 
 (provide 'br-simple-buffer-menu)
 
-
+;;; br-simple-buffer-menu.el ends here
 

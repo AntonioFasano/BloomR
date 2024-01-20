@@ -1,18 +1,31 @@
-1.5.3 -- "Nessun dorma"
+1.5.4 -- "Nessun dorma"
 
-R version 4.3.0
+R version 4.3.2 (2023-10-31 ucrt) -- "Eye Holes"
 
-Introduced the cloud assignment system based on elearnr package  
-pcloudr package to access pCloud.com  
-secretR package to manage secrets in encrypted files  
+New Lab/Studio shortcuts: Delete word backward (C-Back) and forward (C-Del),
+                          Interactive search-and-replace (C-r).
+
+New functions to generate slide based reports.
+Radical optimisations dramatically reduce Lab/Studio editions startup.
+
+Introduced several improvments in the build process, such as:
+automatic Elisp package management, dispatching of encodted Elisp sexps to Lab/Studio builds,
+execution of system command with tee-like logs.
+Advanced auto-detection of project folder.
 
 _Change details_
 
-    build: UNC support not necessary any more with TeXLive system.
-           TeXLive bins are now in bin/windows rather than bin/win32
+    build: +bremacs.pak.* +bloomrTree.brEmacs.pakorder(), +runsexp(), +get.project,
+           +proj.pt(), +makePath(), +build.runtool(), +elisp.delpak(), +retar(),
+	   +void(), +linux.dbg(), -melpa.getvers(), -melpa.getpak().
+	   External tool: run.cs/exe
 
-    bloomr.Rmd: ~.br.addpaths TeXLive bins are now in TinyTeX/bin/windows
+    bloomr.Rmd: +br.rmd2slides.html(),+br.rmd2slides.pdf(), +br.rmd2slides(), +highlight.styles(),
+                ~.br.addpaths. TeXLive bins are now in TinyTeX/bin/windows,
 
+    bremacs.libs: All .el file reviews for optimisations.
+                  ~br-keys.el() with C-r, C-back, C-del
+    
     times.Rmd: fixed conflict masking rm.all, rm.var bloomr.usr.
 
     
