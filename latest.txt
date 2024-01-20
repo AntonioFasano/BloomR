@@ -8,8 +8,8 @@ New Lab/Studio shortcuts: Delete word backward (C-Back) and forward (C-Del),
 New functions to generate slide based reports.
 Radical optimisations dramatically reduce Lab/Studio editions startup.
 
-Introduced several improvments in the build process, such as:
-automatic Elisp package management, dispatching of encodted Elisp sexps to Lab/Studio builds,
+Introduced several improvements in the build process, such as:
+automatic Elisp package management, dispatching of encoded Elisp sexps to Lab/Studio builds,
 execution of system command with tee-like logs.
 Advanced auto-detection of project folder.
 
