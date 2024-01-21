@@ -49,7 +49,7 @@
  
 ;; TST: Test BR/emacs setup dir with respect to received environment variable
 (let ((setup-wanted (expand-file-name(concat invocation-directory "../../.."))); BloomR/apps/bremacs/bin
-      (setup-env (or (getenv "BLOOMR") ""))) 
+      (setup-env (or (getenv "BLOOMR") "")))
   (unless (file-equal-p setup-wanted setup-env)
     (message "BR/Emacs setup directory riceved is \n%s, but expected value was \n%s"
 	     setup-env setup-wanted)
@@ -143,6 +143,9 @@
 ;;	   via advice funcs.  `startup--load-user-init-file' doesn't interrupt
 ;;	   on errors, but these settings can make Emacs frozen or garbled.
 (defun br--reset-inhibited-vars-h ()
+  "Hook to resore the mode-line after early init.
+Also used in advicing `startup--load-user-init-file'."
+  (unless br-debug (kill-buffer "*Messages*")); because ugly without modeline
   (setq-default inhibit-redisplay nil
 		;; Inhibiting `message' only prevents redraws and
 		inhibit-message nil)
@@ -249,7 +252,7 @@ That's due to the file being read before the GUI is initialized.
 There are two possibilities:
 - continue with a standard init file, e.g. `init.el', `site-start.el';
 - use a hook run when GUI is initialized.
-Here we opt for the second. See also:
+Here we opt for the second.  See also:
 https://www.gnu.org/software/emacs/manual/html_node/emacs/Early-Init-File.html
 https://www.gnu.org/software/emacs/manual/html_node/elisp/Init-File.html"
 
@@ -258,7 +261,7 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Init-File.html"
 	(load-file-rep-suffixes (if br-file-handler-optimize '("") load-file-rep-suffixes)))
     
     (let* ((bremacs-lib (concat invocation-directory "../share/emacs/site-lisp/bremacs/"))
-	   (br-init     (concat bremacs-lib "br-init.elc")) ;; XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxXXXXXXXXXXXXXXXXXXXXXXXXXXX shold be elc
+	   (br-init     (concat bremacs-lib "br-init.elc")) 
 	   ;; To simplify debug, BloomR build removes 'br-init-dbg.elc'
 	   (br-init-dbg (concat bremacs-lib "br-init-dbg.el")) 
 	   (missing (or (unless (file-exists-p br-init)	  br-init)
@@ -268,7 +271,7 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Init-File.html"
       (when missing (error "Missing init file: \n%s" (expand-file-name missing)))
       (if br-debug (message "Debug flag set!"))
       (setq what-init (if br-debug br-init-dbg br-init))
-      (load-file what-init)))) ; XXXXXXXXXXxxwas:  (load what-init nil t 'nosuffix nil))))
+      (load-file what-init)))) 
 
 (defun br-startup-time-hk ()
   "Measure and prints the overall BloomR boostrasp time."
@@ -285,7 +288,7 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Init-File.html"
 ;; Hooks are run as LIFO, so this is run second
 (if br-debug
     (add-hook 'window-setup-hook
-	      '(lambda()
+	      #'(lambda()
 		 (message "`early-init.el' started \n%s" 
 			  (expand-file-name
 			   (concat invocation-directory

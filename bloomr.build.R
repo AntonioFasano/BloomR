@@ -36,10 +36,10 @@
 
 
 ### Globals
+### =======   
 G <- new.env()
-G$lastshell <- NULL # Output of last shell invocation
-G$tempmap   <- NULL # Temporary Windows net drive, used by commands not supporting a detected UNC path (NOT USED now)
-G$frames <- sys.frames() # used to find source script wihtout calling the build function
+
+### Customisable globals
 
 ### Contribs
 
@@ -119,13 +119,20 @@ G$panzip <- "pandoc"
 G$texurl <- "https://yihui.org/tinytex/TinyTeX-1.zip"
 G$texzip <- "tinytex"
 
-## Local paths not intended to be customised.
+### Internal globals not intended to be customised.
+
+G$lastshell <- NULL # Output of last shell invocation
+
+## Local paths 
 G$work    <- NULL # This is the build workdir, not to be confused wtih R getwd()
 G$downdir <- NULL # This is the downloads dir
 G$appname <- "apps" # BloomR application folder name, used by app.pt(). It's hardcoded at least in br-init.el, so don't change.
 G$branch  <- NULL # Branch dir. The value can be "brCore" or "brEmacs" (for non-Core editions)
 G$me      <- NULL # This file (automatically detected)
 G$prjdir  <- NULL # The project directory, based  on G$me
+G$frames  <- sys.frames() # used to find G$me wihtout calling the build function
+G$tempmap <- NULL # Temporary Windows net drive, used by commands not supporting a detected UNC path
+G$workcpy <- NULL # A copy of G$work stored when a remap occures
 
 ## makeBloomR() arguments
 G$bremacs <- NULL
@@ -305,8 +312,6 @@ downloads.core <- function(overwrite){
     cback <- function(){
         url <- sfFirstbyProject(G$nsisurl, G$nsiszip)
         url <- sfFirstbyUrl(url, 'english\\.paf')
-#        url <- sfFirstbyUrl(url, 'additional')
-#        url <- sfFirstbyUrl(url, '[[:digit:]]')
         sfDirLink(url)
     }
     download.nice(cback, G$nsiszip, overwrite,
@@ -539,11 +544,10 @@ bloomrTree.Core <- function() {
     for(pack in G$bloomrpacks) { # Loop over packs and download them
         pack.relpath <- p0("res/", pack)
         download.git(pack.relpath, "rlibs-bloomr")
-        from <- winwork.pt(makePath(work.pt("rlibs-bloomr"), pack))       
+        from <- winwork.pt(makePath("rlibs-bloomr", pack))       
         cmd <- c(exe, "--no-site-file --no-environ --no-save --no-restore --quiet CMD INSTALL", from, to)
         shell.cd(cmd, wd="c:") # In Windows cmd.exe is invoked, so we need to set wd to a non-UNC path
     }
-    
 
     
     ## Download docs
@@ -618,7 +622,7 @@ bloomrTree.brEmacs <- function() {
     ## Run with log
     ## download.git("src/cs/run.cs", "run.cs") # currently evaluate in local src to keep a working git exe 
     build.runtool()
-    
+
     ## === Install local BRemacs packages === ##
     message("Installing local BRemacs packages")
     message("...this may take a bit")
@@ -731,40 +735,51 @@ bloomrTree.Studio <- function() {
 makeStudio.addLatex <- function() {
 ### Install LaTeX. Currently TinyTex
 
-    
     ## Copy TinyTeX distro
     message("Adding LaTeX files")
     copy.glob(G$texzip, app.pt(), "tinytex")
-    
+
     ## TeXLive installer path
-    tlmgr <- makePath(app.pt(G$texzip), 'bin/windows/tlmgr.bat')
-    if(!is.path(tlmgr)) stop("Unable to find executable:\n ", work.pt(tlmgr))
-    tlmgr <- pswork.pt(tlmgr)
+    tlmgrpt <- makePath(app.pt(G$texzip), 'bin/windows/tlmgr.bat')
+    if(!is.path(tlmgrpt)) stop("Unable to find executable:\n ", work.pt(tlmgrpt))
+    tlmgr <- \() pswork.pt(tlmgrpt) # parametric for of UNC remappting used in the past
     
     ## Set xetex fonts dir to local
     ## Check before and after with: texmf-var/fonts/conf/fonts.conf 
-    cmd <- paste(tlmgr, "postaction install script xetex")
+    cmd <- paste(tlmgr(), "postaction install script xetex")
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
 
     ## Do not wrap short (80 columns) log file lines
-    cmd <- paste(tlmgr, "conf texmf max_print_line 10000")
+    cmd <- paste(tlmgr(), "conf texmf max_print_line 10000")
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
 
     ## Set repo for updates to nearby
-    cmd <- paste(tlmgr, "option repository 'ctan'")
+    cmd <- paste(tlmgr(), "option repository 'ctan'")
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
-#browser()        
-    ## Update might be necessary
-    cmd <- paste(tlmgr, "update --all")
-    shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
-
-    ## Extra packages: bookmark needed for most report, makeindex for
+   
+    ## Updates might be necessary
+    ## There is a luahbtex issue with a missing vcruntime140_1.dll
+    ## BTW, the exclution does not prevent post-update buldint and
+    ## hence an error
+    cmd <- paste(tlmgr(), "update --all --exclude luahbtex")
+    shell.ps(cmd, winwork.pt("ps.tinytex.txt"))    
+#browser()
+    ## Extra packages: bookmark needed for most reports, makeindex for
     ## R package manuals, and beamer is for slides
-    cmd <- paste(tlmgr, "install bookmark makeindex beamer")
+    extratex <- c("bookmark", "makeindex", "beamer")
+    cmd <- pv(tlmgr(), "install", extratex)
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))
 
+    ## Test they are there
+    cmd <- paste(tlmgr() , "info --list --only-installed --data name")
+    shell.ps(cmd, winwork.pt("ps.tinytex-paks.txt"))    
+    con <- file(work.pt("ps.tinytex-paks.txt"), "r", encoding = 'UTF-16')
+    texpks <- readLines(con)
+    close(con)
+    fail.texpks <- !extratex %in% texpks
+    if(any(fail.texpks)) stop("Failed to instal TeX packages:\n", pv(extratex[fail.texpks])) 
+    
     return()
-
 
     ### ==============
     ## More packs for minimal Rnw: palatino breakurl fpl mathpazo
@@ -772,7 +787,7 @@ makeStudio.addLatex <- function() {
 
     ## TODO: attempt to customise Tinytex paths Now PDF building
     ## functions add on the fly paths to system PATH and remove them
-    ## on exit
+    ## on exit. Before fixing compare with tlmgr() above
     rscript <- makePath(app.pt("R"), 'bin/Rscript.exe')
     rscript <- winwork.pt(rscript)
     
@@ -985,7 +1000,6 @@ makeLauncher_ <- function(script.cont, edition){
    
     ## Get icon from GitHub
     icon <- if(edition=="core") "bloomr" else "bremacs" 
-    # to <- makePath(p0(G$ahkzip, '/Compiler'), p0(edition, ".ico")) XXXXXXXXXXXXXXXXx
     to <- makePath(G$ahkzip, p0(edition, ".ico"))
     download.git(makePath("res", p0(icon, ".ico")), to)
 
@@ -1018,7 +1032,6 @@ makeLauncher_ <- function(script.cont, edition){
     run <- c("Ahk2Exe.exe",
              "/in", p0(edition, ".run"),
              "/icon", p0(edition, ".ico"),
-             # "/bin \"Unicode 32-bit.bin\"",  xxxxxxxxxxxxxx
              "/base \"Ahk2Exe.exe\"",
              "/out", exename
              ) 
@@ -1540,7 +1553,7 @@ runsexp <- function(sexp, # a single SEXP to eval. Use progn or let for more ite
                          c("run", "prt", "dbg"),
                      log = NULL, # Tee output to a file relative to G$work
                      append = FALSE, # if T, append to to log 
-                     emacs.exe = # executable path
+                     emacs.exe = # executable path. Note: This should not be not relative to G$work
                          work.pt(app.pt("bremacs/bin/emacs.exe"))
                      ) {
 
@@ -1599,11 +1612,12 @@ runsexp <- function(sexp, # a single SEXP to eval. Use progn or let for more ite
     args <- paste(batch, "-Q", "-eval", dquoteu(evfunc), "-eval", dquoteu(sexp.enc))
     app.log <- ifelse(append, "-alog", "-log")
     log.arg <- if(is.null(log)) "-nolog" else paste(app.log, winwork.pt(log))
-    ret <- system(paste(runbin, log.arg, winwork.pt(emacs.exe), shQuote(args)))
+    emacs.abs.q <- shQuote(normalizePath(emacs.exe))
+    ret <- system(paste(runbin, log.arg, emacs.abs.q, shQuote(args)))
     if(ret > 0) stop("The command had non-zero exit") 
  
 }
-#         runsexp(log = winwork.pt("run.breamcs-paks.txt"))
+## runsexp(log = winwork.pt("run.breamcs-paks.txt"))
 
 
 ## === Debug local setup package === ##    
@@ -1823,8 +1837,12 @@ proj.pt <- function(path=""){# Prefix path with the project directory
     makePath(G$prjdir, path)
 }
         
-root.pt <- function(path=""){
-### Prefix path with current branch name, e.g 'brStudio'
+root.pt <- function(path="") {
+### Prefix path with current branch name, i.e. "brEmacs", "brCore"   
+### Branch are the folder equivalent of editions, where Lab & Studio
+### share the same "brEmacs" dir.  As we work per branch, the current
+### branch is the root of the project building in the current step.
+    
     if(is.null(G$branch))
         stop("You are asking for a branch-specific path:\n", path, "\n but a branch was not set for `G$branch'.")
     makePath(G$branch, path)
@@ -2207,18 +2225,6 @@ existMake.dd <- function(dir, overwrite, ask, desc=""){
 ### An empty-dir is considered non-existent. Note: if dir="", it is the downloads dir.
 
     existMake_(dir, overwrite=overwrite, ask=ask, desc=desc, use.downdir=TRUE)
-    
-  # would be symlinks, but links are fs specific, better to avoid 
-  #  ## https://superuser.com/questions/1307360/how-do-you-create-a-new-symlink-in-windows-10-using-powershell-not-mklink-exe
-  #  if(!is.subdir_gen(G$downdir, G$work)){  
-  #      mklink  <- sprintf("new-item -itemtype symboliclink -path %s -name 'downloads.lnk' -Target %s",
-  #                         shQuote(G$work), shQuote(G$downdir))
-  #      psline <- paste("powershell -NoProfile -command", shQuote(mklink))
-  #      ret <- system(psline) 
-  #      if(ret) stop("Creating a symlink to the downloads dir inside ", G$work, " was not possible.\n",
-  #                   "Note that in old Windows versions (before circa 2017), you need admin privileges to create symlinks")
-  #  }
-
 }
 
 existMake_ <- function(dir, overwrite, ask, desc="", use.downdir=FALSE){
@@ -2302,7 +2308,28 @@ get.project <- function() { # Identify the sourced script and its parent for G$m
     G$prjdir <- maybe.dir
 }
 
-### === UNC Paths ===  NOT USED any more 
+### === UNC Paths ===  NOT USED any more
+
+#### Example use
+## Remap G$work if it is a network UNC path to a new or existing net drive
+##    unc.replace(G$work, blamed.tool = "TinyTeX")
+## G$work is remapped: e.g.: \\host\share\dir to Z:\dir
+## Make your G$work related tasks and, when done:
+##   unc.mapdel.if()
+## if Z: was created anew, it is removed, if alredy existed and was just recycled it will be left untouched.
+
+unc.replace <- function(unc.path, blamed.tool) { # Like unc._subs(), but with an informative message
+    new.G.work <- unc._subs(unc.path)
+    sprintf("%s \nis a UNC path, which is not supported by %s. The path was remapped as:\n%s",
+           unc.path, blamed.tool, new.G.work) |>
+        message()
+}
+
+unc.mapdel.if <- function() { # Delete UNC drive map, if necessary 
+    if(!is.null(G$tempmap)) unc.mapdel(G$tempmap)
+    G$work <- G$workcpy
+    message("Restored old UNC workdir\n", G$work)
+}
 
 unc.is <- function(path){
 ### Check if a path is a UNC path
@@ -2386,26 +2413,30 @@ unc.mapdel <- function(drive){
 }
 
 
-unc.subs <- function(uncpath){
+unc._subs <- function(uncpath){
 ### Replace all or part of the UNC path with a mapped drive
-### If a mapped drive is found with unc.hasmap() is used else a drive is mapped to uncpath top level dir
+### If a mapped drive is found with unc.hasmap() is used, else a drive is mapped to uncpath top level dir
 
     ndrive <- if(unc.hasmap(uncpath)) unc.getmap(uncpath) else unc.setmap(uncpath)
-    sub(unc.top(uncpath), ndrive,
+    G$workcpy <- G$work
+    G$work <- sub(unc.top(uncpath), ndrive,
         apath <- normalizePath(uncpath),
         fixed=TRUE)
+    G$work
 }
 
 unc._maps <- function(){
 ### A data.frame version of NET USE, where ()$drive, ()$share are resp. the mapped drive and the remote share
 
-    mps <- read.csv(text=shell.cd(c("wmic", "netuse get LocalName,RemoteName /format:csv"), raw=TRUE),
-                    stringsAsFactors=FALSE) # <- to be removed
-
-    if(ncol(mps)==1) mps <- as.data.frame(t(rep("", 3)), stringsAsFactors=FALSE)
-    names(mps)=c('pc', 'drive', 'share')
-    mps       
+    wmicdir <- makePath(Sys.getenv("SystemRoot"), "System32/Wbem")
+    netdrives <- shell.cd(c("wmic", "netuse get LocalName,RemoteName /format:csv"), wd = wmicdir, raw = TRUE)
+    netdrives <- read.csv(text = netdrives)
+    if(ncol(netdrives) == 1) netdrives <- as.data.frame(t(rep("", 3)))
+    names(netdrives) = c('pc', 'drive', 'share')
+    netdrives
 }
+
+
 
 ### === Extaction utils ===
 uzip <- function(from, to, desc, delTarget=TRUE){

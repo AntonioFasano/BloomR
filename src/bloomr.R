@@ -354,7 +354,7 @@ br.rmd2html <- function(rmd.file, html.file, quiet=TRUE){
     if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.html')
     if(html.file != basename(html.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
 
-    #library(knitr)
+    library(knitr)
     #library(rmarkdown)
 
     ## Render Rmd to HTML
@@ -380,7 +380,7 @@ br.rmd2slides.html <- function(rmd.file, html.file, quiet=TRUE){
     if(missing(html.file)) html.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.html')
     if(html.file != basename(html.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
 
-    #library(knitr)
+    library(knitr)
     #library(rmarkdown)
 
     ## Render Rmd to HTML
@@ -406,7 +406,7 @@ br.rmd2slides.pdf <- function(rmd.file, pdf.file, theme = "AnnArbor", highlight 
     if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.pdf')
     if(pdf.file != basename(pdf.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
 
-    #library(knitr)
+    library(knitr)
     #library(rmarkdown)
 
     ## Render Rmd to PDF
@@ -452,16 +452,16 @@ store(highlight.styles)
 
 
 ## ----br.rmd2pdf, opts.label='purlme'-----------------------------------------------------------------------------------------------
-br.rmd2pdf=function(rmd.file, pdf.file, quiet=TRUE){
+br.rmd2pdf <- function(rmd.file, pdf.file, quiet=TRUE){
 ### Make an R Markdown file into a PDF
 ### You need BloomR LaTeX addons or the proper BloomR version
 
     ## Test arguments
     if(missing(rmd.file)) stop("Argument 'rmd.file' missing.")
-    if(missing(pdf.file)) pdf.file=paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.pdf')
+    if(missing(pdf.file)) pdf.file <- paste0(tools:::file_path_sans_ext(basename(rmd.file)), '.pdf')
     if(pdf.file != basename(pdf.file)) stop("Sorry, currently you can only specify a name without directory as an output doc.")
 
-    #library(knitr)
+    library(knitr)
     #library(rmarkdown)
 
     ## Render Rmd to PDF
@@ -497,7 +497,7 @@ br.rmd2both=function(rmd.file, quiet=TRUE){
     ##    html.file <- paste0(out.dir, basename(html.file))
     ##}
 
-    #library(knitr)
+    library(knitr)
     #library(rmarkdown)
 
     ## Render Rmd to HTML
@@ -514,7 +514,7 @@ br.rmd2both=function(rmd.file, quiet=TRUE){
 
     ## Render Rmd to PDF
     cmdexpr <- quote(
-        render(rmd.file,
+        rmarkdown::render(rmd.file,
                output_format = rmarkdown::pdf_document(highlight="tango",
                                             md_extensions = "-tex_math_single_backslash"),
                output_file = pdf.file,

@@ -194,7 +194,7 @@ The rest goes to br-setmodes.el."
   ;; 				    (concat (file-name-directory
   ;; 					     (locate-library  "br-init")) "ess-init.R"))))
 
-  ;; show R help in BRemacs?
+  ;; Show R help in BRemacs?
   ;; br-text-help() 
 
   )
@@ -244,7 +244,7 @@ To avoid a second file system query, we also fill now
 		      (warn "Expected autoload missing:\n%s" pkg-autoload-path))
 
 		  (when (file-exists-p pkg-infodir-path)
-		    (setq br-infodirs (append br-infodirs pkg-dir))))))
+		    (setq br-infodirs (append (list pkg-dir) br-infodirs))))))
 	    
 	    (seq-filter 'file-directory-p
 			(directory-files br-site-lisp-dir t directory-files-no-dot-files-regexp)))))
@@ -266,8 +266,8 @@ possibly use it as a hook for further speed."
     (if (bound-and-true-p Info-directory-list)
 	(mapc (lambda (pkg-dir)	
 		  (push pkg-dir Info-directory-list))
-		br-infodirs))
-    (warn "`Info-directory-list' is not defined, info dirs not updated")))
+		br-infodirs)
+      (warn "`Info-directory-list' is not defined, info dirs not updated"))))
 
 (defun br-init-main ()
   "The kernel function."

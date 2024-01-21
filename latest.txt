@@ -4,14 +4,11 @@ R version 4.3.2 (2023-10-31 ucrt) -- "Eye Holes"
 
 New Lab/Studio shortcuts: Delete word backward (C-Back) and forward (C-Del),
                           Interactive search-and-replace (C-r).
-
 New functions to generate slide based reports.
 Radical optimisations dramatically reduce Lab/Studio editions startup.
-
 Introduced several improvements in the build process, such as:
-automatic Elisp package management, dispatching of encoded Elisp sexps to Lab/Studio builds,
-execution of system command with tee-like logs.
-Advanced auto-detection of project folder.
+    automatic Elisp package management, dispatching of encoded Elisp sexps to Lab/Studio builds,
+    execution of system command with tee-like logs, advanced auto-detection of project folder.
 
 _Change details_
 
@@ -20,12 +17,15 @@ _Change details_
 	   +void(), +linux.dbg(), -melpa.getvers(), -melpa.getpak().
 	   External tool: run.cs/exe
 
-    bloomr.Rmd: +br.rmd2slides.html(),+br.rmd2slides.pdf(), +br.rmd2slides(), +highlight.styles(),
-                ~.br.addpaths. TeXLive bins are now in TinyTeX/bin/windows,
+    Dignostic env: +bremacs-dbg.cmd, +bremacs.cmd, +core.cmd.
+                   -bloomr.ed.cmd, -bremacs-dbg.ed.cmd, -bremacs.ed.cmd
 
     bremacs.libs: All .el file reviews for optimisations.
                   ~br-keys.el() with C-r, C-back, C-del
     
+    bloomr.Rmd: +br.rmd2slides.html(),+br.rmd2slides.pdf(), +br.rmd2slides(), +highlight.styles(),
+                ~.br.addpaths. TeXLive bins are now in TinyTeX/bin/windows,
+
     times.Rmd: fixed conflict masking rm.all, rm.var bloomr.usr.
 
     
