@@ -1,5 +1,4 @@
 ###  BloomR source
-
 ##  TODO
 ##  Separate code (e.g. in bloomr.Rmd) requiring a Bloomberg or Refinitive to test from knitting, time, system code. 
 ##  In bloomr.init.R, eikonapir loading removes requestInfo from .GlobalEnv with a hack. Test it and then delete eikon.fallback() 
@@ -7,7 +6,6 @@
 ##  Finalise dir temp-help docs source dir
 ##  Custom polymode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
 ##  Repurpose tests and test data 
-##  RCurl find and remove references everywhere 
 ##  bloomr.time.Rmd introduces a system to auto extract args desc from comment (see parseargs) consider use it.
 ##  In `knit.twice` in "bloomr.time.Rmd" add the path hacks as `knit2` in "bloomr.Rmd" so as to build it in BloomR.
 ##
@@ -18,7 +16,7 @@
 ##  You will get the BloomR green installer in workDir
 ##
 ##  Requirements:
-##  XML and curl packages. If missing, I try to download and install them.
+##  xml2 and curl packages. If missing, I try to download and install them.
 ##  R should be able to connect to the Internet.
 ##  .Platform$OS.type == "windows"
 ##
@@ -48,7 +46,7 @@ G$eikonurl <- "https://github.com/ahmedmohamedali/eikonapir/archive/master.zip"
 G$eikonzip <- 'eikon'
 
 ## Ahkscript
-G$ahkurl <- "https://api.github.com/repos/AutoHotkey/Ahk2Exe/releases"
+G$ahkurl <- "AutoHotkey/Ahk2Exe"  # (on GitHub)
 G$ahkzip <- "ahk"
 
 ## Github
@@ -59,8 +57,8 @@ G$github.local <- "" # Auto-set by makeBloomR() if gitsim=T, relative to the bui
 ## To learn about deps use:
 ## x <- available.packages(); x["ggplot2","Imports"]; x["ggplot2","Depends"]
 
-pks <- "knitr Rblpapi xts XML httr rmarkdown sodium httpuv RCurl" # RCurl to be removed
-pks <- paste(pks, "plyr pbapply") # for read read.xlx
+pks <- "knitr Rblpapi xts xml2 httr rmarkdown sodium httpuv" 
+pks <- paste(pks, "XML plyr pbapply") # for read read.xlx
 
 ## All packs deps
 G$packlist <- pks
@@ -105,6 +103,14 @@ G$bremacs.paks.manual <- NULL # Manually (tar) linked with a descriptive .el fil
 G$bremacs.paks.tree   <- NULL   # BRemacs pack names, deps, etc
 G$bremacs.paks.order  <- NULL   # BRemacs pack setup order
 
+## zst, used to unpack Mingw Aspell 
+G$zstdgit <- "facebook/zstd"
+G$zstd <- "zst"
+
+## Aspell
+G$aspell <- "aspell"
+G$aspellurl <- "https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/aspell.json"
+
 
 ## SourceForge items
 G$pzip <- "peazip"
@@ -112,7 +118,7 @@ G$nsisurl <- 'portableapps'
 G$nsiszip <- 'nsis'
 
 ## Pandoc for Studio
-G$panurl <- "https://api.github.com/repos/jgm/pandoc/releases"
+G$panurl <- "jgm/pandoc"  # (on GitHub)
 G$panzip <- "pandoc"
 
 ## TeX distro
@@ -122,6 +128,7 @@ G$texzip <- "tinytex"
 ### Internal globals not intended to be customised.
 
 G$lastshell <- NULL # Output of last shell invocation
+G$curver <- NULL # The sam found in the file curver.txt
 
 ## Local paths 
 G$work    <- NULL # This is the build workdir, not to be confused wtih R getwd()
@@ -194,7 +201,7 @@ makeBloomR <- function( # Build BloomR
     
     ## Check for required packages
     if(!loadLib("curl")) return(1)
-    if(!loadLib("XML")) return(1)
+    if(!loadLib("xml2")) return(1)
 
     ## Parse Arguments
     editions <- c('all', 'core', 'lab', 'studio')
@@ -266,11 +273,10 @@ loadLib <- function(lib){
         if(repo=="@CRAN@") repo <- "http://cran.r-project.org"
         install.packages(lib, repos=repo)
     }
-    if(!eval(parse(text=paste('require(', lib,')')))){
-        message("\nUnable to load", lib, "library")
-        return (FALSE)
-    }
-    return (TRUE)
+#   if(!eval(parse(text=paste('require(', lib,')')))){... # OLD
+    if(success <- require(lib, character.only = TRUE)) return(success)
+    message("\nUnable to load ", lib, " library")
+    FALSE
 }
 
 ### Get components
@@ -288,9 +294,9 @@ downloads.core <- function(overwrite){
 
     ## PeaZip
     cback <- function(){
-        url <- sfFirstbyProject(G$pzip, '[[:digit:]]') #get release dir 
-        url <- sfFirstbyUrl(url, "portable[^\"]*?windows")
-        sfDirLink(url)
+        url <- sfFirstInProject(G$pzip, '[[:digit:]]') #get release dir 
+        url <- sfFirstInUrl(url, "portable[^\"]*?windows")
+        sfDirectLink(url)
     }
     download.nice(cback, G$pzip, overwrite,
                   "Peazip files")
@@ -310,9 +316,9 @@ downloads.core <- function(overwrite){
 
     ## NSIS
     cback <- function(){
-        url <- sfFirstbyProject(G$nsisurl, G$nsiszip)
-        url <- sfFirstbyUrl(url, 'english\\.paf')
-        sfDirLink(url)
+        url <- sfFirstInProject(G$nsisurl, G$nsiszip)
+        url <- sfFirstInUrl(url, 'english\\.paf')
+        sfDirectLink(url)
     }
     download.nice(cback, G$nsiszip, overwrite,
                   "NSIS")
@@ -330,17 +336,11 @@ downloads.core <- function(overwrite){
                   "Eikon files")
     
     ## ahkscript
-    cback <- function() {
-        json <- rawToChar(curl::curl_fetch_memory(G$ahkurl) $content)
-        lnks <- regmatches(json, gregexpr("\"browser_download_url\":\"[^\"]+", json))[[1]]
-        regmatches(lnks, regexpr("https://.+zip$", lnks))[[1]]
-    }
+    cback <- \() github.latest(G$ahkurl, "zip$")
     download.nice(cback, G$ahkzip, overwrite, "AutoHotkey")
-
-
-
     
 }
+
 
 downloads.lab <- function(overwrite){   
 ### BloomR Lab downloads
@@ -363,6 +363,10 @@ downloads.lab <- function(overwrite){
     pakurls <- bremacs.pak.tree.el("url")
     basenames <- bremacs.pak.tree.el("basename") 
     existMake("bremacs-retar", overwrite=overwrite, ask=FALSE, "BRemacs retar dir:") # only used in case of compressed tars
+    message(sprintf(
+        "Melpa archive changes often. If you recycled it and get a package download error, try deleting \n%s",
+        down.pt("melpa.el")
+    ))
     for(pack in paknames){ # Loop over packs and download them
         from <- pakurls[pack]
         to <- makePath("bremacs-libs", basenames[pack])
@@ -370,8 +374,20 @@ downloads.lab <- function(overwrite){
         ## Remove compression and rename tar.gz, tgz
         retar(to, "bremacs-retar",  pack)
     }
-        
+
+    ## zst
+    cback <- \() github.latest(G$zstdgit, "win64.zip$")
+    download.nice(cback, G$zstd, overwrite, "zst")
+    
+    ## Aspell (some libs are not used)
+    existMake.dd(G$aspell, overwrite=overwrite, ask=FALSE, "Spell check dir")
+    json <- readLines(G$aspellurl)
+    regex <- "https://.+mingw64.+pkg.tar.zst"
+    zsts <- regmatches(json, regexpr(regex, json))
+    for(zst in zsts) # Loop over zst files and download them 
+        download.nice(zst, makePath(G$aspell, basename(zst)), overwrite, basename(zst))
 }
+
 
 downloads.studio <- function(overwrite){
 ### BloomR Studio downloads
@@ -380,11 +396,7 @@ downloads.studio <- function(overwrite){
     download.nice(G$texurl, G$texzip , overwrite, "TinyTeX")
 
     ## Pandoc        
-    cback <- function() {
-      json <- rawToChar(curl::curl_fetch_memory(G$panurl) $content)
-      lnks <- regmatches(json, gregexpr("\"browser_download_url\":\"[^\"]+", json))[[1]]
-      regmatches(lnks, regexpr("https://.+windows.+zip$", lnks))[[1]]
-    }
+    cback <- \() github.latest(G$panurl, "windows.+zip$")
     download.nice(cback, G$panzip, overwrite, "Pandoc")
     
 }
@@ -435,6 +447,19 @@ expand.lab <- function(){
 ### Expand BloomR Lab
 
     uzip(G$emacszip, G$emacszip, "BRemacs files")
+#browser()
+    ## zstd
+    uzip(G$zstd, G$zstd, "zstd binaries")
+
+    ## Aspell
+    makeDir(G$aspell, "Spell check dir")
+    for(zst in dir(down.pt(G$aspell))) {
+        zstpt <- makePath(G$aspell, zst)
+        tarpt <- tools::file_path_sans_ext(zstpt) # arg like *.tar.zst
+        uzip.zx(zstpt, tarpt, zst)
+        utar.ww(tarpt, makePath(G$aspell, "tars"), basename(tarpt), delTarget = FALSE) 
+    }
+    
 }
  
 expand.studio <- function(){
@@ -484,7 +509,7 @@ bloomrTree.AddVersion <- function() { # Add and possible relpace version file (v
 ### Studio will replace the Lab version file, Lab will replace the Core file.
 
     download.git("curver.txt",  "curver.txt") 
-    ver <- file.read("curver.txt")[1]
+    G$curver <- ver <- file.read("curver.txt")[1]
     edt <- paste(get.edition(), "edition")
     build <-  makeBuildnum()
     file.write(p0(ver, "\n", build, "\n", edt), app.pt("bloomr.txt"))    
@@ -595,7 +620,7 @@ bloomrTree.brEmacs <- function() {
     from <- G$emacszip
     dirs <- c('bin', 'lib', 'libexec', 'share/emacs', 'share/icons', 'share/info', 'share/man')
     copy.glob(from, bremacs, dirs)
-
+    
     ## === Download BRemacs lib files === ##
     makeDir(slisp.pt("bremacs"), "BRemacs library:")
     ## Filename list. If chhanged rubuild like that
@@ -626,6 +651,9 @@ bloomrTree.brEmacs <- function() {
     ## === Install local BRemacs packages === ##
     message("Installing local BRemacs packages")
     message("...this may take a bit")
+    if(is.null(G$bremacs.paks.tree)) stop("'G$bremacs.paks.tree', to be populated during the download step, is NULL.
+The download step was not executed or something went wrong")
+    
     tarpaths <-  makePath(down.pt("bremacs-libs"), bremacs.pak.tree.el("basename")) 
     G$bremacs.paks.order <- bloomrTree.brEmacs.pakorder()
     tarpaths.ord <- tarpaths[G$bremacs.paks.order]
@@ -687,7 +715,9 @@ bloomrTree.brEmacs <- function() {
 "
     ## sprintf(elisp.t, dquoteu(eldir.site)) |> runsexp() # not usually used
     message("\n\n*** Byte-compilation completed ***\n\n")
-    
+#browser()
+    ## Aspell 
+    copy.dir(makePath(G$aspell, "tars/mingw64"), app.pt('bremacs/share/aspell'), "Aspell files...")    
 }
 
 
@@ -761,9 +791,9 @@ makeStudio.addLatex <- function() {
     ## There is a luahbtex issue with a missing vcruntime140_1.dll
     ## BTW, the exclution does not prevent post-update buldint and
     ## hence an error
-    cmd <- paste(tlmgr(), "update --all --exclude luahbtex")
+    cmd <- paste(tlmgr(), "update --self --all --exclude luahbtex")
     shell.ps(cmd, winwork.pt("ps.tinytex.txt"))    
-#browser()
+
     ## Extra packages: bookmark needed for most reports, makeindex for
     ## R package manuals, and beamer is for slides
     extratex <- c("bookmark", "makeindex", "beamer")
@@ -836,10 +866,8 @@ makeStudio.addPandoc <- function(){ # NOT USED
     
     ## Create Pandoc dir
     existMake(pandir, TRUE, FALSE, "Pandoc dir:")
-
-    from <- Sys.glob(work.pt(p0(G$panzip,'/pandoc*')))
-    file.rename(from, work.pt(makePath(pandir, "/bin")))
-    
+    globpaths(G$panzip, "/pandoc*") |>
+        copy.dir(makePath(pandir, "/bin"), "Pandoc files")
 }
 
 makeStudio.addPerl <- function(){
@@ -1077,9 +1105,10 @@ makeInst <- function(ask){ # not used since long
     message('\nCreating BloomR green installer')        
     ## Set name (nsi name is "bloomr-setup.exe")    
     to <- switch(get.edition(), 
-                 core = "BloomR-Core_setup_.exe",
-                 lab = "BloomR-Lab_setup_.exe", 
-                 studio = "BloomR-Studio_setup_.exe")
+                 core = "BloomR-Core",
+                 lab = "BloomR-Lab", 
+                 studio = "BloomR-Studio")
+    to <- p0(to, "_v", G$curver, "-setup.exe")
     
     if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)
@@ -1098,12 +1127,12 @@ makeZip <- function(ask){
 
     message('\nCreating BloomR.zip')
     to <- switch(get.edition(), 
-                 core = "BloomR-Core_setup_.zip",
-                 lab = "BloomR-Lab_setup_.zip",
-                 studio = "BloomR-Studio_setup_.zip")
+                 core = "BloomR-Core",
+                 lab = "BloomR-Lab", 
+                 studio = "BloomR-Studio")
+    to <- p0(to, "_v", G$curver, ".zip")
     
-    if(is.path(to)) del.ask(to, ask, "already exists")
-    
+    if(is.path(to)) del.ask(to, ask, "already exists")    
     del.path(to)    
     from <- p0('./', G$branch, '/*')  # In 7z ./ removes dir prefix from archive files
     zexe <- get7zbin()
@@ -1308,20 +1337,76 @@ web.greplink <- function(regexp, pos=0, url, abs=FALSE){
 ### Grep links from URL and return 0=all, 1=first, -1=last
 ### abs: Return absolute or relative URL paths
     
-    req <- curl_fetch_memory(url, new_handle())
-    req <- rawToChar(req$content)        
-    lnks <- xpathSApply(htmlTreeParse(req, useInternalNodes = TRUE), 
-                        "//a", xmlGetAttr, "href")
+    resp <- curl_fetch_memory(url)
+    page <- read_html(resp$content)
+    lnks <- xml_find_all(page, "//a") |> xml_attr("href")
     glinks <- grep(regexp, lnks, ignore.case=TRUE, value=TRUE)
-    if(abs) glinks <- p0(p0(sub("/$", "", url), "/"), glinks)
+    if(abs) glinks <- makePath(url, glinks)
     if(pos==1) return(glinks[1])
     else if (pos==-1) return(tail(glinks,1))
     else
         glinks  
 }
 
+## Github
+github.latest <- function( # Find the link to latest GitHub release
+                          owner.project, # "JonDoe/project"
+                          regex,         #  regex to filter links, e.g. "myapp.+zip$"
+                          first = TRUE   # If T choose first link, else last
+                          ) {
+    
+    giturl <- makePath("https://api.github.com/repos", owner.project, "releases/latest")
+    json <- rawToChar(curl_fetch_memory(giturl) $content)
 
-## SourceForge 
+    ## Our targets look like: "browser_download_url":"https://github.com/.../download/..."
+    lnks <- regmatches(json, gregexpr("\"browser_download_url\":\"[^\"]+", json))[[1]] |>
+        strsplit("\"") |> lapply(tail, 1)
+
+    ## Apply user regex and choose first or last
+    ht <- if(first) head else tail
+    grep(regex, lnks, value = TRUE) |> ht(1)        
+}
+
+## SourceForge
+sfGetLink <- function (sfPage, regex) { # Find first link in SF "Files" tab matching regex
+  page <- xml2::read_html(sfPage)
+  lnks <- page |> xml_find_all("//a[span[@class='name']]") |> xml_attr("href")
+  if(!length(lnks)) stop("Unable to find download links on\n", sfPage)
+  matches <- grep(regex, lnks, value=TRUE, ignore.case=TRUE)
+  link <- if(length(matches))  matches[1]
+          else stop("Unable to find required file version on\n", sfPage)
+  domain <- "https://sourceforge.net"
+  if(grepl(domain, link)) link else makePath(domain, link)
+}
+
+
+sfFirstInProject <- function ( # First item in SF PROJECT matching REGEX 
+                              project, regex , quiet=FALSE) {
+  if(!quiet) messagev('Searching project', project, 'on SF.net')
+  url <- makePath("https://sourceforge.net/projects", project, "files")
+  sfGetLink(url, regex)
+}
+
+
+sfFirstInUrl <- function (url, regex, quiet=FALSE) { # First item in SF URL matching REGEX 
+### Sometimes you have to click twice: the first time you get the URL
+### to a subproject that you then use here.
+
+  if(!quiet) messagev('Searching URL', url)
+  sfGetLink(url, regex)
+}
+
+sfDirectLink <- function (# Get direct-download link for SF link.
+                          url, quiet=FALSE) {
+### Follow the direct-download link 
+
+    if(!quiet) messagev('Find the best mirror for\n', url)
+    hds <- curl_fetch_memory(url, new_handle(followlocation = FALSE))$header
+    parse_headers(hds) |> grep("^location:", x=_, value = TRUE) |>
+        strsplit(split = " ") |> unlist() |> tail(1)    
+}
+
+### old versions bases on XML
 sfFirstbyProject <- function (project, filtx, quiet=FALSE){
 ### First SF project item matching regex filter (url made from prj name)
     
@@ -1335,6 +1420,7 @@ sfFirstbyProject <- function (project, filtx, quiet=FALSE){
     if(substr(url,1,1)=='/') url <- p0(ref, url)#relative to absolute
     return (url)
 }
+
 
 sfFirstbyUrl <- function (url, versionx, quiet=FALSE){
 ### First SF url item matching regex filter (url given from prj name)
@@ -1747,7 +1833,8 @@ makePath <- function( # Extended version of base file.path()
                      suf = "", # like 'ext' but no dot is added. It is applied before ext, when both are used 
                      plat.sep = FALSE,   # T: use platform specific path separator. F: use forword slash
                      extra.seps = FALSE, # If T, remove unecessary path separators, e.g. a//b -> a/b
-                     nonames = FALSE     # If F, preserve names is all similar or only the longest vector is named
+                     nonames = FALSE,    # If F, preserve names is all similar or only the longest vector is named
+                     http.fix = TRUE     # Don't remove doubles for web output (http[s]:// ftp://)
                      ) {
 
 ### For vector components we use the logic of paste, that is:
@@ -1801,6 +1888,10 @@ makePath <- function( # Extended version of base file.path()
  
     ## Fix separators 
     if(win && plat.sep) p <- gsub("/", "\\\\", p)
+
+
+    ## Fix web address (add back the removed forward slash)
+    p <- sub("^((http[s]?|ftp):/)([^/])", "\\1/\\3", p)
 
     ## Output with names
     if(nonames || !preser) out.nms <- NULL
@@ -2083,7 +2174,7 @@ copy.glob <- function(srcdir, destdir, subpaths){
     if(length(which(!rets))) stop(pv("Unable to write to the following destination/s:", destpaths[which(!rets)], s='\n'))
 }
     
-globpaths <- function( # Return parent/children, resolving globs (not regex). Both dirs should refer to the build workdir.
+globpaths <- function( # Return parent/children resolving globs. Input and output dirs are relative to the build workdir.
 ### Parent is scalar and its expansion should be unique. Children is a vector and each expansion can generate multiple matches
                      parent,   # with globbing, but its expansion gives a single path 
                      children, # with globbing
@@ -2169,6 +2260,7 @@ copy.dir <- function(from, to, desc=""){
 ### Warning: If the temp dir 'c/d/x' exists, an error is raised
     
     if(nzchar(desc)) message("\nAdding ", desc)
+    if(!is.path(from)) stop("Cannot copy non-existing dir:\n", work.pt(from))
     del.path(to)
     copy.dir_(from, to)
 }
@@ -2458,16 +2550,25 @@ uzip_ <- function(from, to){ # uzip workhorse
         stop('\nUnable to perform extraction')  
 }
 
-utar <- function(from, to, desc, delTarget=TRUE) {
-### Untar making path relative to the build workdir
-### Stops on errors and inform used with a desc argument
+utar <- function(from, to, desc, delTarget=TRUE) # like uzip() but untar
+    utar_(from, to, desc, delTarget, "work")
+
+utar.ww <- function(from, to, desc, delTarget=TRUE) { # like utat(), but also FROM is relative to the build workdir
+### For cases like tar.gz the second expansion is in from work dir
+
+    utar_(from, to, desc, delTarget, "work")
+}
+
+utar_<- function(from, to, desc, delTarget=TRUE, parent) { # utar() and utar.ww() workhorse
+
+    if(! parent %in% c("down", "work")) stop("'parent' arg should be 'down' or 'work'")
+    this.pt <- if(parent == "down") down.pt else work.pt
 
     message('\nExpanding ', desc, '...') 
-    if(!file.exists(down.pt(from))) stop("Cannot find the file\n", down.pt(from))
+    if(!file.exists(this.pt(from))) stop("Cannot find the file\n", this.pt(from))
     if(delTarget) del.path(to)
-    # utar_(from, to)  # consider remove this 
     
-    from <- down.pt(from)
+    from <- this.pt(from)
     to <- work.pt(to)
     if(untar(from, exdir = to) != 0)
         stop('\nUnable to perform extraction')    
@@ -2496,7 +2597,7 @@ retar <- function( ## Remove tar compression, if any (for elisp package setup)
     }        
 }
 
-uzip.7z <- function(from, to, desc, delTarget=TRUE){
+uzip.7z <- function(from, to, desc, delTarget=TRUE){ # Like uzip(), but using the 7z binary provided by get7zbin()
     zexe <- get7zbin()
     if(is.path(to)) {
         message('\nDeleting exisiting ', desc)
@@ -2510,18 +2611,24 @@ uzip.7z <- function(from, to, desc, delTarget=TRUE){
     if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 }
 
-get7zbin <- function(){ # Get 7z.exe relative to the build workdir
-    zipdir <- G$pzip
-    versiondir <- get7zbin.ver_(zipdir)
-    subpath <- '/res/bin/7z/7z.exe'
-    makePath(zipdir, p0(versiondir, subpath))
+get7zbin <- function() # Get 7z.exe relative to the build workdir
+    globpaths(G$pzip, "peazip_portable*/res/bin/7z/7z.exe")
+
+uzip.zx <- function(from, to, desc, delTarget=TRUE){ # Like uzip(), but using the zst binary provided by getzxbin()
+    zexe <- getzxbin()
+    if(is.path(to)) {
+        message('\nDeleting exisiting ', desc)
+        del.path(to)
+    }    
+    message('\nExpanding (w/ zstd) ', desc)
+    cmd <- paste(winwork.pt(zexe), '-d', windown.pt(from), '-o',  paste(winwork.pt(to)))
+    ret <- system(cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
+    if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 }
 
-get7zbin.ver_ <- function(zipdir){ # get7zbin workhorse
-    zipdir <- work.pt(zipdir)
-    dir(zipdir)
+getzxbin <- function() { # Get zstd.exe relative to the build workdir
+    globpaths(G$zstd, "zstd*/zstd.exe") 
 }
-
 
 innoextract <- function(from, to, desc, delTarget=TRUE){
     exe <- getInnobin()
@@ -2657,10 +2764,11 @@ linux.dbg <- function( # Some superficial linux debugging after sourcing this fi
                       branch  = c("brEmacs", "brCore"), # defaults to branch[1]
                       downdir = "/bloomr.down.dbg"      # or your last actual path
                       ) {
+    library(curl); library(xml2)
     G$work <- workdir
     G$branch <- branch[1] 
     dir.create(G$work, recursive = TRUE, showWarnings = FALSE)
     G$downdir <- downdir
     dir.create(G$downdir, recursive = TRUE, showWarnings = FALSE)
 }
-## linux.dbg()
+if(.Platform$OS.type == "unix") linux.dbg()

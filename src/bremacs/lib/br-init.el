@@ -34,6 +34,7 @@ Currently default location of Sumatra viewer")
 (defvar br-rterm  nil
   "Location of local R x64 executable \"rterm\".")
 
+
 (defun br-init-paths ()
   "BRemacs system directories are kept separated by the HOME dir.
 This is intended to keep the product user friendly, and have HOME
@@ -165,6 +166,8 @@ Some features are in \"early-init.el\" for speed."
  
   ;; Menu and Icons. It requires ess-mode, ess-mode, and ess-toolbar
   (require 'br-menico)
+  (setq custom-file (expand-file-name "~/bloomr.conf"))
+  (if (file-exists-p custom-file) (load custom-file))
 )
 
 
@@ -279,6 +282,16 @@ possibly use it as a hook for further speed."
   (require 'br-keys)
   (br-init-simple-package-initialize)
 
+  ;; Temporary disabled. It should activated as an entry of the future Quick menu 
+  (with-eval-after-load 'ess-r-mode 
+    (setopt ess-use-flymake nil))
+
+  ;; Aspell
+  (add-to-list 'exec-path  (br-locate-bremacs-path "share/aspell/bin"))
+  (setq-default ispell-program-name "aspell")
+  (setq-default ispell-extra-args (list "--repl"  (br-locate-bremacs-path ".emacs.d/ispell-replace")))
+  (setq-default ispell-personal-dictionary "~/pers-dict")
+  
   ;; If there is a file named user.el in HOME (mybloomr), eval it
   (let ((myinit "~/user.el"))
 	(if (file-exists-p myinit) (load-file myinit))))

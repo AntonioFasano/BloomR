@@ -150,7 +150,7 @@ Yes, browsers are strange sometimes.
 ### More options and requirements
 
 A decent R version is needed 4+ (perhaps older version will do).  
-`.Platform$OS.type == "windows"`. `XML` and `curl` packages are needed, but if missing, the build script will try to download and install them.  
+`.Platform$OS.type == "windows"`. `xml2` and `curl` packages are needed, but if missing, the build script will try to download and install them.  
 R should be able to connect to the Internet.
 
 If you want to find  `BloomR.zip` too in your work directory use:
