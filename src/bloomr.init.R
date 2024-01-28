@@ -9,29 +9,32 @@
 .bootstrap.debug <- Sys.getenv("BREMACSDBG") == "1"
 if(.bootstrap.debug) message("BloomR: Debug/verbose mode on")
 
-### Get user functions
-### ------------------
-source(R.home("share/bloomr/bloomr.R"))
-
 ### Get system functions
 ### --------------------
-bloomr.sys <-  new.env(parent=asNamespace("stats"))
-source(R.home("share/bloomr/bloomr.sys.R"), local=bloomr.sys)
-## q/quit() are redefined so this warns on debug
-attach(bloomr.sys, warn.conflicts = .bootstrap.debug)
-rm(bloomr.sys)
+# bloomr.sys <-  new.env(parent=asNamespace("stats"))
+# source(R.home("share/bloomr/bloomr.sys.R"), local=bloomr.sys)
+# ## q/quit() are redefined so this warns on debug
+# attach(bloomr.sys, warn.conflicts = .bootstrap.debug)
+# rm(bloomr.sys)
 
-### Get time functions
+## Manual attach libs
+load.lib <- function(name, atc.name = name){
+    assign(name, new.env(parent = asNamespace("stats")))
+    rfile <- paste0(name, ".R")
+    source(file.path(R.home("share/bloomr"), rfile), local = get(name))
+    attach(get(name), name = atc.name, warn.conflicts = .bootstrap.debug)
+    rm(name)
+}
+
+
+### Attach BloomR libs
 ### ------------------
-source(R.home("share/bloomr/bloomr.time.R"))
-
-### xlx
-### ---
-local({
-    bloomr.xlx <- new.env(parent=asNamespace("stats"))
-    source(R.home("share/bloomr/xlx.R"), local=bloomr.xlx)
-    attach(bloomr.xlx)
-})
+load.lib("bloomr.sys")
+source(R.home("share/bloomr/bloomr-bbg.R"))
+source(R.home("share/bloomr/bloomr-rmd.R"))
+source(R.home("share/bloomr/bloomr-time.R"))
+load.lib("xlx")
+rm(load.lib)
 
 ### Eikon
 ### -----
@@ -82,6 +85,7 @@ if(Sys.getenv("bloomr_branch") == "bremacs"){
 }
 sink(NULL, type = "message")
 close(con)
+rm(con)
 if(.bootstrap.debug) message(install.packs.debug) else rm(install.packs.debug) 
 
 

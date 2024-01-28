@@ -84,7 +84,7 @@ knit.twice <- function(this.file) {# knit this Rmd.
     if(bad.dir && is.rel) message("\nNOTE: Workdir was adjusted to ", GITPOS, ".")
 
 }
-knit.twice("bloomr.time.Rmd")
+knit.twice("bloomr-time.Rmd")
 
 
 ## if with markdown lib & pandoc (but topics would need a rewrite):
@@ -97,23 +97,23 @@ knit.twice("bloomr.time.Rmd")
 
 ```{r setup, purl=FALSE, include=FALSE}
 
-## debug
-## rm(list=ls(all=TRUE)) 
-
 ### Chunk templates and defaults
-knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60))
 knitr::opts_chunk$set(echo=TRUE)
-OTS=knitr::opts_template$set
-## Step1 template: Load in memory and copy to bloomr(.beta).R BloomR functions
-OTS(brfuncs=   list(purl=step2,  eval=!step2,   include=FALSE))
-## Step2 templates: Run demos using Step1 functions
-OTS(demofull= list(purl=FALSE, eval=step2,  include=TRUE))  # run w/ code + out   
-OTS(demorun=  list(purl=FALSE, eval=step2,  include=TRUE, echo=FALSE)) # run w/ out, no code 
-OTS(demodry=  list(purl=FALSE, eval=step2,  include=FALSE)) # run only (no code/out)
+OTS <- knitr::opts_template$set
+## Step1 template: Load in memory and copy to <lib>.R
+OTS(purlme=   list(purl=TRUE,  eval=!step2,   include=FALSE))
+## Step1 template: Load in memory and copy to <lib>.R
+OTS(demofull= list(purl=FALSE, eval=step2,  include=TRUE))  # run with code + output   
+OTS(demorun=  list(purl=FALSE, eval=step2,  include=TRUE, echo=FALSE)) # run with output, but no code 
+OTS(demohid=  list(purl=FALSE, eval=step2,  include=FALSE)) # run only (without code or output)
 OTS(democode= list(purl=FALSE, eval=FALSE,  include=TRUE))  # show code only, no run  
+OTS(buildenv= list(purl=FALSE, eval=step2,  include=FALSE)) # Called in step2 by the build chunk to knit this document 
 
 ## Purl hook (suggested in the past, but probably no necessary today)
 knitr::knit_hooks$set(purl = knitr::hook_purl)
+
+## Resource directory relative path
+RESDIR <- "../../res"
 
 ```
 
@@ -121,8 +121,8 @@ knitr::knit_hooks$set(purl = knitr::hook_purl)
 ```{r store, opts.label='brfuncs'}
 
 ## Purl this first
-## Store br.* objects in bloomr env in base namespace
-assign('bloomr.time', new.env(parent=asNamespace("stats")))
+## Store br.* objects in dedicated namespace
+bloomr.time <-  new.env(parent=asNamespace("stats"))
 
 
 ## func: store(func);  var: store("var")

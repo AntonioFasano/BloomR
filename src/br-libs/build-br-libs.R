@@ -1,7 +1,17 @@
-### Executes the build chunk of each Rmd found in this directory
-## Build chunks may set options to work only in a BloomR build
+### Executes the build chunk of each Rmd found in this directory and knits main README.md
+## USAGE: Source this file and run knit.all()
 
-## Currently bloomr.Rmd also makes README.md into html
+## For interactive use (C-l)  
+if(FALSE){
+    run.build.chunk("bloomr-bbg.Rmd")
+    run.build.chunk("bloomr-rmd.Rmd")
+    run.build.chunk("bloomr-time.Rmd")
+    knit.all()
+}
+
+
+## Find README
+README <- "../../README.md" # based on GITPOS in run.build.chunk()
 
 run.build.chunk <- function(rmd.file) {
 
@@ -35,6 +45,13 @@ run.build.chunk <- function(rmd.file) {
     ## Inform on new wdir
     if(bad.dir && is.rel) message("\nNOTE: Workdir was adjusted to ", GITPOS, ".")
 }
-run.build.chunk("bloomr.Rmd")
-run.build.chunk("bloomr.time.Rmd")
+
+knit.all <- function() {
+    run.build.chunk("bloomr-bbg.Rmd")
+    run.build.chunk("bloomr-rmd.Rmd")
+    run.build.chunk("bloomr-time.Rmd")
+    ## Run last to benefit the auto-workdir by run.build.chunk()
+    rmarkdown::render(README, rmarkdown::html_document())
+}
+
 

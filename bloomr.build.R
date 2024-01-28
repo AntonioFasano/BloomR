@@ -1,13 +1,9 @@
 ###  BloomR source
 ##  TODO
-##  Separate code (e.g. in bloomr.Rmd) requiring a Bloomberg or Refinitive to test from knitting, time, system code. 
 ##  In bloomr.init.R, eikonapir loading removes requestInfo from .GlobalEnv with a hack. Test it and then delete eikon.fallback() 
 ##  In bloomr.Rmd bdh always.display.ticker, dates.as.row.names and perhaps more relate to old java package.
-##  Finalise dir temp-help docs source dir
 ##  Custom polymode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
 ##  Repurpose tests and test data 
-##  bloomr.time.Rmd introduces a system to auto extract args desc from comment (see parseargs) consider use it.
-##  In `knit.twice` in "bloomr.time.Rmd" add the path hacks as `knit2` in "bloomr.Rmd" so as to build it in BloomR.
 ##
 ##
 ##  Usage:
@@ -566,20 +562,21 @@ bloomrTree.Core <- function() {
         cmd <- c(exe, "--no-site-file --no-environ --no-save --no-restore --quiet CMD INSTALL", from, to)
         shell.cd(cmd, wd="c:") # In Windows cmd.exe is invoked, so we need to set wd to a non-UNC path
     }
-
     
     ## Download docs
     message("\nDownloading BloomR help resources")
     download.git("README.html",                  root.pt("README.html"))
     download.git("LICENSE",                      root.pt("LICENSE.txt"))
     makeDir(root.pt("help"), "BloomR help directory:")
-    download.git("src/br-libs/bloomr.html",      root.pt("help/bloomr.html")) 
-    download.git("src/br-libs/bloomr.pdf",       root.pt("help/bloomr.pdf"))
     download.git("src/xlx/xlx.help.html",        root.pt("help/xlx.help.html"))     
     download.git("src/xlx/xlx.help.pdf",         root.pt("help/xlx.help.pdf"))
     download.git("reports/reporting.pdf",        root.pt("help/reporting.pdf"))     
-    download.git("src/br-libs/bloomr.time.html", root.pt("help/bloomr.time.html"))
-    download.git("src/br-libs/bloomr.time.pdf",  root.pt("help/bloomr.time.pdf"))
+    download.git("src/br-libs/bloomr-bbg.html",  root.pt("help/bloomr-bbg.html")) 
+    download.git("src/br-libs/bloomr-bbg.pdf",   root.pt("help/bloomr-bbg.pdf"))
+    download.git("src/br-libs/bloomr-rmd.html",  root.pt("help/bloomr-rmd.html"))
+    download.git("src/br-libs/bloomr-rmd.pdf",   root.pt("help/bloomr-rmd.pdf"))
+    download.git("src/br-libs/bloomr-time.html", root.pt("help/bloomr-time.html"))
+    download.git("src/br-libs/bloomr-time.pdf",  root.pt("help/bloomr-time.pdf"))
     download.git("res/elearnr.pdf",              root.pt("help/elearnr.pdf"))     
     download.git("res/pcloudr.pdf",              root.pt("help/pcloudr.pdf"))     
     download.git("res/secretR.pdf",              root.pt("help/secretR.pdf")) 
@@ -955,10 +952,11 @@ initScripts.etc <- function() {
     download.git("src/bloomr.init.R",         app.pt("R/share/bloomr/bloomr.init.R"))
     ## download.git("src/bloomr.beta.R",      app.pt("R/share/bloomr/bloomr.beta.R"))
     ## download.git("src/bloomr.api.R",       app.pt("R/share/bloomr/bloomr.api.R"))
-    download.git("src/br-libs/bloomr.R",      app.pt("R/share/bloomr/bloomr.R"))
     download.git("src/bloomr.sys.R",          app.pt("R/share/bloomr/bloomr.sys.R"))
     download.git("src/bloomr.test.R",         app.pt("R/site-library/bloomr.test.R"))
-    download.git("src/br-libs/bloomr.time.R", app.pt("R/share/bloomr/bloomr.time.R"))
+    download.git("src/br-libs/bloomr-bbg.R",  app.pt("R/share/bloomr/bloomr-bbg.R"))
+    download.git("src/br-libs/bloomr-rmd.R",  app.pt("R/share/bloomr/bloomr-rmd.R"))
+    download.git("src/br-libs/bloomr-time.R", app.pt("R/share/bloomr/bloomr-time.R"))
     download.git("src/xlx/xlx.R",             app.pt("R/share/bloomr/xlx.R"))
 
     ## Testdata

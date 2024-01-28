@@ -364,11 +364,10 @@ display: none;
 <tbody>
 <tr class="odd">
 <td><a href="#br.bdh">br.bdh</a> <a href="#br.bulk.csv">br.bulk.csv</a>
-<a href="#br.bulk.desc">br.bulk.desc</a> <a href="#br.bulk.idx">br.bulk.idx</a> <a href="#br.bulk.tiks">br.bulk.tiks</a> <a href="#br.desc">br.desc</a> <a href="#br.md2pdf">br.md2pdf</a> <a href="#br.rmd2html">br.rmd2html</a>
-<a href="#br.rmd2slides">br.rmd2slides</a> <a href="#br.rmd2pdf">br.rmd2pdf</a> <a href="#br.rmd2both">br.rmd2both</a>
-<a href="#br.sample">br.sample</a> <a href="#deprecated.functions">Deprecated functions</a> <a href="#Internal">Internal BloomR functions</a> <a href="#connections">Manage connections</a> <a href="#misc.functions">Misc functions</a> <a href="#beta.functions">Beta
-functionalities</a> title: “BloomR Main Functions” author: “Antonio
-Fasano” date: “Jan 28, 2024”</td>
+<a href="#br.bulk.desc">br.bulk.desc</a> <a href="#br.bulk.idx">br.bulk.idx</a> <a href="#br.bulk.tiks">br.bulk.tiks</a> <a href="#br.desc">br.desc</a> <a href="#br.sample">br.sample</a> <a href="#Internal">Internal BloomR
+functions</a> <a href="#connections">Manage connections</a> title:
+“BloomR Main Functions” author: “Antonio Fasano” date: “Jan 28,
+2024”</td>
 </tr>
 </tbody>
 </table>
@@ -740,27 +739,26 @@ like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2024-01-23  10.064 10.481        NA     NA  10.622
-## 2024-01-24   9.831 11.874        NA 11.179  11.233
-## 2024-01-25  10.020 11.018    10.219 10.005   9.853
-## 2024-01-26  10.524  9.776        NA     NA   9.575
-## 2024-01-27   9.624     NA        NA 10.311  10.234
+## 2024-01-23      NA 10.903     9.841  9.843      NA
+## 2024-01-24   9.051  9.414        NA 10.922   9.232
+## 2024-01-25   9.092 10.412    10.813     NA      NA
+## 2024-01-26      NA 11.726    10.399  8.613      NA
+## 2024-01-27      NA  8.826     9.618 10.079      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2024-01-23      NA   7.331     NA     NA   8.542
-## 2024-01-24   8.773      NA     NA     NA  10.857
-## 2024-01-25      NA   9.159  8.401  9.943   8.915
-## 2024-01-26      NA  10.453  8.781     NA      NA
-## 2024-01-27      NA  11.339 10.646 10.706   8.839
+## 2024-01-23      NA  10.069     NA     NA  10.757
+## 2024-01-24      NA  10.496     NA     NA   9.003
+## 2024-01-25      NA   8.471 11.299     NA   9.005
+## 2024-01-26  11.263  11.186 10.516  7.901  11.548
+## 2024-01-27      NA   9.808 10.663     NA      NA
 ## 
 ## $Indices
-##               DJI DJUSFN  W1TEC
-## 2024-01-23 10.110     NA  9.817
-## 2024-01-24  9.100 11.221 10.739
-## 2024-01-25  7.399 11.000  9.214
-## 2024-01-26 10.213  9.710 10.731
-## 2024-01-27     NA     NA 11.899</code></pre>
+##               DJI DJUSFN W1TEC
+## 2024-01-23     NA  9.265    NA
+## 2024-01-24 11.196     NA 9.091
+## 2024-01-25     NA 11.806    NA
+## 2024-01-26     NA 11.313    NA</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security
@@ -980,11 +978,9 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2024-01-23   8.996   8.684
-## 2024-01-24      NA  10.024
-## 2024-01-25      NA  11.051
-## 2024-01-26      NA  11.347
-## 2024-01-27   9.312  11.241</code></pre>
+## 2024-01-25   9.869   9.249
+## 2024-01-26      NA  10.279
+## 2024-01-27   9.711   9.807</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">
@@ -1022,257 +1018,20 @@ string denoting the ticker queried for data
 <code>CIE_DES_BULK</code>.</p>
 </div>
 </div>
-<div id="br.md2pdf" class="section level1">
-<h1>br.md2pdf</h1>
-<div id="description-4" class="section level2">
-<h2>Description</h2>
-<p>Make a markdown file into a PDF It assumes that you have installed
-the proper BloomR version.</p>
-</div>
-<div id="usage-6" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.md2pdf(md.file, pdf.file)</code></pre>
-</div>
-<div id="arguments-6" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>md.file</dt>
-<dd>
-path to the markdown file to be converted.
-</dd>
-<dt>pdf.file</dt>
-<dd>
-path to the PDF file to be generated. If missing, change extension of
-rmd.file to pdf.
-</dd>
-<dt>quiet</dt>
-<dd>
-FALSE to show the system PATH variable.
-</dd>
-</dl>
-</div>
-<div id="details-4" class="section level2">
-<h2>Details</h2>
-<p>The function will stop with an error if you have not installed proper
-BloomR version.</p>
-</div>
-<div id="value-6" class="section level2">
-<h2>Value</h2>
-<p>If there are no errors, it returns zero invisibly, otherwise it
-prints an error message and returns the related error code.</p>
-</div>
-</div>
-<div id="br.rmd2html" class="section level1">
-<h1>br.rmd2html</h1>
-<div id="description-5" class="section level2">
-<h2>Description</h2>
-<p>Make an R markdown file into a HTML.</p>
-</div>
-<div id="usage-7" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.rmd2html(rmd.file, html.file, quiet=TRUE)</code></pre>
-</div>
-<div id="arguments-7" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>rmd.file</dt>
-<dd>
-path to the R markdown file to be converted.
-</dd>
-<dt>html.file</dt>
-<dd>
-path to the HTML file to be generated. If missing, change extension of
-rmd.file to html.
-</dd>
-<dt>quiet</dt>
-<dd>
-FALSE to show the system PATH variable and intermediate files.
-</dd>
-</dl>
-</div>
-<div id="details-5" class="section level2">
-<h2>Details</h2>
-<p>You need BloomR LaTeX addons or the proper BloomR version.</p>
-</div>
-<div id="value-7" class="section level2">
-<h2>Value</h2>
-<p>If there are no errors, it returns invisibly the absolute path of the
-output file.</p>
-</div>
-</div>
-<div id="br.rmd2slides" class="section level1">
-<h1>br.rmd2slides</h1>
-<div id="description-6" class="section level2">
-<h2>Description</h2>
-<p><code>br.rmd2slides.html()</code> makes an R Markdown file into a <a href="https://github.com/googleworkspace/md2googleslides">Google
-Slides</a> self-contained HTML file.<br />
-<code>br.rmd2slides.pdf()</code> makes an R Markdown file into a Beamer
-PDF.<br />
-<code>br.rmd2slides()</code> makes both a self-contained HTML file and a
-Beamer PDF.<br />
-<code>highlight.styles()</code> print the list of available syntax
-highlight styles.</p>
-</div>
-<div id="usage-8" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.rmd2slides(rmd.file, theme = &quot;AnnArbor&quot;, highlight = &quot;tango&quot;, quiet = TRUE) 
-br.rmd2slides.html(rmd.file, html.file, quiet=TRUE)
-br.rmd2slides.pdf(rmd.file, pdf.file, theme = &quot;AnnArbor&quot;, highlight = &quot;tango&quot;, quiet = TRUE){
-highlight.styles()</code></pre>
-</div>
-<div id="arguments-8" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>rmd.file</dt>
-<dd>
-path to the R markdown file to be converted.
-</dd>
-<dt>theme</dt>
-<dd>
-A Beamer <a href="https://hartwork.org/beamer-theme-matrix/">theme</a>
-</dd>
-<dt>highlight</dt>
-<dd>
-A syntax highlight style. Use <code>highlight.styles()</code> to list
-them.
-</dd>
-<dt>html.file</dt>
-<dd>
-path to the HTML file to be generated. If missing, we change the
-extension of <code>rmd.file</code> to “.html”.
-</dd>
-<dt>pdf.file</dt>
-<dd>
-path to the PDF file to be generated. If missing, we change the
-extension of <code>rmd.file</code> to “.pdf”.
-</dd>
-<dt>quiet</dt>
-<dd>
-FALSE to show the system PATH variable and intermediate files.
-</dd>
-</dl>
-</div>
-<div id="details-6" class="section level2">
-<h2>Details</h2>
-<p>You need the proper BloomR edition. The output filename for
-<code>br.rmd2slides()</code> is automatically generated by changing the
-<code>rmd.file</code> file extension.</p>
-<p>To represent the slide structure in an Rmd, you use the following
-pattern:</p>
-<pre><code>---
-title: &quot;Your Presentation Title&quot;
-author: &quot;Your Name&quot;
-date: &quot;A date description&quot;
----
- 
-## Slide 1
- 
-This is the content for slide 1.
- 
-## Slide 2
- 
-This is the content for slide 2.
- 
-etc.</code></pre>
-<p>Then you can proceed as usual to add R code chunks.</p>
-</div>
-<div id="value-8" class="section level2">
-<h2>Value</h2>
-<p>If there are no errors, it returns invisibly the absolute path of the
-output file.</p>
-</div>
-</div>
-<div id="br.rmd2pdf" class="section level1">
-<h1>br.rmd2pdf</h1>
-<div id="description-7" class="section level2">
-<h2>Description</h2>
-<p>Make an R markdown file into a PDF.</p>
-</div>
-<div id="usage-9" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.rmd2pdf(rmd.file, pdf.file, quiet=TRUE)</code></pre>
-</div>
-<div id="arguments-9" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>rmd.file</dt>
-<dd>
-path to the R markdown file to be converted.
-</dd>
-<dt>pdf.file</dt>
-<dd>
-path to the PDF file to be generated. If missing, change extension of
-rmd.file to pdf.
-</dd>
-<dt>quiet</dt>
-<dd>
-FALSE to show the system PATH variable and intermediate files.
-</dd>
-</dl>
-</div>
-<div id="details-7" class="section level2">
-<h2>Details</h2>
-<p>You need BloomR LaTeX addons or the proper BloomR version.</p>
-</div>
-<div id="value-9" class="section level2">
-<h2>Value</h2>
-<p>If there are no errors, it returns invisibly the absolute path of the
-output file.</p>
-</div>
-</div>
-<div id="br.rmd2both" class="section level1">
-<h1>br.rmd2both</h1>
-<div id="description-8" class="section level2">
-<h2>Description</h2>
-<p>Make an R Markdown file into a PDF and an HTML self-contained
-file</p>
-</div>
-<div id="usage-10" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.rmd2both(rmd.file, out.dir, quiet=TRUE)</code></pre>
-</div>
-<div id="arguments-10" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>rmd.file</dt>
-<dd>
-path to the R markdown file to be converted.
-</dd>
-<dt>out.dir</dt>
-<dd>
-directory of the output files. If missing, use
-<code>dirname(rmd.file)</code>.
-</dd>
-<dt>quiet</dt>
-<dd>
-FALSE to show the system PATH variable and intermediate files.
-</dd>
-</dl>
-</div>
-<div id="details-8" class="section level2">
-<h2>Details</h2>
-<p>You need BloomR LaTeX addons or the proper BloomR version.</p>
-</div>
-<div id="value-10" class="section level2">
-<h2>Value</h2>
-<p>If there are no errors, it returns invisibly the absolute path of the
-output file.</p>
-</div>
-</div>
 <div id="br.sample" class="section level1">
 <h1>br.sample</h1>
-<div id="description-9" class="section level2">
+<div id="description-4" class="section level2">
 <h2>Description</h2>
 <p>Return simulated historical data for n securities in xts or df
 format.</p>
 </div>
-<div id="usage-11" class="section level2">
+<div id="usage-6" class="section level2">
 <h2>Usage</h2>
 <pre><code>br.sample(nrow, nsec=1, price=TRUE, start=Sys.Date(),
 mean=ifelse(price, 10, 0.1), sd=1, jitter=0, same.dates=FALSE, no.na=FALSE,  
 empty.sec=0, df=FALSE, sec.names=NULL)</code></pre>
 </div>
-<div id="arguments-11" class="section level2">
+<div id="arguments-6" class="section level2">
 <h2>Arguments</h2>
 <dl>
 <dt>nrow</dt>
@@ -1344,7 +1103,7 @@ rounded without decimal places.
 </dd>
 </dl>
 </div>
-<div id="value-11" class="section level2">
+<div id="value-6" class="section level2">
 <h2>Value</h2>
 <p>If <code>df=TRUE</code>, a data frame object, where the first column
 is the vector with all generated dates merged and each subsequent column
@@ -1359,39 +1118,13 @@ frame, containing only security labels accessible with
 <code>dimnames(*)[[2]]</code>.</p>
 </div>
 </div>
-<div id="deprecated.functions" class="section level1">
-<h1>Deprecated functions</h1>
-<div id="description-10" class="section level2">
-<h2>Description</h2>
-<p>Functions not used anymore generating an informative error</p>
-</div>
-<div id="usage-12" class="section level2">
-<h2>Usage</h2>
-<pre><code>bbg.open()
-bbg.close(con)</code></pre>
-</div>
-<div id="arguments-12" class="section level2">
-<h2>Arguments</h2>
-<dl>
-<dt>con</dt>
-<dd>
-the connection token returned from br.open()
-</dd>
-</dl>
-</div>
-<div id="example-1" class="section level2">
-<h2>Example</h2>
-<pre><code>con=bbg.open()
-##  Sorry &#39;bbg.open&#39; is now deprecated. Please use br.open().</code></pre>
-</div>
-</div>
 <div id="Internal" class="section level1">
 <h1>Internal BloomR functions</h1>
-<div id="description-11" class="section level2">
+<div id="description-5" class="section level2">
 <h2>Description:</h2>
 <p>Internal functions not to be used by the end user</p>
 </div>
-<div id="usage-13" class="section level2">
+<div id="usage-7" class="section level2">
 <h2>Usage:</h2>
 <pre><code>.br.is.con(con)
 .br.types
@@ -1399,7 +1132,7 @@ the connection token returned from br.open()
 .br.cuttype(type)
 .br.jar()</code></pre>
 </div>
-<div id="arguments-13" class="section level2">
+<div id="arguments-7" class="section level2">
 <h2>Arguments:</h2>
 <dl>
 <dt>con</dt>
@@ -1412,7 +1145,7 @@ a string representing the security type
 </dd>
 </dl>
 </div>
-<div id="details-9" class="section level2">
+<div id="details-4" class="section level2">
 <h2>Details</h2>
 <p><code>.br.is.con</code> checks for the validity of a connection
 token. <code>.br.types</code> is a character vector with security types
@@ -1425,16 +1158,16 @@ the blpapi*.jar</p>
 </div>
 <div id="connections" class="section level1">
 <h1>Manage connections</h1>
-<div id="description-12" class="section level2">
+<div id="description-6" class="section level2">
 <h2>Description</h2>
 <p>Open and close the connection to the Bloomberg service.</p>
 </div>
-<div id="usage-14" class="section level2">
+<div id="usage-8" class="section level2">
 <h2>Usage</h2>
 <pre><code>br.open()
 br.close(con)</code></pre>
 </div>
-<div id="arguments-14" class="section level2">
+<div id="arguments-8" class="section level2">
 <h2>Arguments</h2>
 <dl>
 <dt>con</dt>
@@ -1443,7 +1176,7 @@ the connection token returned from br.open()
 </dd>
 </dl>
 </div>
-<div id="details-10" class="section level2">
+<div id="details-5" class="section level2">
 <h2>Details</h2>
 <p><code>br.open</code> returns the connection token needed by the
 BloomR function downloading data. When you finish you session, you pass
@@ -1452,36 +1185,14 @@ connection token is NULL, closing the connection is optional. Anyway
 running <code>br.close(con)</code>, even if <code>con==NULL</code>
 avoids adding this line when you switch to a actual data download.</p>
 </div>
-<div id="example-2" class="section level2">
+<div id="example-1" class="section level2">
 <h2>Example</h2>
 <pre class="r"><code>con=br.open() # Open the connection and get the token and load some data
 br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)
 br.close(con) # Use the token to release the connection</code></pre>
-</div>
-</div>
-<div id="misc.functions" class="section level1">
-<h1>Misc functions</h1>
-<div id="description-13" class="section level2">
-<h2>Description</h2>
-<p><code>rm.all</code> deletes all objects (variables and functions)
-from memory, including invisible objects (those starting with a dot).
-<code>rm.var</code> deletes non-function objects from memory.</p>
-</div>
-<div id="usage-15" class="section level2">
-<h2>Usage</h2>
-<pre><code>rm.all()
-rm.var()</code></pre>
-</div>
-</div>
-<div id="beta.functions" class="section level1">
-<h1>Beta functionalities</h1>
-<div id="description-14" class="section level2">
-<h2>Description</h2>
-<p>Activate beta functionalities, if available for this release.</p>
-</div>
-<div id="usage-16" class="section level2">
-<h2>Usage</h2>
-<pre><code>br.beta()</code></pre>
+<pre class="r"><code># XXXX
+#if(build.env$use.bloomr)
+#    original.system.path &lt;- .br.addpaths()</code></pre>
 <!-- Local Variables: -->
 <!-- mode: rmd -->
 <!-- End: -->

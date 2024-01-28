@@ -7,17 +7,9 @@ R topics documented:
 [br.bulk.idx](#br.bulk.idx)   
 [br.bulk.tiks](#br.bulk.tiks)   
 [br.desc](#br.desc)   
-[br.md2pdf](#br.md2pdf)    
-[br.rmd2html](#br.rmd2html)    
-[br.rmd2slides](#br.rmd2slides)    
-[br.rmd2pdf](#br.rmd2pdf)    
-[br.rmd2both](#br.rmd2both)    
 [br.sample](#br.sample)   
-[Deprecated functions](#deprecated.functions)   
 [Internal BloomR functions](#Internal)   
 [Manage connections](#connections)   
-[Misc functions](#misc.functions)   
-[Beta functionalities](#beta.functions)   
 title: "BloomR Main Functions"
 author: "Antonio Fasano"
  date: "Jan 28, 2024"
@@ -364,27 +356,26 @@ data
 ```
 ## $Financial
 ##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2024-01-23  10.064 10.481        NA     NA  10.622
-## 2024-01-24   9.831 11.874        NA 11.179  11.233
-## 2024-01-25  10.020 11.018    10.219 10.005   9.853
-## 2024-01-26  10.524  9.776        NA     NA   9.575
-## 2024-01-27   9.624     NA        NA 10.311  10.234
+## 2024-01-23      NA 10.903     9.841  9.843      NA
+## 2024-01-24   9.051  9.414        NA 10.922   9.232
+## 2024-01-25   9.092 10.412    10.813     NA      NA
+## 2024-01-26      NA 11.726    10.399  8.613      NA
+## 2024-01-27      NA  8.826     9.618 10.079      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2024-01-23      NA   7.331     NA     NA   8.542
-## 2024-01-24   8.773      NA     NA     NA  10.857
-## 2024-01-25      NA   9.159  8.401  9.943   8.915
-## 2024-01-26      NA  10.453  8.781     NA      NA
-## 2024-01-27      NA  11.339 10.646 10.706   8.839
+## 2024-01-23      NA  10.069     NA     NA  10.757
+## 2024-01-24      NA  10.496     NA     NA   9.003
+## 2024-01-25      NA   8.471 11.299     NA   9.005
+## 2024-01-26  11.263  11.186 10.516  7.901  11.548
+## 2024-01-27      NA   9.808 10.663     NA      NA
 ## 
 ## $Indices
-##               DJI DJUSFN  W1TEC
-## 2024-01-23 10.110     NA  9.817
-## 2024-01-24  9.100 11.221 10.739
-## 2024-01-25  7.399 11.000  9.214
-## 2024-01-26 10.213  9.710 10.731
-## 2024-01-27     NA     NA 11.899
+##               DJI DJUSFN W1TEC
+## 2024-01-23     NA  9.265    NA
+## 2024-01-24 11.196     NA 9.091
+## 2024-01-25     NA 11.806    NA
+## 2024-01-26     NA 11.313    NA
 ```
 
 Note:
@@ -720,11 +711,9 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2024-01-23   8.996   8.684
-## 2024-01-24      NA  10.024
-## 2024-01-25      NA  11.051
-## 2024-01-26      NA  11.347
-## 2024-01-27   9.312  11.241
+## 2024-01-25   9.869   9.249
+## 2024-01-26      NA  10.279
+## 2024-01-27   9.711   9.807
 ```
 
 ```r
@@ -760,218 +749,6 @@ tik
 Value
 -----
 A data frame containing the value of the Bloomberg fields form `ds001` to `ds009` and the long field `CIE_DES_BULK`.
-
-
-
-
-
-
-
-
-
-br.md2pdf{#br.md2pdf} 
-=====================
-
-Description
------------
-Make a markdown file into a PDF
-It assumes that you have installed the proper BloomR version.
-
-Usage
------
-    br.md2pdf(md.file, pdf.file)
-
-Arguments
----------
-md.file
-:   path to the markdown file to be converted.  
-
-pdf.file
-:   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
-
-quiet
-:   FALSE to show the system PATH variable.  
-
-Details
--------
-The function will stop with an error if you have not installed proper BloomR version.
-
-Value
------
-If there are no errors, it returns zero invisibly, otherwise it prints an error message and returns the related error code.
-
-
-
-
-br.rmd2html{#br.rmd2html} 
-========================
-
-Description
------------
-Make an R markdown file into a HTML.
-
-Usage
------
-    br.rmd2html(rmd.file, html.file, quiet=TRUE)
-
-Arguments
----------
-rmd.file
-:   path to the R markdown file to be converted.  
-
-html.file
-:   path to the HTML file to be generated. If missing, change extension of rmd.file to html.  
-
-quiet
-:   FALSE to show the system PATH variable and intermediate files.  
-
-Details
--------
-You need BloomR LaTeX addons or the proper BloomR version. 
-
-Value
------
-If there are no errors, it returns invisibly the absolute path of the output file.
-
-
-
-br.rmd2slides{#br.rmd2slides} 
-============================
-
-Description
------------
-
-`br.rmd2slides.html()` makes an R Markdown file into a [Google Slides](https://github.com/googleworkspace/md2googleslides) self-contained HTML file.  
-`br.rmd2slides.pdf()` makes an R Markdown file into a Beamer PDF.  
-`br.rmd2slides()` makes both a self-contained HTML file and a Beamer PDF.  
-`highlight.styles()` print the list of available syntax highlight styles.
-
-
-Usage
------
-	br.rmd2slides(rmd.file, theme = "AnnArbor", highlight = "tango", quiet = TRUE) 
-    br.rmd2slides.html(rmd.file, html.file, quiet=TRUE)
-    br.rmd2slides.pdf(rmd.file, pdf.file, theme = "AnnArbor", highlight = "tango", quiet = TRUE){
-	highlight.styles()
-
-Arguments
----------
-rmd.file
-:   path to the R markdown file to be converted.  
-
-theme
-:   A Beamer [theme](https://hartwork.org/beamer-theme-matrix/)  
-
-highlight
-:    A syntax highlight style. Use `highlight.styles()` to list them.  
-
-
-html.file
-:   path to the HTML file to be generated. If missing, we change the extension of `rmd.file` to ".html".  
-
-pdf.file
-:   path to the PDF file to be generated. If missing, we change the extension of `rmd.file` to ".pdf".  
-
-quiet
-:   FALSE to show the system PATH variable and intermediate files.  
-
-
-Details
--------
-You need the proper BloomR edition. The output filename for `br.rmd2slides()` is automatically generated by changing the `rmd.file`  file extension.
-
-To represent the slide structure in an Rmd, you use the following pattern:
-
-    ---
-    title: "Your Presentation Title"
-    author: "Your Name"
-    date: "A date description"
-    ---
-     
-    ## Slide 1
-     
-    This is the content for slide 1.
-     
-    ## Slide 2
-     
-    This is the content for slide 2.
-     
-    etc.
-
-Then you can proceed as usual to add R code chunks.
- 
-Value
------
-If there are no errors, it returns invisibly the absolute path of the output file.
-
-
-
-
-
-br.rmd2pdf{#br.rmd2pdf} 
-=======================
-
-Description
------------
-Make an R markdown file into a PDF.
-
-Usage
------
-    br.rmd2pdf(rmd.file, pdf.file, quiet=TRUE)
-
-Arguments
----------
-rmd.file
-:   path to the R markdown file to be converted.  
-
-pdf.file
-:   path to the PDF file to be generated. If missing, change extension of rmd.file to pdf.  
-
-quiet
-:   FALSE to show the system PATH variable and intermediate files.  
-
-Details
--------
-You need BloomR LaTeX addons or the proper BloomR version. 
-
-Value
------
-If there are no errors, it returns invisibly the absolute path of the output file.
-
-
-
-br.rmd2both{#br.rmd2both} 
-=========================
-
-Description
------------
-Make an R Markdown file into a PDF and an HTML self-contained file
-
-Usage
------
-    br.rmd2both(rmd.file, out.dir, quiet=TRUE)
-
-Arguments
----------
-rmd.file
-:   path to the R markdown file to be converted.  
-
-out.dir
-:   directory of the output files. If missing, use `dirname(rmd.file)`.  
-
-quiet
-:   FALSE to show the system PATH variable and intermediate files.  
-
-Details
--------
-You need BloomR LaTeX addons or the proper BloomR version. 
-
-Value
------
-If there are no errors, it returns invisibly the absolute path of the output file.
-
-
-
 
 
 
@@ -1030,32 +807,6 @@ empty.sec
 Value
 -----
 If `df=TRUE`, a data frame object, where the first column is the vector with all generated dates merged and each  subsequent column contains the sampled data of a security. If `df=FALSE`, an xts object, where each element is the sampled data of a security, while the dates will be part of the xts time object. In both cases if `same.dates=FALSE` and/or `empty.sec!=0` generated data points will have different length and the the date gaps will be filled with NAs, except if `no.na=TRUE`. If the generated values are only NAs the output will be converted to a 0-rows xts or data frame, containing only security labels accessible with `dimnames(*)[[2]]`. 
-
-
-
-
-Deprecated functions{#deprecated.functions}
-===========================================
-
-Description
-------------
-Functions not used anymore generating an informative error
-
-Usage
------
-    bbg.open()
-    bbg.close(con)
- 
-Arguments
----------
-con
-:   the connection token returned from br.open()
-
-Example
--------
-
-    con=bbg.open()
-	##  Sorry 'bbg.open' is now deprecated. Please use br.open().
 
 
 
@@ -1133,44 +884,17 @@ br.close(con) # Use the token to release the connection
 
 
 
-Misc functions{#misc.functions}
-==============================
-
-Description
-------------
-`rm.all` deletes all objects (variables and functions) from memory, including invisible objects (those starting with a dot).
-`rm.var` deletes non-function objects from memory.
-
-
-Usage
------
-	rm.all()
-	rm.var()
-	
-
-
-
-Beta functionalities{#beta.functions}
-=====================================
-
-Description
-------------
-Activate beta functionalities, if available for this release. 
-
-Usage
------
-    br.beta()
 
 
 
 
 
 
-
-
-
-
-
+```r
+# XXXX
+#if(build.env$use.bloomr)
+#    original.system.path <- .br.addpaths()
+```
 
 
 
