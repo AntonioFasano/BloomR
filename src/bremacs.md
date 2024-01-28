@@ -1,12 +1,15 @@
 
 The name of the game
 --------------------
+Non-core BloomR editions (currently Lab and Studio) are internally codenamed **BRemacs** or the BRemacs branch.
 
 BRemacs is a fully portable environment to interact with [R](https://www.r-project.org) under Windows, much more powerful then the graphical interface that comes with R itself. 
 
 BRemacs is very similar in concept to [RStudio](https://www.rstudio.com/products/rstudio).  It targets power users who prefer to type rather than click. Besides, since BRemacs is based on the  [Emacs](https://www.gnu.org/software/emacs/) extensible editor, it might also appeal those who want to take advantage of Emacs thousands of packages or program it themselves. 
 
-BRemacs is part of BloomR and so preconfigured to interact with [Bloomberg Professional Service](https://www.bloomberg.com/professional/) [API](https://www.bloomberg.com/professional/support/api-library/).
+BRemacs preconfigured to interact with [Bloomberg Professional Service](https://www.bloomberg.com/professional/) [API](https://www.bloomberg.com/professional/support/api-library/) and [LSEG](https://www.lseg.com/en) (former Refinitiv)
+[API](https://developers.lseg.com/en/api-catalog/eikon/eikon-data-api). This means that the same  licensing terms of your Bloomberg Professional Service and Refinitiv Eikon service apply to data when you work with it.
+
 
 Motivation
 ----------

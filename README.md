@@ -1,9 +1,9 @@
 BloomR
 ======
 
-*Portable R for Bloomberg and Refinitiv Eikon*
+*Portable R for Bloomberg and LSEG (former Refinitiv) Eikon*
 
-BloomR is a portable R distribution reshaped in order to get, manipulate and run models against Bloomberg or Refinitiv Eikon data.
+BloomR is a portable R distribution reshaped in order to get, manipulate and run models against Bloomberg or LSEG Eikon data.
 
 __Focus on  Data__
 
@@ -48,7 +48,7 @@ In a business environment this also facilitates the process of keeping track and
 
 __No Extra Licensing Restrictions__
 
-BloomR itself is free/libre, open source  software and it is based on the public APIs released by  Bloomberg ([Bloomberg Open API](http://www.openbloomberg.com/open-api/)) and by [Refinitiv](https://developers.refinitiv.com/en/api-catalog/eikon/eikon-data-api). This means that the same  licensing terms of your Bloomberg Professional Service and Refinitiv Eikon service apply to data when you work with it.
+BloomR itself is free/libre, open source  software and it is based on the public APIs released by  Bloomberg ([Bloomberg Open API](http://www.openbloomberg.com/open-api/)) and by [LSEG](https://developers.lseg.com/en/api-catalog/eikon/eikon-data-api) (former Refinitiv).  This means that the same licensing terms of your Bloomberg Professional Service and LSEG Eikon service apply to data when you work with it.
 
 
 BloomR Editions
@@ -67,19 +67,9 @@ __BloomR Studio__  Like BloomR BRemacs, but adds a basic LaTeX (MiKTeX) distribu
 What's new
 ----------
 
-### BloomR Lakmé (1.5.*)
+Please,
+see the [releases](https://github.com/AntonioFasano/BloomR/releases) section.
 
-New edition system: Core, Lab, Studio 
-
-Added a mini Perl distro to improve the cropping.
-
-Switched from Thomson Reuters to Refinitiv Eikon.
-
-HTML-slides support.
-
-Byte compilation with autoloads improving Lab and Studio speed
- 
-Bug fix: Fixed conflicts in plyr:::rbind. 
  
  
 Documentation

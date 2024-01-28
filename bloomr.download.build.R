@@ -1,5 +1,10 @@
-## Download 'bloomr.build.R' from Github and ask to build it inside a date-based dir in the cwd
+
+### Download 'bloomr.build.R' from Github and ask to build it inside a date-based dir in the cwd
 ## Intended for fast internal testing - Readme method is the standard way
+
+### Link to this file:
+## https://raw.githubusercontent.com/AntonioFasano/BloomR/master/bloomr.download.build.R
+
 
 ## script.path= parent.frame(2)$ofile
 

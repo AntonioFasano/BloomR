@@ -368,7 +368,7 @@ display: none;
 <a href="#br.rmd2slides">br.rmd2slides</a> <a href="#br.rmd2pdf">br.rmd2pdf</a> <a href="#br.rmd2both">br.rmd2both</a>
 <a href="#br.sample">br.sample</a> <a href="#deprecated.functions">Deprecated functions</a> <a href="#Internal">Internal BloomR functions</a> <a href="#connections">Manage connections</a> <a href="#misc.functions">Misc functions</a> <a href="#beta.functions">Beta
 functionalities</a> title: “BloomR Main Functions” author: “Antonio
-Fasano” date: “Jan 25, 2024”</td>
+Fasano” date: “Jan 27, 2024”</td>
 </tr>
 </tbody>
 </table>
@@ -713,11 +713,6 @@ will be returned.</p>
 <pre class="r"><code>con=NULL  #Simulated mode: replace with con=br.open() on terminal</code></pre>
 <pre class="r"><code>data=br.bulk.csv(con, &quot;mybloomr/tickers.csv&quot;) </code></pre>
 <pre><code>## Processing Financial ...</code></pre>
-<pre><code>## 
-## Attaching package: &#39;zoo&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     as.Date, as.Date.numeric</code></pre>
 <pre><code>## Loading 3988 HK Equity</code></pre>
 <pre><code>## Loading C US Equity</code></pre>
 <pre><code>## Loading 601288 CH Equity</code></pre>
@@ -739,26 +734,28 @@ show anymore in the following.</p>
 like follows:</p>
 <pre class="r"><code>data</code></pre>
 <pre><code>## $Financial
-##            3988 HK  C US 601288 CH BAC US HSBA LN
-## 2024-01-20  10.640 9.963     9.561     NA  12.343
-## 2024-01-21      NA    NA        NA 10.574      NA
-## 2024-01-22      NA    NA        NA     NA   8.479
-## 2024-01-23   9.811    NA    10.306     NA      NA
-## 2024-01-24  10.930    NA     8.799     NA   9.710
+##            3988 HK   C US 601288 CH BAC US HSBA LN
+## 2024-01-22      NA  9.730     8.193 10.175  11.038
+## 2024-01-23      NA 10.349    10.706     NA  10.500
+## 2024-01-24   8.262  9.659        NA     NA  10.015
+## 2024-01-25      NA  8.569        NA     NA      NA
+## 2024-01-26  10.366 10.303        NA 10.366      NA
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2024-01-20   9.210  11.168 12.772     NA   9.996
-## 2024-01-21   8.451      NA  9.629     NA   9.532
-## 2024-01-22   8.349      NA  9.682     NA   9.459
-## 2024-01-23      NA   9.025 10.842  9.233  11.166
-## 2024-01-24  10.873  11.314  9.880     NA  11.044
+## 2024-01-22      NA      NA 10.021 10.485  10.093
+## 2024-01-23      NA   7.632 10.166 10.674   8.895
+## 2024-01-24   9.490      NA  9.039 10.054  10.047
+## 2024-01-25  10.651   9.107 10.061 10.240  11.313
+## 2024-01-26   7.628      NA 11.119 10.316  10.378
 ## 
 ## $Indices
 ##               DJI DJUSFN  W1TEC
-## 2024-01-20 12.266     NA     NA
-## 2024-01-22 10.117 10.079 10.729
-## 2024-01-23     NA     NA  9.817</code></pre>
+## 2024-01-22  8.994     NA  8.890
+## 2024-01-23  9.063  9.686 11.075
+## 2024-01-24 10.669  9.846 11.506
+## 2024-01-25  8.750  9.814 10.661
+## 2024-01-26  9.843  8.707 10.960</code></pre>
 <p>Note:</p>
 <ul>
 <li><p>The name of the securities tickers is stored without the security
@@ -978,11 +975,11 @@ br.bulk.tiks(con, c(&quot;MSFT US&quot;, &quot;AMZN US&quot;), addtype=TRUE)</co
 <pre><code>## Loading MSFT US Equity</code></pre>
 <pre><code>## Loading AMZN US Equity</code></pre>
 <pre><code>##            MSFT US AMZN US
-## 2024-01-20      NA   9.828
-## 2024-01-21      NA   9.670
-## 2024-01-22   8.603  10.547
-## 2024-01-23      NA  10.951
-## 2024-01-24      NA   9.578</code></pre>
+## 2024-01-22   9.324  10.210
+## 2024-01-23   8.885   9.244
+## 2024-01-24  11.925   9.857
+## 2024-01-25   9.781   9.900
+## 2024-01-26   9.165  11.265</code></pre>
 <pre class="r"><code>br.close(con) # Use the token to release the connection</code></pre>
 </div>
 <div id="see-also" class="section level2">

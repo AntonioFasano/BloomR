@@ -49,9 +49,8 @@ G$eikonzip <- 'eikon'
 G$ahkurl <- "AutoHotkey/Ahk2Exe"  # (on GitHub)
 G$ahkzip <- "ahk"
 
-## Github
+## Github project
 G$github <- "https://raw.githubusercontent.com/AntonioFasano/BloomR/master"
-G$github.local <- "" # Auto-set by makeBloomR() if gitsim=T, relative to the build workdir 
 
 ## Packages to download. Case sensitive
 ## To learn about deps use:
@@ -147,7 +146,7 @@ G$studio <- NULL
 G$ndown <- 0
 G$what <- NULL # What edition? If what !'core', then is.bremacs() TRUE
 G$builds <- NULL # Char vector of remaining builds to go 
-
+G$github.local <- "" # Auto-set by makeBloomR() if gitsim=T, relative to the build workdir 
 
 ## Path conventions
 ## Paths are normally related to G$work or G$downdir.
@@ -254,7 +253,6 @@ makeBloomR <- function( # Build BloomR
 }
 
 ### Editions' predicates
-
 is.multi    <- function() G$what == 'all' 
 get.edition <- function() G$builds[1] 
 is.core     <- function() get.edition() == 'core' 
@@ -273,7 +271,6 @@ loadLib <- function(lib){
         if(repo=="@CRAN@") repo <- "http://cran.r-project.org"
         install.packages(lib, repos=repo)
     }
-#   if(!eval(parse(text=paste('require(', lib,')')))){... # OLD
     if(success <- require(lib, character.only = TRUE)) return(success)
     message("\nUnable to load ", lib, " library")
     FALSE
@@ -527,10 +524,6 @@ bloomrTree.Core <- function() {
 
     ## Add version file
     bloomrTree.AddVersion()
-    # download.git("curver.txt",  app.pt("bloomr.txt")) 
-    # download.git("curver.txt",  "curver.txt") 
-    # ver <- file.read("curver.txt")[1]
-    # file.write(p0(ver, "\n", makeBuildnum()), app.pt("bloomr.txt"))
     
     ## Copy R and make site directory
     from <- p0(G$rzip , '/app')
@@ -577,26 +570,25 @@ bloomrTree.Core <- function() {
     
     ## Download docs
     message("\nDownloading BloomR help resources")
-    download.git("README.html",               root.pt("README.html"))
-    download.git("LICENSE",                   root.pt("LICENSE.txt"))
+    download.git("README.html",                  root.pt("README.html"))
+    download.git("LICENSE",                      root.pt("LICENSE.txt"))
     makeDir(root.pt("help"), "BloomR help directory:")
-    download.git("src/bloomr.html",           root.pt("help/bloomr.html")) 
-    download.git("src/bloomr.pdf",            root.pt("help/bloomr.pdf"))
-    download.git("src/xlx/xlx.help.html",     root.pt("help/xlx.help.html"))     
-    download.git("src/xlx/xlx.help.pdf",      root.pt("help/xlx.help.pdf"))
-    download.git("reports/reporting.pdf",     root.pt("help/reporting.pdf"))     
-    download.git("src/bloomr.time.html",      root.pt("help/bloomr.time.html"))
-    download.git("src/bloomr.time.pdf",       root.pt("help/bloomr.time.pdf"))
+    download.git("src/br-libs/bloomr.html",      root.pt("help/bloomr.html")) 
+    download.git("src/br-libs/bloomr.pdf",       root.pt("help/bloomr.pdf"))
+    download.git("src/xlx/xlx.help.html",        root.pt("help/xlx.help.html"))     
+    download.git("src/xlx/xlx.help.pdf",         root.pt("help/xlx.help.pdf"))
+    download.git("reports/reporting.pdf",        root.pt("help/reporting.pdf"))     
+    download.git("src/br-libs/bloomr.time.html", root.pt("help/bloomr.time.html"))
+    download.git("src/br-libs/bloomr.time.pdf",  root.pt("help/bloomr.time.pdf"))
+    download.git("res/elearnr.pdf",              root.pt("help/elearnr.pdf"))     
+    download.git("res/pcloudr.pdf",              root.pt("help/pcloudr.pdf"))     
+    download.git("res/secretR.pdf",              root.pt("help/secretR.pdf")) 
+    download.git("res/frontier.pdf",             root.pt("help/frontier.pdf"))     
+    download.git("res/Bloomberg API Intro.pdf",  root.pt("help/Bloomberg API Intro.pdf"))
     
     ## These docs are not uploaded on git, so they are added only with gitsim != FALSE
     if(nzchar(G$github.local)){
-        download.git("temp-help/BloomR.pdf",               root.pt("help/BloomR.pdf"))     
-        download.git("temp-help/frontier.pdf",             root.pt("help/frontier.pdf"))     
-        download.git("temp-help/Bloomberg API Intro.pdf",  root.pt("help/Bloomberg API Intro.pdf"))
-        unlink(root.pt("help/bloomr.html"))
-        download.git("temp-help/elearnr.pdf",               root.pt("help/elearnr.pdf"))     
-        download.git("temp-help/pcloudr.pdf",               root.pt("help/pcloudr.pdf"))     
-        download.git("temp-help/secretR.pdf",               root.pt("help/secretR.pdf")) 
+#     Old temporary temp-help/ material, now mostly in res/ or auto-generated
     }
     
     ## Environment diagnostic
@@ -753,12 +745,6 @@ bloomrTree.Studio <- function() {
     makeStudio.addLatex()
     ## makeStudio.addPerl()
     makeStudio.addPandoc()
-
-    ## Set the edition
-    # ver <- file.read(app.pt("bloomr.txt"))
-    # edt <- paste(get.edition(), "edition")
-    # file.write(p0(ver, "\n", edt), app.pt("bloomr.txt"))
-    # file.write(edt, app.pt("bloomr.txt"), append=TRUE)
 }
 
 
@@ -966,14 +952,14 @@ initScripts.etc <- function() {
     ## Get bloomr lib files including xlx.R from Github
     to <- app.pt("R/share/bloomr")    
     makeDir(to,"BloomR share directory:")
-    download.git("src/bloomr.init.R", app.pt("R/share/bloomr/bloomr.init.R"))
-    ## download.git("src/bloomr.beta.R", app.pt("R/share/bloomr/bloomr.beta.R"))
-    ## download.git("src/bloomr.api.R",  app.pt("R/share/bloomr/bloomr.api.R"))
-    download.git("src/bloomr.R",      app.pt("R/share/bloomr/bloomr.R"))
-    download.git("src/bloomr.sys.R",  app.pt("R/share/bloomr/bloomr.sys.R"))
-    download.git("src/bloomr.test.R", app.pt("R/site-library/bloomr.test.R"))
-    download.git("src/bloomr.time.R", app.pt("R/share/bloomr/bloomr.time.R"))
-    download.git("src/xlx/xlx.R",     app.pt("R/share/bloomr/xlx.R"))
+    download.git("src/bloomr.init.R",         app.pt("R/share/bloomr/bloomr.init.R"))
+    ## download.git("src/bloomr.beta.R",      app.pt("R/share/bloomr/bloomr.beta.R"))
+    ## download.git("src/bloomr.api.R",       app.pt("R/share/bloomr/bloomr.api.R"))
+    download.git("src/br-libs/bloomr.R",      app.pt("R/share/bloomr/bloomr.R"))
+    download.git("src/bloomr.sys.R",          app.pt("R/share/bloomr/bloomr.sys.R"))
+    download.git("src/bloomr.test.R",         app.pt("R/site-library/bloomr.test.R"))
+    download.git("src/br-libs/bloomr.time.R", app.pt("R/share/bloomr/bloomr.time.R"))
+    download.git("src/xlx/xlx.R",             app.pt("R/share/bloomr/xlx.R"))
 
     ## Testdata
     to <- app.pt("R/share/bloomr/testdata")
@@ -1147,11 +1133,10 @@ makeBuildnum <- function(){
     ## today
     td <- format(Sys.time(), "Build %Y%m%d%H%M")
 
-    # days from 2015 
+    ## days from 2015 
     diff <- as.numeric( as.POSIXct(Sys.time()) - as.POSIXct("2015/01/01") )
     rnd <- round(diff, 2) * 100  # About 13 min rounding  
-    paste(td, rnd)
-    
+    paste(td, rnd)    
 }
 
 debug.mismatch <- function(){ # Test and stop on deb & what args inconsistence
@@ -1186,7 +1171,7 @@ or you are using 'deb' with what='all'."
 shell.cd <- function(
 ### Similar to system2(), but can set the process work dir, environment and it stops on errors
                      cmdvec,     # c(cmd, arg1,...) or c(cmd, agvec)
-                                 # cmdvec[1] is tested for exisitance and shQuoted if necessary
+                                 ## cmdvec[1] is tested for exisitance and shQuoted if necessary
                      wd=NULL,    # optional work dir
                      raw=FALSE,  # if T, do not pretty format the output with pv
                      echo=TRUE,  # Echo to console via messagev
@@ -1791,7 +1776,6 @@ download.git <- function(file, to, overwrite=TRUE, desc=""){
     ## remote git
     if(!nzchar(G$github.local)) {
         from <- makePath(G$github, file)
-        #to.temp <- basename(to)
         to.temp <- basename(tempfile(pattern = basename(to), tmpdir = down.pt()))
         download.nice(from, to.temp, overwrite=TRUE, desc)
         file.rename(down.pt(to.temp), work.pt(to))
@@ -2641,9 +2625,6 @@ innoextract <- function(from, to, desc, delTarget=TRUE){
     message('This may take a bit ...')
     cmd <- c(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
     ret <- shell.cd(cmd, echo = FALSE)
-    # cmd <- paste(winwork.pt(exe), windown.pt(from),  "--output-dir", winwork.pt(to))
-    # ret <- system( cmd, intern=FALSE, wait =TRUE, show.output.on.console =FALSE, ignore.stdout=TRUE) 
-    # if(ret) stop(paste('\n', cmd, '\nreported a problem'))
 }
 
 
