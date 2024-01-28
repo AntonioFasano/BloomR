@@ -10,6 +10,7 @@ New Lab/Studio key bindings: Delete word backward (C-Back) and forward (C-Del),
 New functions to generate slide based reports.
 Lab/Studio menu bar shows startup times.
 R messages are in English, even on non-English Windows systems.
+Help file are reviwed: finacial content and report content separate.
 Radical optimisations dramatically reduce Lab/Studio editions startup.
 Introduced several improvements in the build process, such as:
     automatic Elisp package management, dispatching of encoded Elisp sexps to Lab/Studio builds,
@@ -30,9 +31,8 @@ _Change details_
                   ~br-keys.el() with C-r, C-back, C-del.
                   ~br-menico.el() with Quick menu.
     
-    bloomr.Rmd: +br.rmd2slides.html(),+br.rmd2slides.pdf(), +br.rmd2slides(), +highlight.styles(),
-                ~.br.addpaths. TeXLive bins are now in TinyTeX/bin/windows,
+    bloomr.Rmd: Split into bloomr-bbg.Rmd and bloomr-rmd.Rmd.
+                +br.rmd2slides.html(),+br.rmd2slides.pdf(), +br.rmd2slides(), +highlight.styles(),
+                ~.br.addpaths. TeXLive bins are now in TinyTeX/bin/windows
 
     times.Rmd: fixed conflict masking rm.all, rm.var bloomr.usr.
-
-    

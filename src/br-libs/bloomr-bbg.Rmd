@@ -1,7 +1,7 @@
- ---
+---
 title: "BloomR Bloomberg Functions"
 author: "Antonio Fasano"
- date: "`r format(Sys.Date(), '%b %d, %Y')`"
+date: "`r format(Sys.Date(), '%b %d, %Y')`"
 ---
 
 ```{r build, purl=FALSE, eval=FALSE, include=FALSE}
@@ -1074,12 +1074,11 @@ topics <- function(rmdfile, mdfile){
     x=sub("\\{", "]\\(", x )
     x=sub("\\}", "\\)", x )
     idx=paste0("[", x, "   ")
-    idx=c("R topics documented:", "-----------", idx)
+    idx=c("\nR topics documented:", "-----------", idx)
     txt <- readLines(mdfile)
-    first=grep(".", txt)[1]
-    txt=c(txt[first], idx, txt[(first+1):length(txt)])
+    yaml.end=grep("^---", txt)[2] 
+    txt=c(txt[1:yaml.end], idx, txt[(yaml.end+1):length(txt)])
     writeLines(txt, mdfile)
-#    c(txt[first], idx,  txt[(first+1):(first+4)])
 }
 ```
 

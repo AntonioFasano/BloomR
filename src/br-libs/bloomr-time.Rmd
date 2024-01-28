@@ -1,10 +1,10 @@
- ---
+---
 title: "BloomR Time Functions"
 author: "Antonio Fasano"
 date: "`r format(Sys.Date(), '%b %d, %Y')`"
 ---
 
-```{r buildme, purl=FALSE, eval=FALSE, include=FALSE}
+```{r build, purl=FALSE, eval=FALSE, include=FALSE}
 
 ## Two-step knitting
 ## -----------------
@@ -34,7 +34,7 @@ date: "`r format(Sys.Date(), '%b %d, %Y')`"
 ## See "setup" chunk for definition of  "demo*" option templates.
 ## TODO (cf bloomr.Rmd) For beta code, source(".../bloomr.R") is usually required to execute step2. See "betaonly" chunk.
 
-knit.twice <- function(this.file) {# knit this Rmd. 
+knit.twice <- function(this.file) {# knit this Rmd
 
     ## Polymode tends to start R synced with git root dir.
     ## We check the Rmd path is absolute or as expected    
@@ -81,8 +81,7 @@ knit.twice <- function(this.file) {# knit this Rmd.
     writeLines(txt, paste0(fse, ".R"))
 
     ## Inform on new wdir
-    if(bad.dir && is.rel) message("\nNOTE: Workdir was adjusted to ", GITPOS, ".")
-
+    if(bad.dir && is.rel) message("\nNOTE: Workdir was adjusted to ", GITPOS, ".")   
 }
 knit.twice("bloomr-time.Rmd")
 
@@ -101,13 +100,12 @@ knit.twice("bloomr-time.Rmd")
 knitr::opts_chunk$set(echo=TRUE)
 OTS <- knitr::opts_template$set
 ## Step1 template: Load in memory and copy to <lib>.R
-OTS(purlme=   list(purl=TRUE,  eval=!step2,   include=FALSE))
+OTS(brfuncs=   list(purl=TRUE,  eval=!step2,   include=FALSE))
 ## Step1 template: Load in memory and copy to <lib>.R
 OTS(demofull= list(purl=FALSE, eval=step2,  include=TRUE))  # run with code + output   
 OTS(demorun=  list(purl=FALSE, eval=step2,  include=TRUE, echo=FALSE)) # run with output, but no code 
 OTS(demohid=  list(purl=FALSE, eval=step2,  include=FALSE)) # run only (without code or output)
 OTS(democode= list(purl=FALSE, eval=FALSE,  include=TRUE))  # show code only, no run  
-OTS(buildenv= list(purl=FALSE, eval=step2,  include=FALSE)) # Called in step2 by the build chunk to knit this document 
 
 ## Purl hook (suggested in the past, but probably no necessary today)
 knitr::knit_hooks$set(purl = knitr::hook_purl)
@@ -320,12 +318,11 @@ topics <- function(rmdfile, mdfile){
     x=sub("\\{", "]\\(", x )
     x=sub("\\}", "\\)", x )
     idx=paste0("[", x, "   ")
-    idx=c("R topics documented:", "-----------", idx)
+    idx=c("\nR topics documented:", "-----------", idx)
     txt <- readLines(mdfile)
-    first=grep(".", txt)[1]
-    txt=c(txt[first], idx, txt[(first+1):length(txt)])
+    yaml.end=grep("^---", txt)[2] 
+    txt=c(txt[1:yaml.end], idx, txt[(yaml.end+1):length(txt)])
     writeLines(txt, mdfile)
-#    c(txt[first], idx,  txt[(first+1):(first+4)])
 }
 
 
