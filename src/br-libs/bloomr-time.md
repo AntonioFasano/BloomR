@@ -1,7 +1,7 @@
 ---
 title: "BloomR Time Functions"
 author: "Antonio Fasano"
-date: "Jan 28, 2024"
+date: "Jan 29, 2024"
 ---
 
 R topics documented:
@@ -51,7 +51,6 @@ Details
 
 
 
-
 Time extension functions{#time.functions}
 =========================================
 
@@ -92,8 +91,6 @@ Details
 If `component` is `day`, `month` or `year`: `component(d)` returns the *component* of the date `d` as an integer; `component(d, n)` returns the date `d` with the *component* set to the integer `n`; `component(d)= n` sets to the *component* of the date `d` to the integer `n`.  
 `%+%` and `%-%` add and subtract months to a date.  
 `last.day` returns last day of the month as an integer. `day.us` calculates date differences with the US convention.  
-
-
 
 
 

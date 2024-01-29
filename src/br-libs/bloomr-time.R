@@ -1,24 +1,27 @@
-## ----store, opts.label='brfuncs'---------------------------------------------------------------------------------------------------
-
-## Purl this first
-## Store br.* objects in dedicated namespace
-bloomr.time <-  new.env(parent=asNamespace("stats"))
-
-
-## func: store(func);  var: store("var")
-store=function(sym) {
-    if(is.function(sym)) {
-        name=deparse(substitute(sym))
-        val=sym
-    } else {
-        name=sym
-        val=get(sym)
+## ----store, code = store.parse(THISLIB), opts.label='brfuncs'----------------------------------------------------------------------
+THISLIB <- 'bloomr.time'
+assign(THISLIB, new.env(parent = asNamespace("stats")))
+store <-
+function (sym, reg = FALSE)
+{
+    if (is.function(sym)) {
+        name <- deparse(substitute(sym))
+        val <- sym
     }
-
-    assign(name, val, envir=bloomr.time)
-    rm( list=name, envir=parent.frame())
+    else {
+        name <- sym
+        val <- get(sym)
+    }
+    assign(name, val, envir = get(THISLIB))
+    if (reg) {
+        mtcs <- regmatches(name, regexec("(.+)(\\.)(.+)", name))[[1]]
+        genname <- mtcs[2]
+        class <- mtcs[4]
+        method <- mtcs[1]
+        registerS3method(genname, class, method, get(THISLIB))
+    }
+    rm(list = name, envir = parent.frame())
 }
-
 
 ## ----MISCFUNC, opts.label='brfuncs'------------------------------------------------------------------------------------------------
 
@@ -107,15 +110,16 @@ store(`month<-`)
 store(`year<-`)
 store(`%+%`)
 store(`%-%`)
-store(`%+%.Date`)
-store(`%-%.Date`)
+store(`%+%.Date`, reg = TRUE)
+store(`%-%.Date`, reg = TRUE)
 store(last.day)
 store(day.us)
 
 
-## ----attach, opts.label='brfuncs'--------------------------------------------------------------------------------------------------
-### Make visible br.* in bloomr env and base ns
-attach(bloomr.time)
-rm(store)
-rm(bloomr.time)
+## ----attach, code = lib.attach(), opts.label='brfuncs'-----------------------------------------------------------------------------
+{
+    attach(get(THISLIB), name = THISLIB)
+    rm(store)
+    rm(list = c(THISLIB, "THISLIB"))
+}
 

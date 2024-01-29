@@ -1,4 +1,4 @@
-## ----store, opts.label='purlme'----------------------------------------------------------------------------------------------------
+## ----store, opts.label='brfuncs'---------------------------------------------------------------------------------------------------
 ## Purl this first
 ## Store br.* objects in dedicated namespace
 bloomr.bbg <- new.env(parent=asNamespace("stats"))
@@ -18,7 +18,7 @@ store=function(sym){
 }
 
 
-## ----br.bdh, opts.label='purlme'---------------------------------------------------------------------------------------------------
+## ----br.bdh, opts.label='brfuncs'--------------------------------------------------------------------------------------------------
 br.bdh=function(
     con, securities, fields="PX_LAST", start.date, end.date = NULL,
     option.names = NULL, option.values = NULL,
@@ -32,7 +32,7 @@ br.bdh=function(
 }
 store(br.bdh)
 
-## ----br.bulk.csv, opts.label='purlme'----------------------------------------------------------------------------------------------
+## ----br.bulk.csv, opts.label='brfuncs'---------------------------------------------------------------------------------------------
 br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
     addtype=FALSE, showtype=FALSE, use.xts=TRUE, comma=TRUE,
     price=TRUE, nrow=5, same.dates=FALSE, no.na=FALSE, empty.sec=0
@@ -77,7 +77,7 @@ br.bulk.csv=function(con, file, start=Sys.Date()-5, field="PX_LAST", cols=NULL,
 }
 store(br.bulk.csv)
 
-## ----br.bulk.desc, opts.label='purlme'---------------------------------------------------------------------------------------------
+## ----br.bulk.desc, opts.label='brfuncs'--------------------------------------------------------------------------------------------
 br.bulk.desc=function(con, tiks) {
 
     LL = lapply(tiks, function(tik){
@@ -89,7 +89,7 @@ br.bulk.desc=function(con, tiks) {
 }
 store(br.bulk.desc)
 
-## ----br.bulk.idx, opts.label='purlme'----------------------------------------------------------------------------------------------
+## ----br.bulk.idx, opts.label='brfuncs'---------------------------------------------------------------------------------------------
 br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=FALSE,
     include.idx=TRUE, use.xts=TRUE,
     nsec=10, price=TRUE, nrow=5,
@@ -139,7 +139,7 @@ br.bulk.idx=function(con, index, start=Sys.Date()-5, field="PX_LAST", showtype=F
 }
 store(br.bulk.idx)
 
-## ----br.bulk.tiks, opts.label='purlme'---------------------------------------------------------------------------------------------
+## ----br.bulk.tiks, opts.label='brfuncs'--------------------------------------------------------------------------------------------
 br.bulk.tiks=function(
     con,
     tiks,
@@ -223,7 +223,7 @@ br.bulk.tiks=function(
 }
 store(br.bulk.tiks)
 
-## ----br.desc, opts.label='purlme'--------------------------------------------------------------------------------------------------
+## ----br.desc, opts.label='brfuncs'-------------------------------------------------------------------------------------------------
 br.desc=function(con, tik)
 {
 
@@ -252,7 +252,7 @@ br.desc=function(con, tik)
 }
 store(br.desc)
 
-## ----br.sample, opts.label='purlme'------------------------------------------------------------------------------------------------
+## ----br.sample, opts.label='brfuncs'-----------------------------------------------------------------------------------------------
 br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price, 10, 0.1), sd=1,
     jitter=0, same.dates=FALSE, no.na=FALSE, df=FALSE, empty.sec=0, sec.names=NULL)
 {
@@ -319,7 +319,7 @@ br.sample=function(nrow, nsec=1, price=TRUE, start=Sys.Date(), mean=ifelse(price
 }
 store(br.sample)
 
-## ----bbg-internal, opts.label='purlme'---------------------------------------------------------------------------------------------
+## ----bbg-internal, opts.label='brfuncs'--------------------------------------------------------------------------------------------
 
 ## Check connection token
 .br.is.con=function(con) identical(attr(con, 'jclass'), "org/findata/blpwrapper/Connection")
@@ -356,14 +356,14 @@ store(.br.check.type)
 store(.br.cuttype)
 store(.br.jar)
 
-## ----connections, opts.label='purlme'----------------------------------------------------------------------------------------------
+## ----connections, opts.label='brfuncs'---------------------------------------------------------------------------------------------
 br.open=function() blpConnect(blpapi.jar.file=.br.jar())
 br.close=function(conn) if(!is.null(conn)) blpDisconnect(conn)
 
 store(br.open)
 store(br.close)
 
-## ----attach, opts.label='purlme'---------------------------------------------------------------------------------------------------
+## ----attach, opts.label='brfuncs'--------------------------------------------------------------------------------------------------
 ### Make visible br.* in bloomr env and base ns
 attach(bloomr.bbg)
 rm(store)

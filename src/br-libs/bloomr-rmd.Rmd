@@ -74,7 +74,7 @@ knit.twice("bloomr-rmd.Rmd")
 knitr::opts_chunk$set(echo=TRUE)
 OTS <- knitr::opts_template$set
 ## Step1 template: Load in memory and copy to <lib>.R
-OTS(purlme=   list(purl=TRUE,  eval=!step2,   include=FALSE))
+OTS(brfuncs=   list(purl=TRUE,  eval=!step2,   include=FALSE))
 ## Step1 template: Load in memory and copy to <lib>.R
 OTS(demofull= list(purl=FALSE, eval=step2,  include=TRUE))  # run with code + output   
 OTS(demorun=  list(purl=FALSE, eval=step2,  include=TRUE, echo=FALSE)) # run with output, but no code 
@@ -91,7 +91,7 @@ RESDIR <- "../../res"
 ```
 
 
-```{r store, opts.label='purlme'}
+```{r store, opts.label='brfuncs'}
 ## Purl this first
 ## Store br.* objects in dedicated namespace
 bloomr.rmd <- new.env(parent=asNamespace("stats"))
@@ -113,7 +113,7 @@ store=function(sym){
 ```
 
 
-```{r rmd-internal, opts.label='purlme'}
+```{r rmd-internal, opts.label='brfuncs'}
 .br.addpaths <- function(pandonly = FALSE, quiet = TRUE){
 ### Add to Windows System Path the executable directories of LaTeX, Pandoc, and Perl with this search priority, and
 ### return invisibly the original path. If "pandonly" is true, add only Pandoc. If "quiet" is false, print the new path.
@@ -226,7 +226,7 @@ Value
 If there are no errors, it returns zero invisibly, otherwise it prints an error message and returns the related error code.
 
 
-```{r br.md2pdf, opts.label='purlme'}
+```{r br.md2pdf, opts.label='brfuncs'}
 br.md2pdf <- function(md.file, pdf.file, quiet=TRUE){
 ### Make a markdown file into a PDF
 ### You need the proper BloomR version
@@ -275,7 +275,7 @@ Value
 If there are no errors, it returns invisibly the absolute path of the output file.
 
 
-```{r br.rmd2html, opts.label='purlme'}
+```{r br.rmd2html, opts.label='brfuncs'}
 br.rmd2html <- function(rmd.file, html.file, quiet=TRUE){
 ### Make an R Markdown file into a HTML self-contained file
 ### You need the proper BloomR edition
@@ -371,7 +371,7 @@ Value
 If there are no errors, it returns invisibly the absolute path of the output file.
 
 
-```{r br.rmd2slides, opts.label='purlme'}
+```{r br.rmd2slides, opts.label='brfuncs'}
 br.rmd2slides.html <- function(rmd.file, html.file, quiet=TRUE){
 ### Make an R Markdown file into a Google Slides self-contained HTML file
 ### You need proper BloomR edition
@@ -484,7 +484,7 @@ Value
 -----
 If there are no errors, it returns invisibly the absolute path of the output file.
 
-```{r br.rmd2pdf, opts.label='purlme'}
+```{r br.rmd2pdf, opts.label='brfuncs'}
 br.rmd2pdf <- function(rmd.file, pdf.file, quiet=TRUE){
 ### Make an R Markdown file into a PDF
 ### You need BloomR LaTeX addons or the proper BloomR version
@@ -543,7 +543,7 @@ Value
 If there are no errors, it returns invisibly the absolute path of the output file.
 
 
-```{r br.rmd2both, opts.label='purlme'}
+```{r br.rmd2both, opts.label='brfuncs'}
 br.rmd2both <- function(rmd.file, quiet=TRUE){
 ### Make an R Markdown file into a PDF and an HTML self-contained file
 ### You need  BloomR LaTeX addons or the proper BloomR version
@@ -668,7 +668,7 @@ Usage
 	rm.var()
 	
 
-```{r miscfunc, opts.label='purlme'}
+```{r miscfunc, opts.label='brfuncs'}
 
 #Clean up
 ## Remove visible and invisible objects
@@ -695,7 +695,7 @@ Usage
     br.beta()
 
 
-```{r betafun, opts.label='purlme'}
+```{r betafun, opts.label='brfuncs'}
 
 br.beta <- function(){
     f=paste0(R.home("share"), "/bloomr/bloomr.beta.R")    
@@ -890,7 +890,7 @@ parseargs <- function(rmdfile, tmpfile) {
     
 ```
 
-```{r attach, opts.label='purlme'}
+```{r attach, opts.label='brfuncs'}
 ### Make visible br.* in bloomr env and base ns
 attach(bloomr.rmd)
 rm(store)

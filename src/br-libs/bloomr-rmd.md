@@ -1,7 +1,7 @@
 ---
 title: "BloomR Rmd Functions"
 author: "Antonio Fasano"
-date: "Jan 28, 2024"
+date: "Jan 29, 2024"
 ---
 
 R topics documented:

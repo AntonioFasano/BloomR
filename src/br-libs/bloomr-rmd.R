@@ -1,4 +1,4 @@
-## ----store, opts.label='purlme'----------------------------------------------------------------------------------------------------
+## ----store, opts.label='brfuncs'---------------------------------------------------------------------------------------------------
 ## Purl this first
 ## Store br.* objects in dedicated namespace
 bloomr.rmd <- new.env(parent=asNamespace("stats"))
@@ -18,7 +18,7 @@ store=function(sym){
 }
 
 
-## ----rmd-internal, opts.label='purlme'---------------------------------------------------------------------------------------------
+## ----rmd-internal, opts.label='brfuncs'--------------------------------------------------------------------------------------------
 .br.addpaths <- function(pandonly = FALSE, quiet = TRUE){
 ### Add to Windows System Path the executable directories of LaTeX, Pandoc, and Perl with this search priority, and
 ### return invisibly the original path. If "pandonly" is true, add only Pandoc. If "quiet" is false, print the new path.
@@ -95,7 +95,7 @@ store(.br.pathexe)
 store(.br.inittex)
 
 
-## ----br.md2pdf, opts.label='purlme'------------------------------------------------------------------------------------------------
+## ----br.md2pdf, opts.label='brfuncs'-----------------------------------------------------------------------------------------------
 br.md2pdf <- function(md.file, pdf.file, quiet=TRUE){
 ### Make a markdown file into a PDF
 ### You need the proper BloomR version
@@ -112,7 +112,7 @@ br.md2pdf <- function(md.file, pdf.file, quiet=TRUE){
 }
 store(br.md2pdf)
 
-## ----br.rmd2html, opts.label='purlme'----------------------------------------------------------------------------------------------
+## ----br.rmd2html, opts.label='brfuncs'---------------------------------------------------------------------------------------------
 br.rmd2html <- function(rmd.file, html.file, quiet=TRUE){
 ### Make an R Markdown file into a HTML self-contained file
 ### You need the proper BloomR edition
@@ -138,7 +138,7 @@ br.rmd2html <- function(rmd.file, html.file, quiet=TRUE){
 }
 store(br.rmd2html)
 
-## ----br.rmd2slides, opts.label='purlme'--------------------------------------------------------------------------------------------
+## ----br.rmd2slides, opts.label='brfuncs'-------------------------------------------------------------------------------------------
 br.rmd2slides.html <- function(rmd.file, html.file, quiet=TRUE){
 ### Make an R Markdown file into a Google Slides self-contained HTML file
 ### You need proper BloomR edition
@@ -219,7 +219,7 @@ store(highlight.styles)
 
 
 
-## ----br.rmd2pdf, opts.label='purlme'-----------------------------------------------------------------------------------------------
+## ----br.rmd2pdf, opts.label='brfuncs'----------------------------------------------------------------------------------------------
 br.rmd2pdf <- function(rmd.file, pdf.file, quiet=TRUE){
 ### Make an R Markdown file into a PDF
 ### You need BloomR LaTeX addons or the proper BloomR version
@@ -246,7 +246,7 @@ br.rmd2pdf <- function(rmd.file, pdf.file, quiet=TRUE){
 }
 store(br.rmd2pdf)
 
-## ----br.rmd2both, opts.label='purlme'----------------------------------------------------------------------------------------------
+## ----br.rmd2both, opts.label='brfuncs'---------------------------------------------------------------------------------------------
 br.rmd2both <- function(rmd.file, quiet=TRUE){
 ### Make an R Markdown file into a PDF and an HTML self-contained file
 ### You need  BloomR LaTeX addons or the proper BloomR version
@@ -295,7 +295,7 @@ br.rmd2both <- function(rmd.file, quiet=TRUE){
 store(br.rmd2both)
 
 
-## ----miscfunc, opts.label='purlme'-------------------------------------------------------------------------------------------------
+## ----miscfunc, opts.label='brfuncs'------------------------------------------------------------------------------------------------
 
 #Clean up
 ## Remove visible and invisible objects
@@ -309,7 +309,7 @@ rm.var <- function()
 store(rm.all)
 store(rm.var)
 
-## ----betafun, opts.label='purlme'--------------------------------------------------------------------------------------------------
+## ----betafun, opts.label='brfuncs'-------------------------------------------------------------------------------------------------
 
 br.beta <- function(){
     f=paste0(R.home("share"), "/bloomr/bloomr.beta.R")
@@ -319,7 +319,7 @@ br.beta <- function(){
 store(br.beta)
 
 
-## ----attach, opts.label='purlme'---------------------------------------------------------------------------------------------------
+## ----attach, opts.label='brfuncs'--------------------------------------------------------------------------------------------------
 ### Make visible br.* in bloomr env and base ns
 attach(bloomr.rmd)
 rm(store)

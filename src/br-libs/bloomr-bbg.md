@@ -1,7 +1,7 @@
 ---
 title: "BloomR Bloomberg Functions"
 author: "Antonio Fasano"
-date: "Jan 28, 2024"
+date: "Jan 29, 2024"
 ---
 
 R topics documented:
@@ -274,6 +274,17 @@ data=br.bulk.csv(con, "mybloomr/tickers.csv")
 ```
 
 ```
+## 
+## Attaching package: 'zoo'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+```
+
+```
 ## Loading 3988 HK Equity
 ```
 
@@ -345,27 +356,27 @@ data
 
 ```
 ## $Financial
-##            3988 HK   C US 601288 CH BAC US HSBA LN
-## 2024-01-23  10.699 10.934        NA  9.724      NA
-## 2024-01-24  10.751  8.299        NA 10.803   8.682
-## 2024-01-25      NA  9.134     8.952  9.180      NA
-## 2024-01-26      NA     NA        NA  9.616      NA
-## 2024-01-27      NA  9.547        NA     NA      NA
+##            3988 HK  C US 601288 CH BAC US HSBA LN
+## 2024-01-24  11.422 9.112     7.893     NA   9.566
+## 2024-01-25  10.193 7.997     9.271     NA   9.276
+## 2024-01-26      NA 9.639     9.490 10.193   9.257
+## 2024-01-27      NA 9.816    11.021 10.293   8.640
+## 2024-01-28   8.480 9.499    10.090     NA   9.282
 ## 
 ## $Technology
 ##            QCOM US CSCO US 700 HK IBM US INTC US
-## 2024-01-23      NA  11.181     NA     NA      NA
-## 2024-01-24   8.594  10.713 11.448     NA      NA
-## 2024-01-25      NA  10.921     NA  9.858      NA
-## 2024-01-26      NA  11.670  8.108     NA   11.79
-## 2024-01-27      NA   8.647     NA 10.850      NA
+## 2024-01-24  10.359      NA     NA 10.176      NA
+## 2024-01-25   9.580   9.816 10.665     NA      NA
+## 2024-01-26   9.866   8.873     NA     NA  12.175
+## 2024-01-27   9.097   8.878 10.444     NA      NA
+## 2024-01-28  11.324  12.062 10.415     NA      NA
 ## 
 ## $Indices
 ##               DJI DJUSFN W1TEC
-## 2024-01-23 12.122     NA    NA
-## 2024-01-25     NA  11.06    NA
-## 2024-01-26 10.197     NA    NA
-## 2024-01-27     NA     NA 8.158
+## 2024-01-24 11.201     NA    NA
+## 2024-01-25 10.221     NA 8.822
+## 2024-01-27     NA 11.246    NA
+## 2024-01-28 10.328     NA    NA
 ```
 
 Note:
@@ -701,8 +712,11 @@ br.bulk.tiks(con, c("MSFT US", "AMZN US"), addtype=TRUE)
 
 ```
 ##            MSFT US AMZN US
-## 2024-01-24  11.636      NA
-## 2024-01-25  10.139   9.212
+## 2024-01-24  10.194   9.116
+## 2024-01-25      NA  11.541
+## 2024-01-26  11.037  10.817
+## 2024-01-27  10.112  10.578
+## 2024-01-28      NA  11.128
 ```
 
 ```r

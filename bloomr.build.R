@@ -1,5 +1,6 @@
 ###  BloomR source
 ##  TODO
+##  Complete commonilisation of Rmd components in Rmd's in BloomR.src/src/br-libs/ as for  bloomr-time.Rmd
 ##  In bloomr.init.R, eikonapir loading removes requestInfo from .GlobalEnv with a hack. Test it and then delete eikon.fallback() 
 ##  In bloomr.Rmd bdh always.display.ticker, dates.as.row.names and perhaps more relate to old java package.
 ##  Custom polymode (bremacs-rmd-mode), temporary disabled, to be restored in br-setmode.el
